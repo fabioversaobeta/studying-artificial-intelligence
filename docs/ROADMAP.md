@@ -30,7 +30,7 @@ real backend and database.**
 | Frontend auth flow | COMPLETED | Register/login/logout, protected routes, auto token refresh on 401 |
 | Frontend dashboard + learning UI | COMPLETED | Dashboard, subjects, skill tree, study sessions, challenges, goals — verified live in-browser, zero console errors |
 | Deployment config (Vercel + Railway) | COMPLETED | `frontend/vercel.json`, `backend/railway.toml`; DATABASE_URL scheme auto-normalized for Railway's Postgres plugin — see docs/DEPLOYMENT.md |
-| GitHub repository created + pushed | NOT_STARTED | Awaiting owner decision on repo visibility — see docs/PENDING.md |
+| GitHub repository created + pushed | COMPLETED | Private repo: https://github.com/fabioversaobeta/studying-artificial-intelligence |
 
 ## Not yet in the frontend (backend already supports these)
 
@@ -60,13 +60,11 @@ because they're blocked.
 
 ## Next up (in priority order)
 
-1. Owner decision: GitHub repo name/visibility, then create + push (see
-   docs/PENDING.md — this is the one item this session paused on).
-2. Actually deploy to Railway + Vercel using docs/DEPLOYMENT.md and verify
+1. Actually deploy to Railway + Vercel using docs/DEPLOYMENT.md and verify
    the production flow end-to-end.
-3. Frontend UI for spaced-repetition reviews, achievements/quests, and
+2. Frontend UI for spaced-repetition reviews, achievements/quests, and
    learning paths (backend already supports all three).
-4. Frontend test suite (component/integration tests) — none exist yet;
+3. Frontend test suite (component/integration tests) — none exist yet;
    the frontend has been verified manually in-browser but not automated.
-5. Then: pick up the "Explicitly deferred past v1" list based on what's
+4. Then: pick up the "Explicitly deferred past v1" list based on what's
    most useful for the owner's interview-prep timeline.

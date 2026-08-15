@@ -6,19 +6,11 @@ project owner has an opinion.
 
 ---
 
-## GitHub repository creation — genuinely blocking, awaiting owner input
+## GitHub repository creation — RESOLVED (2026-08-15)
 
-**Question**: the original brief asks for a new GitHub repository (named
-after the project directory) to be created and pushed to. Creating a
-repository and pushing code is visible-to-others, external-system state —
-outside the bounds of "normal engineering decisions" this session was asked
-to make autonomously.
-**Status**: NOT done. Everything else in v1 is complete and committed
-locally (`git log` on `master`); only the GitHub push is outstanding.
-**What's needed from the owner**: repo name (default: `studying-artificial-
-intelligence`, matching the directory), visibility (public/private), and
-confirmation to proceed — `gh repo create` + `git push` are ready to run as
-soon as that's confirmed.
+Owner confirmed: private repo, matching the directory name. Created and
+pushed: https://github.com/fabioversaobeta/studying-artificial-intelligence
+(`master` branch, tracking `origin/master`).
 
 ---
 
