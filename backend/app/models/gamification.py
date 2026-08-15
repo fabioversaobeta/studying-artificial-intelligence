@@ -8,21 +8,27 @@ XP measures *activity*. Mastery (see app.models.learning.Mastery) measures
 import uuid
 from datetime import date, datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Date,
     DateTime,
-    Enum as SAEnum,
     ForeignKey,
     Integer,
     String,
     Text,
     UniqueConstraint,
 )
+from sqlalchemy import (
+    Enum as SAEnum,
+)
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 def _enum(enum_cls: type[StrEnum], name: str) -> SAEnum:
@@ -82,7 +88,7 @@ class GamificationProfile(UUIDPrimaryKeyMixin, Base):
     last_activity_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship()
 
 
 class XPAward(UUIDPrimaryKeyMixin, Base):
@@ -97,7 +103,7 @@ class XPAward(UUIDPrimaryKeyMixin, Base):
     description: Mapped[str | None] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="xp_awards")  # noqa: F821
+    user: Mapped["User"] = relationship(back_populates="xp_awards")
 
 
 class Achievement(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -130,7 +136,7 @@ class UserAchievement(UUIDPrimaryKeyMixin, Base):
     )
     earned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship()
     achievement: Mapped["Achievement"] = relationship(back_populates="user_achievements")
 
 
@@ -175,5 +181,5 @@ class QuestCompletion(UUIDPrimaryKeyMixin, Base):
     period_key: Mapped[str] = mapped_column(String(20), nullable=False)
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship()
     quest: Mapped["Quest"] = relationship(back_populates="completions")

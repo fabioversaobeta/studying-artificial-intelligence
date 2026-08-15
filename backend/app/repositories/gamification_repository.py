@@ -70,9 +70,7 @@ def get_earned_achievement_codes(db: Session, user_id: uuid.UUID) -> set[str]:
     return set(db.execute(stmt).scalars().all())
 
 
-def get_earned_achievements_by_code(
-    db: Session, user_id: uuid.UUID
-) -> dict[str, datetime]:
+def get_earned_achievements_by_code(db: Session, user_id: uuid.UUID) -> dict[str, datetime]:
     stmt = (
         select(Achievement.code, UserAchievement.earned_at)
         .join(UserAchievement, UserAchievement.achievement_id == Achievement.id)
@@ -81,7 +79,9 @@ def get_earned_achievements_by_code(
     return {code: earned_at for code, earned_at in db.execute(stmt).all()}
 
 
-def award_achievement(db: Session, *, user_id: uuid.UUID, achievement_id: uuid.UUID) -> UserAchievement:
+def award_achievement(
+    db: Session, *, user_id: uuid.UUID, achievement_id: uuid.UUID
+) -> UserAchievement:
     record = UserAchievement(
         user_id=user_id, achievement_id=achievement_id, earned_at=datetime.now(UTC)
     )

@@ -21,12 +21,21 @@ from app.models.learning import (
     LearningResource,
     Subject,
 )
-from app.seeds.content import ACHIEVEMENTS, LEARNING_PATHS, QUESTS, SUBJECTS
+from app.seeds.content import (
+    ACHIEVEMENTS,
+    LEARNING_PATHS,
+    QUESTS,
+    SUBJECTS,
+    ChallengeSeed,
+    CompetencySeed,
+    ResourceSeed,
+    SubjectSeed,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def _upsert_subject(db: Session, seed) -> Subject:
+def _upsert_subject(db: Session, seed: SubjectSeed) -> Subject:
     subject = db.query(Subject).filter(Subject.slug == seed.slug).one_or_none()
     if subject is None:
         subject = Subject(slug=seed.slug)
@@ -40,7 +49,9 @@ def _upsert_subject(db: Session, seed) -> Subject:
     return subject
 
 
-def _upsert_competency(db: Session, subject: Subject, seed, order: int) -> Competency:
+def _upsert_competency(
+    db: Session, subject: Subject, seed: CompetencySeed, order: int
+) -> Competency:
     competency = (
         db.query(Competency)
         .filter(Competency.subject_id == subject.id, Competency.slug == seed.slug)
@@ -57,7 +68,9 @@ def _upsert_competency(db: Session, subject: Subject, seed, order: int) -> Compe
     return competency
 
 
-def _sync_resources(db: Session, competency: Competency, resource_seeds) -> None:
+def _sync_resources(
+    db: Session, competency: Competency, resource_seeds: list[ResourceSeed]
+) -> None:
     existing_titles = {
         r.title
         for r in db.query(LearningResource).filter(LearningResource.competency_id == competency.id)
@@ -78,7 +91,9 @@ def _sync_resources(db: Session, competency: Competency, resource_seeds) -> None
     db.flush()
 
 
-def _sync_challenges(db: Session, competency: Competency, challenge_seeds) -> None:
+def _sync_challenges(
+    db: Session, competency: Competency, challenge_seeds: list[ChallengeSeed]
+) -> None:
     existing_titles = {
         c.title for c in db.query(Challenge).filter(Challenge.competency_id == competency.id)
     }
@@ -145,7 +160,9 @@ def seed_learning_paths(db: Session, competency_by_key: dict[tuple[str, str], Co
 
         existing_competency_ids = {
             item.competency_id
-            for item in db.query(LearningPathItem).filter(LearningPathItem.learning_path_id == path.id)
+            for item in db.query(LearningPathItem).filter(
+                LearningPathItem.learning_path_id == path.id
+            )
         }
         for item_order, (subject_slug, competency_slug) in enumerate(path_seed.items):
             competency = competency_by_key.get((subject_slug, competency_slug))
@@ -199,7 +216,8 @@ def run() -> None:
         seed_quests(db)
         db.commit()
         logger.info(
-            "Seed complete: %d subjects, %d competencies, %d learning paths, %d achievements, %d quests",
+            "Seed complete: %d subjects, %d competencies, %d learning paths, "
+            "%d achievements, %d quests",
             len(SUBJECTS),
             len(competency_by_key),
             len(LEARNING_PATHS),

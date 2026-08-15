@@ -36,9 +36,7 @@ def create_study_session(
     return session
 
 
-def list_study_sessions(
-    db: Session, user_id: uuid.UUID, *, limit: int = 50
-) -> list[StudySession]:
+def list_study_sessions(db: Session, user_id: uuid.UUID, *, limit: int = 50) -> list[StudySession]:
     stmt = (
         select(StudySession)
         .where(StudySession.user_id == user_id)
@@ -48,7 +46,9 @@ def list_study_sessions(
     return list(db.execute(stmt).scalars().all())
 
 
-def total_study_minutes_for_competency(db: Session, user_id: uuid.UUID, competency_id: uuid.UUID) -> int:
+def total_study_minutes_for_competency(
+    db: Session, user_id: uuid.UUID, competency_id: uuid.UUID
+) -> int:
     stmt = select(func.coalesce(func.sum(StudySession.duration_minutes), 0)).where(
         StudySession.user_id == user_id, StudySession.competency_id == competency_id
     )
@@ -96,7 +96,9 @@ def has_passed_challenge_before(db: Session, user_id: uuid.UUID, challenge_id: u
 
 
 def count_challenges_for_competency(db: Session, competency_id: uuid.UUID) -> int:
-    stmt = select(func.count()).select_from(Challenge).where(Challenge.competency_id == competency_id)
+    stmt = (
+        select(func.count()).select_from(Challenge).where(Challenge.competency_id == competency_id)
+    )
     return int(db.execute(stmt).scalar_one())
 
 

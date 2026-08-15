@@ -8,12 +8,12 @@ mastery/XP are kept as separate concepts.
 import uuid
 from datetime import date, datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
-    Enum as SAEnum,
     Float,
     ForeignKey,
     Integer,
@@ -21,10 +21,16 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy import (
+    Enum as SAEnum,
+)
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class GoalStatus(StrEnum):
@@ -83,7 +89,7 @@ class LearningGoal(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     target_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    user: Mapped["User"] = relationship(back_populates="learning_goals")  # noqa: F821
+    user: Mapped["User"] = relationship(back_populates="learning_goals")
 
 
 class Subject(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -106,7 +112,10 @@ class Competency(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __table_args__ = (UniqueConstraint("subject_id", "slug", name="uq_competency_subject_slug"),)
 
     subject_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     slug: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
@@ -188,7 +197,10 @@ class LearningResource(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "learning_resources"
 
     competency_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("competencies.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("competencies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     type: Mapped[ResourceType] = mapped_column(_enum(ResourceType, "resource_type"), nullable=False)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -214,12 +226,10 @@ class StudySession(UUIDPrimaryKeyMixin, Base):
     )
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    occurred_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="study_sessions")  # noqa: F821
+    user: Mapped["User"] = relationship(back_populates="study_sessions")
     competency: Mapped["Competency | None"] = relationship()
 
 
@@ -227,7 +237,10 @@ class Challenge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "challenges"
 
     competency_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("competencies.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("competencies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -249,7 +262,10 @@ class ChallengeSubmission(UUIDPrimaryKeyMixin, Base):
         PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     challenge_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("challenges.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("challenges.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     status: Mapped[ChallengeSubmissionStatus] = mapped_column(
         _enum(ChallengeSubmissionStatus, "challenge_submission_status"), nullable=False
@@ -258,27 +274,30 @@ class ChallengeSubmission(UUIDPrimaryKeyMixin, Base):
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     xp_awarded: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship()
     challenge: Mapped["Challenge"] = relationship(back_populates="submissions")
 
 
 class Mastery(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "mastery_records"
-    __table_args__ = (UniqueConstraint("user_id", "competency_id", name="uq_mastery_user_competency"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "competency_id", name="uq_mastery_user_competency"),
+    )
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     competency_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("competencies.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("competencies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     algorithm_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="mastery_records")  # noqa: F821
+    user: Mapped["User"] = relationship(back_populates="mastery_records")
     competency: Mapped["Competency"] = relationship()
 
 
@@ -289,20 +308,27 @@ class Review(UUIDPrimaryKeyMixin, Base):
     """
 
     __tablename__ = "reviews"
-    __table_args__ = (UniqueConstraint("user_id", "competency_id", name="uq_review_user_competency"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "competency_id", name="uq_review_user_competency"),
+    )
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     competency_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("competencies.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True),
+        ForeignKey("competencies.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     interval_days: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     ease_factor: Mapped[float] = mapped_column(Float, default=2.5, nullable=False)
     repetitions: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    last_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     last_recall_quality: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship()
     competency: Mapped["Competency"] = relationship()

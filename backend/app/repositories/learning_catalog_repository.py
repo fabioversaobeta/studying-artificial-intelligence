@@ -72,7 +72,9 @@ def list_learning_paths(db: Session) -> list[LearningPath]:
 
 def get_learning_path_by_slug(db: Session, slug: str) -> LearningPath | None:
     stmt = (
-        select(LearningPath).options(selectinload(LearningPath.items)).where(LearningPath.slug == slug)
+        select(LearningPath)
+        .options(selectinload(LearningPath.items))
+        .where(LearningPath.slug == slug)
     )
     return db.execute(stmt).scalar_one_or_none()
 

@@ -33,8 +33,9 @@ def submit_challenge(
         raise NotFoundError("Challenge not found")
 
     xp_awarded = 0
-    if status == ChallengeSubmissionStatus.PASSED and not study_repository.has_passed_challenge_before(
-        db, user_id, challenge_id
+    if (
+        status == ChallengeSubmissionStatus.PASSED
+        and not study_repository.has_passed_challenge_before(db, user_id, challenge_id)
     ):
         xp_awarded = challenge.xp_value
 

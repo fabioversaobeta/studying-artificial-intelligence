@@ -77,7 +77,9 @@ def check_and_award_achievements(db: Session, user_id: uuid.UUID) -> list[str]:
         if achievement.code in earned_codes:
             continue
 
-        if _achievement_criteria_met(db, user_id, achievement.criteria_type, achievement.criteria_value):
+        if _achievement_criteria_met(
+            db, user_id, achievement.criteria_type, achievement.criteria_value
+        ):
             gamification_repository.award_achievement(
                 db, user_id=user_id, achievement_id=achievement.id
             )

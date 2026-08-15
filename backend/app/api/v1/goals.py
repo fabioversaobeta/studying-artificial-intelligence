@@ -10,7 +10,9 @@ router = APIRouter(prefix="/goals", tags=["learning"])
 
 
 @router.post("", response_model=LearningGoalRead, status_code=status.HTTP_201_CREATED)
-def create_goal(payload: LearningGoalCreate, current_user: CurrentUser, db: DbSession) -> LearningGoalRead:
+def create_goal(
+    payload: LearningGoalCreate, current_user: CurrentUser, db: DbSession
+) -> LearningGoalRead:
     goal = learning_service.create_goal(
         db,
         user_id=current_user.id,

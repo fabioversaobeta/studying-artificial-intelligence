@@ -9,8 +9,8 @@ lets new subjects be added without touching application logic.
 
 from dataclasses import dataclass, field
 
-from app.models.learning import DifficultyLevel, ResourceType
 from app.models.gamification import AchievementCriterion, QuestCriterion, QuestPeriod
+from app.models.learning import DifficultyLevel, ResourceType
 
 
 @dataclass
@@ -37,7 +37,9 @@ class CompetencySeed:
     difficulty: DifficultyLevel
     resources: list[ResourceSeed] = field(default_factory=list)
     challenges: list[ChallengeSeed] = field(default_factory=list)
-    requires: list[str] = field(default_factory=list)  # slugs of prerequisite competencies (same subject)
+    requires: list[str] = field(
+        default_factory=list
+    )  # slugs of prerequisite competencies (same subject)
 
 
 @dataclass
@@ -366,7 +368,10 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["cap-theorem"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: replication lag and read-your-writes"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES,
+                        title="Personal notes: replication lag and read-your-writes",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -387,7 +392,9 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["replication"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: choosing a shard key"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES, title="Personal notes: choosing a shard key"
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -467,7 +474,11 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["rest-api-design"],
                 resources=[
-                    ResourceSeed(type=ResourceType.DOCUMENTATION, title="JWT Introduction", url="https://jwt.io/introduction"),
+                    ResourceSeed(
+                        type=ResourceType.DOCUMENTATION,
+                        title="JWT Introduction",
+                        url="https://jwt.io/introduction",
+                    ),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="OWASP Top 10",
@@ -519,7 +530,10 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["postgresql-fundamentals"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: outbox pattern for reliable publishing"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES,
+                        title="Personal notes: outbox pattern for reliable publishing",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -548,7 +562,11 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Data model, comprehensions, context managers, and idiomatic control flow.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
-                    ResourceSeed(type=ResourceType.DOCUMENTATION, title="The Python Tutorial", url="https://docs.python.org/3/tutorial/"),
+                    ResourceSeed(
+                        type=ResourceType.DOCUMENTATION,
+                        title="The Python Tutorial",
+                        url="https://docs.python.org/3/tutorial/",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -610,7 +628,11 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["python-fundamentals"],
                 resources=[
-                    ResourceSeed(type=ResourceType.DOCUMENTATION, title="pytest documentation", url="https://docs.pytest.org/en/stable/"),
+                    ResourceSeed(
+                        type=ResourceType.DOCUMENTATION,
+                        title="pytest documentation",
+                        url="https://docs.pytest.org/en/stable/",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -636,7 +658,9 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Tokens, embeddings, context windows, sampling, and why models hallucinate.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: tokens, temperature, top-p"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES, title="Personal notes: tokens, temperature, top-p"
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -676,7 +700,9 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["context-engineering"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: chunking strategy tradeoffs"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES, title="Personal notes: chunking strategy tradeoffs"
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -716,7 +742,9 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["ai-agents-tool-use"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: designing a golden dataset"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES, title="Personal notes: designing a golden dataset"
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -742,7 +770,10 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Arrays, hash maps, trees, graphs, and the patterns that cover most interview problems.",
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: two-pointer and sliding-window checklist"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES,
+                        title="Personal notes: two-pointer and sliding-window checklist",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -760,7 +791,10 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["coding-interview-patterns"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: system design interview framework"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES,
+                        title="Personal notes: system design interview framework",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(
@@ -795,7 +829,10 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["behavioral-interviews"],
                 resources=[
-                    ResourceSeed(type=ResourceType.NOTES, title="Personal notes: recording and reviewing mock answers"),
+                    ResourceSeed(
+                        type=ResourceType.NOTES,
+                        title="Personal notes: recording and reviewing mock answers",
+                    ),
                 ],
                 challenges=[
                     ChallengeSeed(

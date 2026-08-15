@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import NotFoundError
 from app.domain.skill_tree import compute_competency_state
 from app.models.gamification import XPSource
-from app.models.learning import Competency, GoalStatus, LearningGoal, StudySession
+from app.models.learning import Competency, GoalStatus, LearningGoal, LearningPath, StudySession
 from app.repositories import (
     goal_repository,
     learning_catalog_repository,
@@ -33,7 +33,10 @@ def log_study_session(
     notes: str | None,
     occurred_at: datetime | None,
 ) -> StudySession:
-    if competency_id is not None and learning_catalog_repository.get_competency(db, competency_id) is None:
+    if (
+        competency_id is not None
+        and learning_catalog_repository.get_competency(db, competency_id) is None
+    ):
         raise NotFoundError("Competency not found")
 
     session = study_repository.create_study_session(
@@ -128,11 +131,11 @@ def _competency_with_state(db: Session, user_id: uuid.UUID, competency: Competen
     }
 
 
-def list_learning_paths(db: Session) -> list:
+def list_learning_paths(db: Session) -> list[LearningPath]:
     return learning_catalog_repository.list_learning_paths(db)
 
 
-def get_learning_path(db: Session, slug: str):
+def get_learning_path(db: Session, slug: str) -> LearningPath:
     path = learning_catalog_repository.get_learning_path_by_slug(db, slug)
     if path is None:
         raise NotFoundError("Learning path not found")
