@@ -7,7 +7,7 @@ settings discoverable in one place.
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +25,21 @@ class Settings(BaseSettings):
     database_url: str = Field(
         default="postgresql+psycopg://learning_platform:learning_platform@localhost:5434/learning_platform"
     )
+
+    @field_validator("database_url")
+    @classmethod
+    def _normalize_database_url(cls, value: str) -> str:
+        """Railway (and Heroku, and most managed-Postgres providers) inject
+        DATABASE_URL as `postgresql://...` or `postgres://...`, which
+        SQLAlchemy resolves to the psycopg2 dialect. This project uses
+        psycopg (v3) instead (see docs/DECISIONS.md), so the scheme must say
+        so explicitly — otherwise deploys fail with "no module named
+        psycopg2" the first time a request touches the database.
+        """
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                return "postgresql+psycopg://" + value[len(prefix) :]
+        return value
 
     secret_key: str = Field(default="dev-secret-key-change-me-in-production")
     jwt_algorithm: str = "HS256"

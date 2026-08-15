@@ -8,7 +8,9 @@ Last updated: 2026-08-15
 
 Target: the "Definition of Done" flow — register, log in, see the
 dashboard, set a goal, study a competency, complete an activity, earn XP,
-see progress and mastery, come back later and continue.
+see progress and mastery, come back later and continue. **This flow is now
+fully implemented and verified end-to-end in a real browser against the
+real backend and database.**
 
 | Feature | Status | Notes |
 |---|---|---|
@@ -18,17 +20,25 @@ see progress and mastery, come back later and continue.
 | Core domain schema + migrations (20 tables) | COMPLETED | |
 | Learning services (subjects/competencies/skill-tree state, paths, study sessions, goals) | COMPLETED | |
 | Mastery scoring (engagement + practice + retention) | COMPLETED | Formula in docs/DOMAIN.md |
-| Spaced repetition (SM-2-lite) | COMPLETED | Review due-list + recall submission |
+| Spaced repetition (SM-2-lite) | COMPLETED | Review due-list + recall submission; not yet surfaced in the frontend UI |
 | Gamification (XP, levels, streaks, achievements, quests) | COMPLETED | Quests auto-complete on read — see docs/DECISIONS.md |
 | Dashboard aggregate endpoint | COMPLETED | |
-| Seed data (7 subjects, 30 competencies, 3 paths, 9 achievements, 4 quests) | COMPLETED | Idempotent (`app.seeds.run`) |
+| Seed data (7 subjects, 30 competencies, 3 paths, 9 achievements, 4 quests) | COMPLETED | Idempotent (`app.seeds.run`); verified against a fresh DB |
 | Backend test suite | COMPLETED | 51 tests: domain unit tests + API integration tests |
 | Backend lint/type-check clean (ruff + mypy) | COMPLETED | |
-| Frontend scaffold (React + TS + Vite + Tailwind) | IN_PROGRESS | |
-| Frontend auth flow | NOT_STARTED | |
-| Frontend dashboard + learning UI | NOT_STARTED | |
-| Deployment config (Vercel + Railway) | NOT_STARTED | |
-| GitHub repository created + pushed | NOT_STARTED | |
+| Frontend scaffold (React + TS + Vite + Tailwind) | COMPLETED | Dark theme adapted from fabiobandacheski.com |
+| Frontend auth flow | COMPLETED | Register/login/logout, protected routes, auto token refresh on 401 |
+| Frontend dashboard + learning UI | COMPLETED | Dashboard, subjects, skill tree, study sessions, challenges, goals — verified live in-browser, zero console errors |
+| Deployment config (Vercel + Railway) | COMPLETED | `frontend/vercel.json`, `backend/railway.toml`; DATABASE_URL scheme auto-normalized for Railway's Postgres plugin — see docs/DEPLOYMENT.md |
+| GitHub repository created + pushed | NOT_STARTED | Awaiting owner decision on repo visibility — see docs/PENDING.md |
+
+## Not yet in the frontend (backend already supports these)
+
+| Feature | Status | Notes |
+|---|---|---|
+| Spaced-repetition review UI (due list, recall submission) | NOT_STARTED | `GET /reviews/due` and `POST /reviews/{id}/recall` exist and are tested; no page consumes them yet |
+| Achievements / quests UI | NOT_STARTED | `/gamification/achievements` and `/gamification/quests` exist and are tested; not yet shown anywhere in the frontend |
+| Learning paths UI | NOT_STARTED | `/learning-paths` endpoints exist; no page browses them yet |
 
 ## Explicitly deferred past v1
 
@@ -50,11 +60,13 @@ because they're blocked.
 
 ## Next up (in priority order)
 
-1. Finish frontend scaffold, wire up the API client and routing shell.
-2. Auth flow: login/register pages, token storage, protected routes.
-3. Dashboard page against the real `/dashboard` endpoint.
-4. Subjects/skill-tree browsing UI, study session logging UI, challenge
-   submission UI.
-5. Deployment configuration for Vercel (frontend) and Railway
-   (backend + Postgres), plus `docs/DEPLOYMENT.md`.
-6. Create the GitHub repository and push.
+1. Owner decision: GitHub repo name/visibility, then create + push (see
+   docs/PENDING.md — this is the one item this session paused on).
+2. Actually deploy to Railway + Vercel using docs/DEPLOYMENT.md and verify
+   the production flow end-to-end.
+3. Frontend UI for spaced-repetition reviews, achievements/quests, and
+   learning paths (backend already supports all three).
+4. Frontend test suite (component/integration tests) — none exist yet;
+   the frontend has been verified manually in-browser but not automated.
+5. Then: pick up the "Explicitly deferred past v1" list based on what's
+   most useful for the owner's interview-prep timeline.

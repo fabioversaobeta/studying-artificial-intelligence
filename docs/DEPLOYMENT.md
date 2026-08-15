@@ -1,0 +1,99 @@
+# Deployment
+
+Target architecture: frontend on **Vercel**, backend + PostgreSQL on
+**Railway**. Both platforms deploy from this Git repository.
+
+## Backend — Railway
+
+### 1. Create the project
+
+1. In Railway, create a new project and add a **PostgreSQL** plugin — this
+   provisions a database and injects a `DATABASE_URL` environment variable
+   into every service in the project automatically.
+2. Add a second service for the backend, pointing at this repository with
+   **root directory `backend/`**.
+
+### 2. Configuration Railway picks up automatically
+
+- `backend/railway.toml` sets the start command:
+  ```
+  alembic upgrade head && python -m app.seeds.run && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+  ```
+  Migrations run before the server starts on every deploy. Re-running seeds
+  on every deploy is intentional and safe — `app.seeds.run` is idempotent
+  (upserts by slug/code), so it keeps catalog content in sync with whatever
+  is currently in `app/seeds/content.py` without ever duplicating rows.
+- `backend/.python-version` pins the build to Python 3.12.
+- Nixpacks installs dependencies from `backend/pyproject.toml`
+  automatically (no `requirements.txt` needed).
+
+### 3. Required environment variables
+
+| Variable | Value | Notes |
+|---|---|---|
+| `DATABASE_URL` | *(auto-injected by the Postgres plugin)* | The app normalizes `postgres://`/`postgresql://` to the `postgresql+psycopg://` scheme it needs — see `app.core.config`. Don't edit this manually. |
+| `SECRET_KEY` | a long random string | Generate with `python -c "import secrets; print(secrets.token_urlsafe(64))"`. **Never reuse the local dev default.** |
+| `ENVIRONMENT` | `production` | |
+| `DEBUG` | `false` | |
+| `CORS_ALLOW_ORIGINS` | `["https://<your-vercel-app>.vercel.app"]` | JSON array. Update after the frontend's Vercel URL is known — see step 4 below. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` (default) | Override only if you want a different session length. |
+| `REFRESH_TOKEN_EXPIRE_MINUTES` | `43200` (default) | |
+
+Full list with descriptions: `backend/.env.example`.
+
+### 4. After the frontend is deployed
+
+Update `CORS_ALLOW_ORIGINS` on the Railway backend service to include the
+real Vercel URL, then redeploy. Until this is set correctly, the frontend
+will be able to reach the API from a browser's perspective (CORS is
+enforced by the browser, not a network boundary) but every request will be
+rejected by the CORS preflight.
+
+### 5. Verify
+
+- `GET https://<railway-app>.up.railway.app/health` → `{"status": "ok"}`
+- `GET https://<railway-app>.up.railway.app/health/ready` → confirms DB
+  connectivity
+- `GET https://<railway-app>.up.railway.app/docs` → interactive API docs
+
+## Frontend — Vercel
+
+### 1. Import the project
+
+Import this repository into Vercel with **root directory `frontend/`**.
+`frontend/vercel.json` sets the build command (`npm run build`), output
+directory (`dist`), and SPA rewrites (every path serves `index.html` so
+React Router's client-side routing works on refresh/deep links).
+
+### 2. Required environment variable
+
+| Variable | Value |
+|---|---|
+| `VITE_API_URL` | `https://<railway-app>.up.railway.app` (no trailing slash) |
+
+Set this in the Vercel project's Environment Variables settings before the
+first deploy — Vite inlines `VITE_*` variables at build time, so changing
+it later requires a redeploy, not just a restart.
+
+### 3. Verify
+
+Visit the deployed URL, register an account, and confirm the dashboard
+loads with no console errors. If requests fail with a CORS error, revisit
+backend step 4 above.
+
+## Local production-build sanity check
+
+Before deploying, confirm both sides actually build cleanly:
+
+```bash
+cd backend && ./.venv/Scripts/python.exe -m pytest && ./.venv/Scripts/python.exe -m mypy app
+cd ../frontend && npm run build
+```
+
+## Rollback
+
+Both Railway and Vercel keep prior deploys and support one-click rollback
+to the previous successful deploy from their respective dashboards. There
+is no destructive migration in this project's history yet (no dropped
+columns/tables) — if one is ever added, note the rollback plan for that
+specific migration in its `docs/DECISIONS.md` entry.

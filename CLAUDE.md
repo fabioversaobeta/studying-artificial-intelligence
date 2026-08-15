@@ -43,10 +43,14 @@ project owner tracks progress, not just a style preference.
 
 ## Local development
 
+Full instructions with troubleshooting: `docs/DEVELOPMENT.md`. Quick
+version:
+
 ```bash
 # 1. Start Postgres (mapped to host port 5434 to avoid clashing with other
-#    local projects — see docker-compose.yml)
+#    local projects — see docker-compose.yml) and create the test DB
 docker compose up -d
+docker exec learning-platform-postgres createdb -U learning_platform learning_platform_test
 
 # 2. Backend
 cd backend
@@ -64,19 +68,26 @@ npm run dev
 ```
 
 Backend tests: `cd backend && ./.venv/Scripts/python.exe -m pytest`
-Frontend tests: `cd frontend && npm test`
+Frontend: no automated test suite yet (see docs/ROADMAP.md) — verify
+changes manually in-browser via the `run` skill or `npm run dev`.
 
 ## Quality gates before calling anything "done"
 
-1. `ruff format` + `ruff check` (backend), `eslint` (frontend)
-2. Type checks: `mypy app` (backend), `tsc --noEmit` (frontend)
-3. `pytest` (backend), frontend test suite
+1. `ruff format` + `ruff check` (backend), `oxlint` (frontend, `npm run lint`)
+2. Type checks: `mypy app` (backend), `tsc -b --noEmit` (frontend, `npm run typecheck`)
+3. `pytest` (backend) — there is no frontend test suite yet
 4. `alembic upgrade head` runs cleanly against a fresh database
 5. `npm run build` succeeds
 6. Manually verify the affected flow (curl or browser) — don't trust green
    tests alone for UI changes
 7. Update `docs/ROADMAP.md` (and `docs/DECISIONS.md` / `docs/PENDING.md` if
    relevant)
+
+## Deployment
+
+Target: Vercel (frontend) + Railway (backend + Postgres). Full steps,
+required environment variables, and the Railway `DATABASE_URL` scheme
+gotcha: `docs/DEPLOYMENT.md`.
 
 ## Autonomous operation
 
