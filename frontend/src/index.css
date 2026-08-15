@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Visual identity carried over from fabiobandacheski.com, adapted for a
+     learning/productivity app (see docs/DECISIONS.md). */
+  --color-bg: #0a0d15;
+  --color-surface: #10141f;
+  --color-surface-raised: #161b28;
+  --color-border: #232938;
+
+  --color-fg: #eef1f6;
+  --color-fg-muted: #96a2b8;
+  --color-fg-subtle: #c3ccd9;
+  --color-heading: #ffffff;
+
+  --color-accent: #6685ff;
+  --color-accent-light: #97b2ff;
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--color-border);
+}

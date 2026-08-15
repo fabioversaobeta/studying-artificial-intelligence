@@ -1,0 +1,49 @@
+import { apiClient } from '@/services/api-client'
+import type {
+  Challenge,
+  ChallengeSubmission,
+  ChallengeSubmissionStatus,
+  Dashboard,
+  LearningGoal,
+  LearningPath,
+  GoalStatus,
+  Review,
+  StudySession,
+  SubjectDetail,
+  SubjectWithProgress,
+} from '@/types/api'
+
+export const learningService = {
+  getDashboard: () => apiClient.get<Dashboard>('/api/v1/dashboard'),
+
+  listSubjects: () => apiClient.get<SubjectWithProgress[]>('/api/v1/subjects'),
+  getSubject: (id: string) => apiClient.get<SubjectDetail>(`/api/v1/subjects/${id}`),
+
+  listLearningPaths: () => apiClient.get<LearningPath[]>('/api/v1/learning-paths'),
+
+  logStudySession: (input: {
+    competency_id?: string
+    subject_id?: string
+    duration_minutes: number
+    notes?: string
+  }) => apiClient.post<StudySession>('/api/v1/study-sessions', input),
+  listStudySessions: () => apiClient.get<StudySession[]>('/api/v1/study-sessions'),
+
+  listGoals: () => apiClient.get<LearningGoal[]>('/api/v1/goals'),
+  createGoal: (input: { title: string; description?: string; target_date?: string }) =>
+    apiClient.post<LearningGoal>('/api/v1/goals', input),
+  updateGoalStatus: (goalId: string, status: GoalStatus) =>
+    apiClient.patch<LearningGoal>(`/api/v1/goals/${goalId}/status`, { status }),
+
+  listChallenges: (competencyId: string) =>
+    apiClient.get<Challenge[]>(`/api/v1/competencies/${competencyId}/challenges`),
+  submitChallenge: (challengeId: string, status: ChallengeSubmissionStatus, notes?: string) =>
+    apiClient.post<ChallengeSubmission>(`/api/v1/challenges/${challengeId}/submissions`, {
+      status,
+      notes,
+    }),
+
+  listDueReviews: () => apiClient.get<Review[]>('/api/v1/reviews/due'),
+  submitRecall: (competencyId: string, quality: number) =>
+    apiClient.post<Review>(`/api/v1/reviews/${competencyId}/recall`, { quality }),
+}

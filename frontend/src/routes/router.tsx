@@ -1,0 +1,40 @@
+import { createBrowserRouter } from 'react-router-dom'
+import { AppLayout } from '@/layouts/app-layout'
+import { AuthLayout } from '@/layouts/auth-layout'
+import { ProtectedRoute, GuestOnlyRoute } from '@/routes/protected-route'
+import { LoginPage } from '@/pages/login-page'
+import { RegisterPage } from '@/pages/register-page'
+import { DashboardPage } from '@/pages/dashboard-page'
+import { SubjectsPage } from '@/pages/subjects-page'
+import { SubjectDetailPage } from '@/pages/subject-detail-page'
+import { GoalsPage } from '@/pages/goals-page'
+
+export const router = createBrowserRouter([
+  {
+    element: <GuestOnlyRoute />,
+    children: [
+      {
+        element: <AuthLayout><LoginPage /></AuthLayout>,
+        path: '/login',
+      },
+      {
+        element: <AuthLayout><RegisterPage /></AuthLayout>,
+        path: '/register',
+      },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { path: '/', element: <DashboardPage /> },
+          { path: '/subjects', element: <SubjectsPage /> },
+          { path: '/subjects/:id', element: <SubjectDetailPage /> },
+          { path: '/goals', element: <GoalsPage /> },
+        ],
+      },
+    ],
+  },
+])
