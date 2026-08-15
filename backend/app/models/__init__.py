@@ -1,0 +1,72 @@
+"""SQLAlchemy ORM models.
+
+Every model must be imported here so that ``Base.metadata`` is fully
+populated for Alembic autogeneration and for ``Base.metadata.create_all``
+in tests.
+"""
+
+from app.models.base import Base
+from app.models.gamification import (
+    Achievement,
+    AchievementCriterion,
+    GamificationProfile,
+    Quest,
+    QuestCompletion,
+    QuestCriterion,
+    QuestPeriod,
+    UserAchievement,
+    XPAward,
+    XPSource,
+)
+from app.models.learning import (
+    Challenge,
+    ChallengeSubmission,
+    ChallengeSubmissionStatus,
+    Competency,
+    CompetencyPrerequisite,
+    CompetencyState,
+    DifficultyLevel,
+    GoalStatus,
+    LearningGoal,
+    LearningPath,
+    LearningPathItem,
+    LearningResource,
+    Mastery,
+    ResourceType,
+    Review,
+    StudySession,
+    Subject,
+)
+from app.models.user import User
+
+__all__ = [
+    "Base",
+    "User",
+    "LearningGoal",
+    "GoalStatus",
+    "Subject",
+    "Competency",
+    "CompetencyPrerequisite",
+    "CompetencyState",
+    "DifficultyLevel",
+    "LearningPath",
+    "LearningPathItem",
+    "LearningResource",
+    "ResourceType",
+    "StudySession",
+    "Challenge",
+    "ChallengeSubmission",
+    "ChallengeSubmissionStatus",
+    "Mastery",
+    "Review",
+    "XPAward",
+    "XPSource",
+    "GamificationProfile",
+    "Achievement",
+    "AchievementCriterion",
+    "UserAchievement",
+    "Quest",
+    "QuestCriterion",
+    "QuestPeriod",
+    "QuestCompletion",
+]

@@ -1,0 +1,1116 @@
+Fabio:
+
+Eu estou estudando mais sobre desenvolvimento de software com inteligencia artificial. Atualmente estou utilizando muito o Claude Code para isso, fazendo experimentos, testando prompts e aplicando algumas sugestões que encontro nas redes sociais. Eu quero me aprofundar mais no assunto, de forma que eu consiga contribuir com equipes de alta performance. Atualmente estou aplicando em vagas internacionais, e quero estar preparado para entrevistas técnicas, onde sei que meus conhecimentos de programação e também de inteligencia artificial serão testados. Para isso, quero que me ajude a construir um cronograma de estudo para que eu consiga entender tudo o que é necessário para desenvolver aplicações escaláveis, seguras, e de fácil manutenção. Quero um conteúdo com o maior grau de excelência, para me ajudar rapidamente a conquistar um espaço de destaque nesse assunto.
+
+
+GPT:
+
+Fabio, eu acho que você está mirando no lugar certo.
+
+Pelo seu histórico, você não precisa virar um “especialista em IA” começando do zero. Você já tem uma base muito forte em engenharia: 18+ anos de desenvolvimento, sistemas de pagamento, alta disponibilidade, incidentes críticos, arquitetura, PHP/Node.js/React e experiência prática com sistemas distribuídos.
+
+O próximo salto é aprender a usar IA como uma nova camada de engenharia, e não simplesmente aprender a escrever prompts.
+
+E eu faria uma mudança importante na sua estratégia:
+
+Seu objetivo não deveria ser “aprender Claude Code”. Seu objetivo deveria ser se tornar um AI-Native Senior Software Engineer capaz de projetar, construir, avaliar, proteger e operar sistemas de software usando agentes de IA.
+
+Claude Code seria uma das suas principais ferramentas para chegar lá.
+
+A própria Anthropic vem tratando o desenvolvimento com agentes cada vez mais como uma disciplina de engenharia: contexto, ferramentas, arquitetura de agentes, avaliação e controle de comportamento.
+
+1. O profissional que eu quero que você se torne
+
+Eu dividiria seu objetivo em 5 competências:
+
+                    AI-NATIVE
+                  SOFTWARE ENGINEER
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+   SOFTWARE         AI ENGINEERING    SYSTEM DESIGN
+   ENGINEERING            │                │
+        │                 │                │
+   Architecture       LLMs/Agents      Distributed Systems
+   Clean Code         Context          Scalability
+   Testing            RAG              Reliability
+   Security           Tool Use         Performance
+   Maintainability    Evals            Observability
+        │                 │                │
+        └────────────────┼────────────────┘
+                         │
+                  PRODUCTION SYSTEMS
+                         │
+                  Security + Cost
+                  Reliability + UX
+
+E existe uma sexta competência transversal:
+
+AI-assisted Engineering
+
+Ou seja:
+
+Saber fazer uma tarefa que normalmente levaria 2 dias ser realizada em algumas horas sem diminuir a qualidade do software.
+
+Isso significa saber:
+
+decompor problemas;
+fornecer contexto;
+trabalhar com agentes;
+revisar código produzido por IA;
+criar testes;
+validar hipóteses;
+utilizar ferramentas;
+criar loops de feedback;
+avaliar resultados;
+detectar alucinações;
+proteger secrets e dados;
+controlar mudanças;
+medir qualidade.
+
+Isso é muito mais valioso em uma entrevista internacional do que simplesmente dizer:
+
+"I know prompt engineering."
+
+2. O roadmap que eu recomendo
+
+Eu estruturaria seu estudo em 32 semanas, aproximadamente 8 meses.
+
+Mas existe uma diferença importante:
+
+Você não deve esperar 8 meses para começar a aplicar para vagas.
+
+Você pode começar a aplicar agora e evoluir durante o processo.
+
+Eu organizaria assim:
+
+Fase	Período	Objetivo
+0	Semana 1	Baseline + setup
+1	Semanas 2–5	AI-assisted Software Engineering
+2	Semanas 6–9	LLM fundamentals
+3	Semanas 10–13	Context Engineering + RAG
+4	Semanas 14–17	AI Agents
+5	Semanas 18–21	Evals + Observability
+6	Semanas 22–25	AI Security
+7	Semanas 26–29	Production AI Systems
+8	Semanas 30–32	Architecture + Interview Mastery
+
+E, paralelamente:
+
+System Design + Distributed Systems + Coding Interviews
+
+desde a primeira semana.
+
+3. Fase 0 — Baseline
+Semana 1
+
+Antes de estudar, quero que você descubra onde realmente está.
+
+Faça um projeto pequeno utilizando Claude Code.
+
+Por exemplo:
+
+Build a production-ready payment transaction API.
+
+Não precisa ser um sistema gigantesco.
+
+Algo como:
+
+POST /payments
+GET  /payments/{id}
+POST /payments/{id}/refund
+
+Utilize:
+
+PHP;
+Laravel;
+MySQL;
+Docker;
+PHPUnit;
+Redis;
+OpenAPI;
+logs;
+metrics.
+
+E permita que o Claude Code participe do desenvolvimento.
+
+Mas existe uma regra:
+
+Não aceite código cegamente.
+
+Para cada mudança importante, pergunte:
+
+Why?
+
+What assumptions did you make?
+
+What could go wrong?
+
+What are the security implications?
+
+What happens under high concurrency?
+
+What happens if this operation is retried?
+
+How would you test this?
+
+Isso já começa a mudar sua forma de trabalhar.
+
+4. Fase 1 — AI-Assisted Software Engineering
+Semanas 2–5
+
+Aqui começa a parte mais importante para você.
+
+Você precisa aprender a transformar Claude Code em um membro de uma equipe de engenharia, e não em um autocomplete sofisticado.
+
+Estude
+Prompt Engineering
+
+Mas não fique preso a:
+
+role prompting;
+"act as";
+few-shot;
+chain of thought;
+prompts gigantes.
+
+Aprenda principalmente:
+
+instruction hierarchy;
+constraints;
+structured outputs;
+decomposition;
+iterative prompting;
+verification;
+feedback loops.
+Context Engineering
+
+Essa provavelmente será uma das competências mais importantes.
+
+A Anthropic descreve context engineering como a evolução natural do prompt engineering: o problema passa a ser qual contexto deve estar disponível para o modelo produzir o comportamento desejado.
+
+Você precisa entender:
+
+Prompt
+  +
+Repository
+  +
+Architecture
+  +
+Documentation
+  +
+Tests
+  +
+Tool outputs
+  +
+Previous decisions
+  +
+Runtime state
+  =
+Context
+
+E aprender:
+
+context window;
+context compression;
+context selection;
+context pollution;
+context prioritization;
+persistent context;
+project instructions;
+repository instructions.
+5. Claude Code como ambiente de engenharia
+
+Você já está utilizando Claude Code. Agora quero que você vá muito além de:
+
+"Implement this feature."
+
+Estude profundamente:
+
+CLAUDE.md;
+project instructions;
+subagents;
+skills;
+hooks;
+MCP;
+permissions;
+tool use;
+agent workflows;
+git workflows;
+automated testing;
+code review;
+autonomous tasks.
+
+O conceito que quero que você domine é:
+
+Human
+   ↓
+Specification
+   ↓
+AI Agent
+   ↓
+Tools
+   ↓
+Code
+   ↓
+Tests
+   ↓
+Evaluation
+   ↓
+Human Review
+   ↓
+Production
+
+Não:
+
+Human → Prompt → Code → Production
+6. Fase 2 — LLM Fundamentals
+Semanas 6–9
+
+Você não precisa se tornar pesquisador de Machine Learning.
+
+Mas precisa saber explicar tecnicamente como um LLM funciona.
+
+Estude:
+
+Fundamental
+tokens;
+embeddings;
+transformer;
+attention;
+context window;
+inference;
+temperature;
+sampling;
+top-p;
+model parameters;
+pre-training;
+instruction tuning;
+RLHF;
+reasoning models;
+multimodal models.
+
+Depois:
+
+Model behavior
+hallucination;
+grounding;
+stochasticity;
+instruction following;
+model limitations;
+context degradation.
+
+Você precisa conseguir responder em uma entrevista:
+
+"Why does an LLM hallucinate?"
+
+e:
+
+"How would you design a system to reduce hallucinations?"
+
+sem recorrer a respostas genéricas.
+
+7. Fase 3 — RAG e Context Engineering
+Semanas 10–13
+
+Agora entramos em aplicações reais.
+
+Aprenda:
+
+User
+ ↓
+Query
+ ↓
+Retrieval
+ ↓
+Relevant Context
+ ↓
+LLM
+ ↓
+Answer
+
+Mas vá além do tutorial de "chat with PDF".
+
+Estude:
+
+Embeddings
+semantic similarity;
+vector databases;
+cosine similarity;
+chunking;
+metadata;
+hybrid search.
+Retrieval
+dense retrieval;
+sparse retrieval;
+hybrid retrieval;
+reranking;
+query expansion;
+filtering.
+RAG architecture
+Documents
+    ↓
+Ingestion
+    ↓
+Chunking
+    ↓
+Embedding
+    ↓
+Vector Store
+    ↓
+Retriever
+    ↓
+Reranker
+    ↓
+Context
+    ↓
+LLM
+
+Depois aprenda:
+
+RAG evaluation;
+retrieval quality;
+context relevance;
+groundedness;
+citation;
+stale data;
+access control.
+8. Projeto obrigatório #1
+
+Quero que você construa:
+
+AI Payment Engineering Assistant
+
+Imagine que você tenha:
+
+documentação da API;
+arquitetura;
+ADRs;
+código;
+incident reports;
+runbooks;
+documentação de integrações;
+exemplos de payloads.
+
+O agente deve conseguir responder:
+
+How does the PIX payment flow work?
+
+Where could this payment fail?
+
+Which service owns this behavior?
+
+What happens if the request is retried?
+
+Show me the relevant implementation.
+
+What tests cover this behavior?
+
+Isso conecta perfeitamente sua experiência em pagamentos com IA.
+
+E isso será excelente para entrevistas.
+
+9. Fase 4 — AI Agents
+Semanas 14–17
+
+Aqui começa uma das áreas mais importantes.
+
+Você precisa entender a diferença entre:
+
+Workflow
+A → B → C → D
+
+e
+
+Agent
+             ┌── Tool
+             │
+Goal → Agent ┼── Tool
+             │
+             ├── Tool
+             │
+             └── Observation
+                    ↓
+                  Agent
+
+Estude:
+
+tool calling;
+function calling;
+agent loops;
+planning;
+state;
+memory;
+tool selection;
+reflection;
+retries;
+human-in-the-loop;
+single-agent architecture;
+multi-agent architecture.
+
+A recomendação atual da Anthropic é especialmente interessante aqui: escolher entre workflows, single-agent e multi-agent de acordo com a complexidade real do problema, em vez de assumir que "mais agentes = melhor".
+
+10. MCP
+
+Você deve estudar Model Context Protocol.
+
+Não apenas usar MCP.
+
+Entender:
+
+LLM
+ │
+ ├── MCP Server → Database
+ │
+ ├── MCP Server → GitHub
+ │
+ ├── MCP Server → Documentation
+ │
+ └── MCP Server → Internal API
+
+E principalmente:
+
+tools;
+resources;
+prompts;
+authorization;
+security;
+schemas;
+lifecycle;
+permissions;
+tool boundaries.
+
+O MCP está evoluindo rapidamente; a especificação de julho de 2026 introduziu mudanças relevantes como núcleo stateless, multi-round-trip requests, routing por headers, caching de resultados e hardening de autorização.
+
+Isso significa que vale estudar o protocolo conceitualmente, e não decorar uma implementação específica.
+
+11. Projeto obrigatório #2
+
+Construa:
+
+AI Software Engineer Agent
+
+Dê ao agente acesso a:
+
+Git
+GitHub
+Documentation
+Database
+Tests
+Codebase
+Issue tracker
+
+E permita que ele receba:
+
+Implement issue #123.
+
+O agente deve:
+
+entender a issue;
+explorar o código;
+identificar arquitetura;
+propor solução;
+implementar;
+executar testes;
+analisar falhas;
+corrigir;
+gerar relatório;
+criar commit/PR.
+
+Isso é muito mais próximo do futuro do desenvolvimento de software.
+
+12. Fase 5 — Evals
+Semanas 18–21
+
+Essa é uma área que eu considero obrigatória para você.
+
+A pergunta não é:
+
+"Does the AI work?"
+
+A pergunta é:
+
+"How do I know the AI works?"
+
+A Anthropic recomenda tratar avaliações de agentes de maneira semelhante à manutenção de testes: definir capacidades desejadas, criar avaliações e utilizá-las continuamente durante o desenvolvimento.
+
+Estude:
+
+deterministic tests;
+LLM-as-a-judge;
+human evaluation;
+golden datasets;
+regression testing;
+adversarial testing;
+benchmark design;
+task success;
+tool-call accuracy;
+latency;
+cost;
+failure rate.
+
+Aprenda este ciclo:
+
+Build
+ ↓
+Evaluate
+ ↓
+Observe failure
+ ↓
+Change
+ ↓
+Evaluate again
+ ↓
+Regression suite
+
+Isso é AI Engineering de verdade.
+
+13. Fase 6 — AI Security
+Semanas 22–25
+
+Essa parte vai diferenciar você de muitos desenvolvedores que estão simplesmente "brincando com IA".
+
+Estude profundamente o OWASP Top 10 for LLM Applications 2025. Ele cobre riscos como prompt injection e insecure output handling, entre outros.
+
+Você precisa dominar:
+
+prompt injection;
+indirect prompt injection;
+sensitive information disclosure;
+excessive agency;
+insecure output handling;
+tool abuse;
+privilege escalation;
+data poisoning;
+model denial of service;
+supply-chain risks.
+
+Imagine:
+
+User
+ ↓
+LLM
+ ↓
+Tool
+ ↓
+Production Database
+
+Agora pergunte:
+
+What happens if the user convinces the model to execute a destructive operation?
+
+Isso muda completamente a maneira como você projeta agentes.
+
+14. Fase 7 — Production AI
+Semanas 26–29
+
+Agora você precisa unir tudo.
+
+Aprenda a projetar:
+
+                ┌──────────────┐
+                │   Frontend   │
+                └──────┬───────┘
+                       ↓
+                ┌──────────────┐
+                │     API      │
+                └──────┬───────┘
+                       ↓
+               ┌────────────────┐
+               │ Agent Runtime  │
+               └───────┬────────┘
+                       │
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+       Model        Tools        Retrieval
+          │            │            │
+          └────────────┼────────────┘
+                       ↓
+                ┌──────────────┐
+                │  Evaluation  │
+                └──────────────┘
+
+Estude:
+
+Reliability
+timeout;
+retry;
+backoff;
+circuit breaker;
+idempotency;
+rate limiting;
+fallback;
+graceful degradation.
+Scalability
+horizontal scaling;
+queues;
+caching;
+async processing;
+load balancing;
+concurrency.
+Cost
+token consumption;
+model routing;
+caching;
+batching;
+context optimization.
+Observability
+logs;
+metrics;
+traces;
+prompt traces;
+tool traces;
+token usage;
+latency;
+failure rates.
+15. E aqui entra uma vantagem enorme que você já possui
+
+Seu background em pagamentos é extremamente valioso.
+
+Você já entende conceitos como:
+
+idempotency;
+retries;
+consistency;
+failure modes;
+observability;
+incidents;
+availability;
+distributed systems.
+
+Agora você precisa aprender a aplicar isso em:
+
+AI systems.
+
+Por exemplo:
+
+Idempotency em pagamentos
+POST /payment
+Idempotency-Key: abc
+Idempotency em agentes
+Agent
+ ↓
+Tool call
+ ↓
+Payment API
+
+O agente pode tentar novamente.
+
+Você precisa pensar:
+
+"What if the model calls this tool twice?"
+
+Isso é exatamente o tipo de raciocínio que empresas maduras vão procurar.
+
+16. Fase 8 — System Design + AI
+Semanas 30–32
+
+Aqui você começa a juntar tudo para entrevistas.
+
+Você deve ser capaz de desenhar:
+
+Traditional
+
+Design a payment processing platform.
+
+AI
+
+Design an AI coding assistant.
+
+Hybrid
+
+Design an AI-powered fraud investigation platform.
+
+Agentic
+
+Design an autonomous customer support agent.
+
+High-scale
+
+Design a globally distributed AI application handling millions of requests per day.
+
+E responder:
+
+architecture;
+data flow;
+storage;
+caching;
+queues;
+consistency;
+availability;
+observability;
+security;
+cost;
+failure modes;
+scaling.
+17. O segundo eixo do seu estudo: Software Engineering
+
+Aqui eu não reduziria seu estudo tradicional de engenharia.
+
+Na verdade, eu aumentaria.
+
+Você precisa continuar estudando:
+
+Architecture
+SOLID;
+Clean Architecture;
+Hexagonal Architecture;
+Domain-Driven Design;
+modular monolith;
+microservices;
+event-driven architecture.
+Distributed Systems
+CAP;
+consistency;
+consensus;
+replication;
+partitioning;
+sharding;
+distributed transactions;
+eventual consistency;
+messaging.
+Databases
+indexes;
+query optimization;
+transactions;
+isolation levels;
+locking;
+replication;
+partitioning.
+Reliability
+SLI;
+SLO;
+SLA;
+error budgets;
+incident management;
+graceful degradation.
+
+O material do Google SRE é excelente aqui, inclusive com capítulos específicos sobre sistemas distribuídos, troubleshooting, incidentes, testes de confiabilidade, overload e cascading failures.
+
+18. Security
+
+Outro eixo paralelo:
+
+Authentication
+Authorization
+OAuth2
+OIDC
+JWT
+Secrets
+Encryption
+TLS
+SQL Injection
+XSS
+CSRF
+SSRF
+RBAC
+ABAC
+Supply Chain
+Dependency Security
+Container Security
+API Security
+
+E depois:
+
+LLM Security
+     +
+Traditional Security
+
+Isso é fundamental.
+
+19. Coding Interviews
+
+Eu reservaria:
+
+3 horas por semana
+
+para:
+
+arrays;
+hash maps;
+trees;
+graphs;
+recursion;
+dynamic programming;
+sorting;
+searching;
+concurrency.
+
+Mas não faria LeetCode 3 horas por dia.
+
+Para um Senior Engineer, system design e engineering judgment provavelmente terão muito mais retorno.
+
+20. Sua rotina semanal
+
+Eu sugiro algo próximo de:
+
+Atividade	Horas
+AI Engineering	5h
+Software Architecture	3h
+Distributed Systems	2h
+System Design	2h
+Coding Interview	2h
+English / Interview	2h
+Projeto prático	4h
+Total	20h
+
+Se você tiver apenas 10h:
+
+AI Engineering       3h
+Projeto               3h
+Architecture          1h
+System Design         1h
+Coding                1h
+English               1h
+21. A regra 30/50/20
+
+Para você, eu usaria:
+
+30% — teoria
+
+Livros, papers, documentação, cursos.
+
+50% — construção
+
+Código real.
+
+20% — explicação
+
+Você precisa conseguir explicar aquilo em inglês.
+
+Essa última parte é extremamente importante para suas entrevistas internacionais.
+
+22. Seu laboratório pessoal
+
+Eu criaria um único repositório:
+
+ai-engineering-lab/
+│
+├── 01-prompt-engineering/
+├── 02-context-engineering/
+├── 03-llm-fundamentals/
+├── 04-rag/
+├── 05-agents/
+├── 06-mcp/
+├── 07-evals/
+├── 08-security/
+├── 09-observability/
+├── 10-production/
+│
+├── projects/
+│   ├── payment-assistant/
+│   ├── coding-agent/
+│   └── fraud-investigator/
+│
+└── docs/
+    ├── architecture/
+    ├── adr/
+    ├── experiments/
+    └── learnings/
+
+Cada experimento deveria possuir:
+
+Problem
+Hypothesis
+Implementation
+Result
+Failure
+What I learned
+What I would change
+
+Isso cria algo muito mais poderoso que simplesmente "estudar".
+
+Você estará construindo evidência de competência.
+
+23. Seu projeto final
+
+Eu faria algo ambicioso.
+
+AI Payment Engineering Platform
+
+Imagine:
+
+                    ┌──────────────┐
+                    │     User     │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │ AI Assistant │
+                    └──────┬───────┘
+                           ↓
+                 ┌───────────────────┐
+                 │   Agent Runtime   │
+                 └─────────┬─────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          ↓                ↓                ↓
+     Documentation      GitHub          Observability
+          │                │                │
+          └────────────────┼────────────────┘
+                           ↓
+                     Payment System
+                           │
+              ┌────────────┼────────────┐
+              ↓            ↓            ↓
+             API          DB          Events
+
+O agente poderia:
+
+analisar incidentes;
+investigar pagamentos;
+consultar documentação;
+analisar código;
+sugerir correções;
+gerar testes;
+explicar arquitetura;
+investigar logs;
+gerar postmortem;
+propor melhorias.
+
+E você teria:
+
+RAG;
+agents;
+MCP;
+tool calling;
+evaluation;
+observability;
+security;
+distributed systems;
+payment domain.
+
+Isso seria um excelente projeto de portfólio para seu posicionamento internacional.
+
+24. O que você precisa conseguir responder em uma entrevista
+
+Ao final desse processo, quero que você consiga responder perguntas como:
+
+LLM
+
+How does a transformer work?
+
+What is an embedding?
+
+Why do LLMs hallucinate?
+
+RAG
+
+How would you design a RAG system for millions of documents?
+
+How do you evaluate retrieval quality?
+
+Agents
+
+When would you use an agent instead of a deterministic workflow?
+
+When would you avoid multi-agent architecture?
+
+MCP
+
+What problem does MCP solve?
+
+How would you secure an MCP server?
+
+Evals
+
+How do you know your AI agent is actually improving?
+
+Security
+
+How would you defend an agent against prompt injection?
+
+Architecture
+
+Design a scalable AI application.
+
+Production
+
+How would you reduce latency and cost?
+
+Engineering
+
+How do you prevent AI-generated code from degrading code quality?
+
+Leadership
+
+How would you introduce AI-assisted development into an engineering team?
+
+Essa última pergunta é particularmente importante para você.
+
+25. O ponto mais importante
+
+Eu não quero que você se torne:
+
+"A developer who uses AI."
+
+Quero que você se torne:
+
+"A senior engineer who knows how to engineer software systems in an AI-native environment."
+
+Existe uma diferença enorme.
+
+O primeiro sabe:
+
+"Claude Code writes code for me."
+
+O segundo sabe:
+
+"I can design an engineering workflow where AI agents safely produce, test, evaluate and maintain production software."
+
+Esse segundo perfil é muito mais raro.
+
+E a direção atual do mercado aponta justamente para essa evolução: agentes deixam de ser simplesmente interfaces de chat e passam a operar com ferramentas, estado, contexto, avaliação e ambientes de execução.
+
+26. E eu faria uma coisa ainda mais estratégica no seu caso
+
+Como você está simultaneamente estudando e fazendo entrevistas internacionais, eu não faria um curso linear de 32 semanas.
+
+Eu criaria um programa de treinamento contínuo, em ciclos de 2 semanas:
+
+LEARN
+  ↓
+BUILD
+  ↓
+BREAK
+  ↓
+DEBUG
+  ↓
+MEASURE
+  ↓
+EXPLAIN
+  ↓
+INTERVIEW
+
+A cada ciclo você teria:
+
+1 conceito → 1 experimento → 1 projeto → 1 arquitetura → 5 perguntas de entrevista.
+
+Isso evita o enorme problema de estudar IA durante meses e chegar na entrevista sabendo muitos conceitos, mas sem conseguir explicar decisões arquiteturais ou defender tecnicamente aquilo que construiu.
+
+Minha recomendação para você
+
+Eu começaria imediatamente pela Semana 1, mas faria algo mais estruturado do que simplesmente te entregar uma lista de assuntos.
+
+Podemos transformar isso em um programa de formação personalizado, no qual eu te acompanho módulo por módulo.
+
+Para cada módulo, eu posso definir:
+
+objetivos de aprendizagem;
+teoria que você precisa dominar;
+documentação oficial;
+artigos;
+livros;
+vídeos/cursos quando realmente agregarem;
+exercícios;
+desafios de programação;
+experimentos com Claude Code;
+projetos reais;
+perguntas de entrevista;
+system-design exercises;
+perguntas em inglês;
+critérios objetivos para saber se você realmente aprendeu;
+provas práticas, nas quais você terá que construir algo sem simplesmente copiar uma solução da IA.
+
+E, principalmente, podemos fazer o Claude Code virar parte do próprio treinamento: eu te dou um problema, você tenta resolver com Claude Code, traz o resultado, e nós fazemos uma code review/architecture review como se eu fosse seu Staff Engineer.
+
+Isso, na minha visão, é o caminho mais rápido para transformar seu conhecimento atual de Senior Engineer em uma especialização realmente forte em AI-Native Software Engineering
