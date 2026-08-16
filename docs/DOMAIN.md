@@ -38,6 +38,16 @@ dataclasses and upserted into the database by `backend/app/seeds/run.py`
 (idempotent — safe to re-run). Application code never hardcodes a subject
 or competency name; everything is read back as rows.
 
+`LearningResource` covers two distinct shapes sharing one table: external
+references (`url` set — articles, docs, videos) and in-platform lessons
+(`type == LESSON`, `content` holds a full markdown body). Lesson content
+is authored as ordered modules per competency in `backend/app/seeds/
+lessons/` (one Python file per subject) — module count scales with the
+topic's real complexity rather than being fixed, e.g. SOLID gets 6 modules
+(one per principle plus synthesis), narrower topics get 1-2. See
+docs/DECISIONS.md for why this is split out from `content.py` and a
+raw-string gotcha worth knowing before editing lesson bodies.
+
 ## Skill-tree state (computed, not stored)
 
 A competency's state for a given user — `locked`, `available`, `learning`,

@@ -11,7 +11,13 @@ from dataclasses import dataclass, field
 
 from app.models.gamification import AchievementCriterion, QuestCriterion, QuestPeriod
 from app.models.learning import DifficultyLevel, ResourceType
+from app.seeds.lessons.ai_engineering import LESSONS as AI_LESSONS
+from app.seeds.lessons.backend_engineering import LESSONS as BE_LESSONS
+from app.seeds.lessons.distributed_systems import LESSONS as DS_LESSONS
+from app.seeds.lessons.interview_preparation import LESSONS as IP_LESSONS
+from app.seeds.lessons.python_subject import LESSONS as PY_LESSONS
 from app.seeds.lessons.software_engineering import LESSONS as SE_LESSONS
+from app.seeds.lessons.system_design import LESSONS as SD_LESSONS
 from app.seeds.lessons.types import LessonModule
 
 
@@ -137,6 +143,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["solid-principles"],
                 resources=[
+                    *lesson_resources(SE_LESSONS["design-patterns"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Refactoring.Guru: Catalog of Design Patterns",
@@ -162,6 +169,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["design-patterns"],
                 resources=[
+                    *lesson_resources(SE_LESSONS["clean-architecture"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Martin Fowler: Architecture articles",
@@ -188,6 +196,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["clean-architecture"],
                 resources=[
+                    *lesson_resources(SE_LESSONS["domain-driven-design"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: aggregates vs. entities vs. value objects",
@@ -213,6 +222,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["solid-principles"],
                 resources=[
+                    *lesson_resources(SE_LESSONS["testing-strategy"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Martin Fowler: Test Pyramid",
@@ -247,6 +257,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="REST semantics, versioning, pagination, idempotency, and error contracts.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(SD_LESSONS["api-design"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="REST API Tutorial",
@@ -273,6 +284,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["api-design"],
                 resources=[
+                    *lesson_resources(SD_LESSONS["caching-strategies"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="Redis Documentation",
@@ -298,6 +310,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["api-design"],
                 resources=[
+                    *lesson_resources(SD_LESSONS["load-balancing"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: L4 vs L7 load balancing",
@@ -323,6 +336,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["caching-strategies", "load-balancing"],
                 resources=[
+                    *lesson_resources(SD_LESSONS["database-scaling"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="PostgreSQL: Indexes",
@@ -357,6 +371,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Consistency, availability, and partition tolerance — and why you can't have all three.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(DS_LESSONS["cap-theorem"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="CAP theorem — overview",
@@ -382,6 +397,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["cap-theorem"],
                 resources=[
+                    *lesson_resources(DS_LESSONS["replication"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: replication lag and read-your-writes",
@@ -406,6 +422,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["replication"],
                 resources=[
+                    *lesson_resources(DS_LESSONS["partitioning-sharding"]),
                     ResourceSeed(
                         type=ResourceType.NOTES, title="Personal notes: choosing a shard key"
                     ),
@@ -429,6 +446,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["replication"],
                 resources=[
+                    *lesson_resources(DS_LESSONS["consensus-algorithms"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="The Raft Consensus Algorithm",
@@ -462,6 +480,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Turning API design into a real, well-tested implementation.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(BE_LESSONS["rest-api-design"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="FastAPI Documentation",
@@ -488,6 +507,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["rest-api-design"],
                 resources=[
+                    *lesson_resources(BE_LESSONS["authentication-authorization"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="JWT Introduction",
@@ -518,6 +538,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["rest-api-design"],
                 resources=[
+                    *lesson_resources(BE_LESSONS["postgresql-fundamentals"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="PostgreSQL: Transaction Isolation",
@@ -544,6 +565,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["postgresql-fundamentals"],
                 resources=[
+                    *lesson_resources(BE_LESSONS["event-driven-architecture"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: outbox pattern for reliable publishing",
@@ -576,6 +598,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Data model, comprehensions, context managers, and idiomatic control flow.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(PY_LESSONS["python-fundamentals"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="The Python Tutorial",
@@ -598,6 +621,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["python-fundamentals"],
                 resources=[
+                    *lesson_resources(PY_LESSONS["type-hints"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="typing — Support for type hints",
@@ -620,6 +644,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["type-hints"],
                 resources=[
+                    *lesson_resources(PY_LESSONS["async-python"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="asyncio — Coroutines and Tasks",
@@ -642,6 +667,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["python-fundamentals"],
                 resources=[
+                    *lesson_resources(PY_LESSONS["testing-with-pytest"]),
                     ResourceSeed(
                         type=ResourceType.DOCUMENTATION,
                         title="pytest documentation",
@@ -672,6 +698,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Tokens, embeddings, context windows, sampling, and why models hallucinate.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(AI_LESSONS["llm-fundamentals"]),
                     ResourceSeed(
                         type=ResourceType.NOTES, title="Personal notes: tokens, temperature, top-p"
                     ),
@@ -692,6 +719,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["llm-fundamentals"],
                 resources=[
+                    *lesson_resources(AI_LESSONS["context-engineering"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Anthropic Engineering: Building Effective Agents",
@@ -714,6 +742,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["context-engineering"],
                 resources=[
+                    *lesson_resources(AI_LESSONS["rag-architecture"]),
                     ResourceSeed(
                         type=ResourceType.NOTES, title="Personal notes: chunking strategy tradeoffs"
                     ),
@@ -734,6 +763,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["rag-architecture"],
                 resources=[
+                    *lesson_resources(AI_LESSONS["ai-agents-tool-use"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Model Context Protocol — official site",
@@ -756,6 +786,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["ai-agents-tool-use"],
                 resources=[
+                    *lesson_resources(AI_LESSONS["ai-evaluation"]),
                     ResourceSeed(
                         type=ResourceType.NOTES, title="Personal notes: designing a golden dataset"
                     ),
@@ -784,6 +815,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Arrays, hash maps, trees, graphs, and the patterns that cover most interview problems.",
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 resources=[
+                    *lesson_resources(IP_LESSONS["coding-interview-patterns"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: two-pointer and sliding-window checklist",
@@ -805,6 +837,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.ADVANCED,
                 requires=["coding-interview-patterns"],
                 resources=[
+                    *lesson_resources(IP_LESSONS["system-design-interviews"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: system design interview framework",
@@ -825,6 +858,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="Structuring behavioral answers with Situation-Task-Action-Result, and picking the right stories.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(IP_LESSONS["behavioral-interviews"]),
                     ResourceSeed(type=ResourceType.NOTES, title="Personal notes: STAR story bank"),
                 ],
                 challenges=[
@@ -843,6 +877,7 @@ SUBJECTS: list[SubjectSeed] = [
                 difficulty=DifficultyLevel.INTERMEDIATE,
                 requires=["behavioral-interviews"],
                 resources=[
+                    *lesson_resources(IP_LESSONS["technical-communication"]),
                     ResourceSeed(
                         type=ResourceType.NOTES,
                         title="Personal notes: recording and reviewing mock answers",

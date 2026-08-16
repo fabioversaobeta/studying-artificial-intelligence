@@ -2,7 +2,7 @@
 
 Statuses: `NOT_STARTED` | `IN_PROGRESS` | `BLOCKED` | `COMPLETED`
 
-Last updated: 2026-08-15
+Last updated: 2026-08-15 (lesson content pass)
 
 ## v1 — Foundation (current milestone)
 
@@ -24,11 +24,12 @@ real backend and database.**
 | Gamification (XP, levels, streaks, achievements, quests) | COMPLETED | Quests auto-complete on read — see docs/DECISIONS.md |
 | Dashboard aggregate endpoint | COMPLETED | |
 | Seed data (7 subjects, 30 competencies, 3 paths, 9 achievements, 4 quests) | COMPLETED | Idempotent (`app.seeds.run`); verified against a fresh DB |
+| In-platform lesson content (all 30 competencies) | COMPLETED | 77 markdown modules (`backend/app/seeds/lessons/`), module count scaled to real topic complexity (1-6 per competency) — see docs/DOMAIN.md |
 | Backend test suite | COMPLETED | 51 tests: domain unit tests + API integration tests |
 | Backend lint/type-check clean (ruff + mypy) | COMPLETED | |
 | Frontend scaffold (React + TS + Vite + Tailwind) | COMPLETED | Dark theme adapted from fabiobandacheski.com |
 | Frontend auth flow | COMPLETED | Register/login/logout, protected routes, auto token refresh on 401 |
-| Frontend dashboard + learning UI | COMPLETED | Dashboard, subjects, skill tree, study sessions, challenges, goals — verified live in-browser, zero console errors |
+| Frontend dashboard + learning UI | COMPLETED | Dashboard, subjects, skill tree, study sessions, challenges, goals, and rendered lesson content (react-markdown + remark-gfm) — verified live in-browser, zero console errors |
 | Deployment config (Vercel + Railway) | COMPLETED | `frontend/vercel.json`, `backend/railway.toml`; DATABASE_URL scheme auto-normalized for Railway's Postgres plugin — see docs/DEPLOYMENT.md |
 | GitHub repository created + pushed | COMPLETED | Private repo: https://github.com/fabioversaobeta/studying-artificial-intelligence |
 

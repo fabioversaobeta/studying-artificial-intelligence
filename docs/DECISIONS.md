@@ -5,6 +5,40 @@ Newest first.
 
 ---
 
+## Lesson content: modular per-competency, module count scales with complexity
+
+**Context**: manual testing surfaced that the platform had subject/
+competency *metadata* (names, descriptions, links to external resources)
+but no actual study material — nothing to learn from inside the platform
+itself. A flat "one description paragraph per competency" fix would have
+been dishonest about depth: SOLID Principles and, say, CAP Theorem do not
+deserve the same amount of material.
+**Decision**: each competency gets one or more `LearningResource` rows of
+`type=LESSON` (markdown in a new `content` column), authored as ordered
+modules — `LessonModule(title, content)` — in per-subject Python files
+under `backend/app/seeds/lessons/`, wired into `backend/app/seeds/
+content.py` via a `lesson_resources()` helper. Module count is a judgment
+call per competency (1 for a narrow topic like "Technical Communication",
+6 for SOLID — one per principle plus a synthesis module), not a fixed
+number.
+**Why**: content depth should track real topic complexity, not be forced
+into a uniform template. Splitting by subject file (rather than one giant
+content file) also let the authoring work be parallelized across
+background agents without merge conflicts — each subject's lessons live in
+their own file.
+**Cost / gotcha hit during authoring**: markdown lesson bodies are Python
+`r"""..."""` raw strings; embedding a bare Python docstring (`"""..."""`)
+inside a code example within that string prematurely terminates the outer
+string and causes a `SyntaxError`. Fixed by using `# comment` instead of
+`"""docstring"""` in every embedded code example — documented in the
+`lessons/` package so it isn't rediscovered.
+**Also fixed alongside this**: `app.seeds.run`'s resource/challenge sync
+was insert-only-if-title-missing, so editing an existing lesson's content
+and re-running seeds silently did nothing. Changed to a true upsert
+(update fields on the existing row by title, not just skip it).
+
+---
+
 ## Local Postgres on port 5434, not 5432
 
 **Context**: `docker compose up` failed — port 5432 was already bound by an
