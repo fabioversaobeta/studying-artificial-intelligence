@@ -71,44 +71,37 @@ def _upsert_competency(
 def _sync_resources(
     db: Session, competency: Competency, resource_seeds: list[ResourceSeed]
 ) -> None:
-    existing_titles = {
-        r.title
+    existing_by_title = {
+        r.title: r
         for r in db.query(LearningResource).filter(LearningResource.competency_id == competency.id)
     }
     for i, rs in enumerate(resource_seeds):
-        if rs.title in existing_titles:
-            continue
-        db.add(
-            LearningResource(
-                competency_id=competency.id,
-                type=rs.type,
-                title=rs.title,
-                url=rs.url,
-                description=rs.description,
-                sort_order=i,
-            )
-        )
+        resource = existing_by_title.get(rs.title)
+        if resource is None:
+            resource = LearningResource(competency_id=competency.id, title=rs.title)
+            db.add(resource)
+        resource.type = rs.type
+        resource.url = rs.url
+        resource.description = rs.description
+        resource.content = rs.content
+        resource.sort_order = i
     db.flush()
 
 
 def _sync_challenges(
     db: Session, competency: Competency, challenge_seeds: list[ChallengeSeed]
 ) -> None:
-    existing_titles = {
-        c.title for c in db.query(Challenge).filter(Challenge.competency_id == competency.id)
+    existing_by_title = {
+        c.title: c for c in db.query(Challenge).filter(Challenge.competency_id == competency.id)
     }
     for cs in challenge_seeds:
-        if cs.title in existing_titles:
-            continue
-        db.add(
-            Challenge(
-                competency_id=competency.id,
-                title=cs.title,
-                description=cs.description,
-                difficulty=cs.difficulty,
-                xp_value=cs.xp_value,
-            )
-        )
+        challenge = existing_by_title.get(cs.title)
+        if challenge is None:
+            challenge = Challenge(competency_id=competency.id, title=cs.title)
+            db.add(challenge)
+        challenge.description = cs.description
+        challenge.difficulty = cs.difficulty
+        challenge.xp_value = cs.xp_value
     db.flush()
 
 

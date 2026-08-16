@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 
 from app.models.gamification import AchievementCriterion, QuestCriterion, QuestPeriod
 from app.models.learning import DifficultyLevel, ResourceType
+from app.seeds.lessons.software_engineering import LESSONS as SE_LESSONS
+from app.seeds.lessons.types import LessonModule
 
 
 @dataclass
@@ -19,6 +21,17 @@ class ResourceSeed:
     title: str
     url: str | None = None
     description: str | None = None
+    content: str | None = None
+
+
+def lesson_resources(modules: list[LessonModule]) -> list["ResourceSeed"]:
+    """Turn a competency's ordered lesson modules into LESSON-type
+    resources. Modules are the actual thing to study, so they always sort
+    before any external reference resources (see `CompetencySeed.resources`
+    call sites below, where these are placed first in the list)."""
+    return [
+        ResourceSeed(type=ResourceType.LESSON, title=m.title, content=m.content) for m in modules
+    ]
 
 
 @dataclass
@@ -97,6 +110,7 @@ SUBJECTS: list[SubjectSeed] = [
                 description="The five design principles for maintainable, extensible object-oriented code.",
                 difficulty=DifficultyLevel.BEGINNER,
                 resources=[
+                    *lesson_resources(SE_LESSONS["solid-principles"]),
                     ResourceSeed(
                         type=ResourceType.ARTICLE,
                         title="Refactoring.Guru: Design Patterns & Principles",

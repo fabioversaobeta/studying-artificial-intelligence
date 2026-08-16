@@ -67,6 +67,7 @@ class LearningResourceRead(BaseModel):
     title: str
     url: str | None
     description: str | None
+    content: str | None
 
 
 class LearningPathItemRead(BaseModel):

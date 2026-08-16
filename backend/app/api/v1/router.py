@@ -7,6 +7,7 @@ from app.api.v1 import (
     gamification,
     goals,
     learning_paths,
+    resources,
     reviews,
     study_sessions,
     subjects,
@@ -19,6 +20,7 @@ api_router.include_router(learning_paths.router)
 api_router.include_router(study_sessions.router)
 api_router.include_router(goals.router)
 api_router.include_router(challenges.router)
+api_router.include_router(resources.router)
 api_router.include_router(reviews.router)
 api_router.include_router(gamification.router)
 api_router.include_router(dashboard.router)

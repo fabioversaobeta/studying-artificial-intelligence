@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import NotFoundError
 from app.domain.skill_tree import compute_competency_state
 from app.models.gamification import XPSource
-from app.models.learning import Competency, GoalStatus, LearningGoal, LearningPath, StudySession
+from app.models.learning import (
+    Competency,
+    GoalStatus,
+    LearningGoal,
+    LearningPath,
+    LearningResource,
+    StudySession,
+)
 from app.repositories import (
     goal_repository,
     learning_catalog_repository,
@@ -129,6 +136,12 @@ def _competency_with_state(db: Session, user_id: uuid.UUID, competency: Competen
         "mastery_score": mastery.score if mastery else 0.0,
         "state": state,
     }
+
+
+def list_competency_resources(db: Session, competency_id: uuid.UUID) -> list[LearningResource]:
+    if learning_catalog_repository.get_competency(db, competency_id) is None:
+        raise NotFoundError("Competency not found")
+    return learning_catalog_repository.list_resources_by_competency(db, competency_id)
 
 
 def list_learning_paths(db: Session) -> list[LearningPath]:

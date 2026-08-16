@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LogSessionForm } from '@/features/learning/log-session-form'
 import { ChallengeList } from '@/features/learning/challenge-list'
+import { ResourceList } from '@/features/learning/resource-list'
 
 const stateTone: Record<CompetencyWithState['state'], 'neutral' | 'accent' | 'success' | 'warning'> = {
   locked: 'neutral',
@@ -59,12 +60,27 @@ export function CompetencyCard({
       </div>
 
       {isExpanded && (
-        <div className="mt-4 space-y-4 border-t border-border pt-4">
-          <LogSessionForm
-            competencyId={competency.id}
-            onLogged={onActivity}
-          />
-          <ChallengeList competencyId={competency.id} onActivity={onActivity} />
+        <div className="mt-4 space-y-6 border-t border-border pt-4">
+          <div>
+            <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
+              Study
+            </h4>
+            <ResourceList competencyId={competency.id} />
+          </div>
+
+          <div>
+            <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
+              Log a session
+            </h4>
+            <LogSessionForm competencyId={competency.id} onLogged={onActivity} />
+          </div>
+
+          <div>
+            <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
+              Challenges
+            </h4>
+            <ChallengeList competencyId={competency.id} onActivity={onActivity} />
+          </div>
         </div>
       )}
     </Card>

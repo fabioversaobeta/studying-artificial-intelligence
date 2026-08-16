@@ -16,7 +16,14 @@ export interface TokenResponse {
 }
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced'
-export type ResourceType = 'article' | 'book' | 'video' | 'documentation' | 'course' | 'notes'
+export type ResourceType =
+  | 'lesson'
+  | 'article'
+  | 'book'
+  | 'video'
+  | 'documentation'
+  | 'course'
+  | 'notes'
 export type GoalStatus = 'active' | 'achieved' | 'archived'
 export type ChallengeSubmissionStatus = 'submitted' | 'passed' | 'failed'
 export type CompetencyState = 'locked' | 'available' | 'learning' | 'mastered'
@@ -56,6 +63,15 @@ export interface CompetencyWithState {
 export interface SubjectDetail {
   subject: Subject
   competencies: CompetencyWithState[]
+}
+
+export interface LearningResource {
+  id: Uuid
+  type: ResourceType
+  title: string
+  url: string | null
+  description: string | null
+  content: string | null
 }
 
 export interface LearningPathItem {

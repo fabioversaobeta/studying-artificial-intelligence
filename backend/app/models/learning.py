@@ -46,6 +46,7 @@ class DifficultyLevel(StrEnum):
 
 
 class ResourceType(StrEnum):
+    LESSON = "lesson"
     ARTICLE = "article"
     BOOK = "book"
     VIDEO = "video"
@@ -194,6 +195,16 @@ class LearningPathItem(UUIDPrimaryKeyMixin, Base):
 
 
 class LearningResource(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    """A study material attached to a competency.
+
+    Two shapes share this table: external references (``url`` set,
+    ``content`` empty — articles, docs, videos, books) and in-platform
+    lessons (``type == LESSON``, ``content`` holds the full markdown body,
+    ``url`` empty). Every competency should have at least one LESSON
+    resource — that's the actual thing to study, not just a pointer
+    elsewhere (see docs/DECISIONS.md).
+    """
+
     __tablename__ = "learning_resources"
 
     competency_id: Mapped[uuid.UUID] = mapped_column(
@@ -206,6 +217,7 @@ class LearningResource(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content: Mapped[str | None] = mapped_column(Text, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     competency: Mapped["Competency"] = relationship(back_populates="resources")

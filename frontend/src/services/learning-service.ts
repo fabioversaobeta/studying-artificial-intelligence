@@ -6,6 +6,7 @@ import type {
   Dashboard,
   LearningGoal,
   LearningPath,
+  LearningResource,
   GoalStatus,
   Review,
   StudySession,
@@ -34,6 +35,9 @@ export const learningService = {
     apiClient.post<LearningGoal>('/api/v1/goals', input),
   updateGoalStatus: (goalId: string, status: GoalStatus) =>
     apiClient.patch<LearningGoal>(`/api/v1/goals/${goalId}/status`, { status }),
+
+  listResources: (competencyId: string) =>
+    apiClient.get<LearningResource[]>(`/api/v1/competencies/${competencyId}/resources`),
 
   listChallenges: (competencyId: string) =>
     apiClient.get<Challenge[]>(`/api/v1/competencies/${competencyId}/challenges`),
