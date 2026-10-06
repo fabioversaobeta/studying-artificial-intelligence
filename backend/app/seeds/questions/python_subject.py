@@ -1299,9 +1299,410 @@ _ASYNC_EXTRA: tuple[QuestionSeed, ...] = (
     ),
 )
 
+_STACKED_PARAMETRIZE_CODE = """```python
+import pytest
+
+@pytest.mark.parametrize("role", ["admin", "member", "guest"])
+@pytest.mark.parametrize("is_active", [True, False])
+def test_dashboard(role, is_active):
+    assert isinstance(is_active, bool)
+```"""
+
+_FIXTURE_ORDER_CODE = """```python
+import pytest
+
+@pytest.fixture
+def a():
+    print("setup a")
+    yield "a"
+    print("teardown a")
+
+@pytest.fixture
+def b(a):
+    print("setup b")
+    yield "b"
+    print("teardown b")
+
+def test_order(b):
+    print("test body")
+```"""
+
+_AUTOSPEC_CODE = """```python
+from unittest.mock import Mock, create_autospec
+
+def charge(amount, currency):
+    return True
+
+loose = Mock(return_value=True)
+strict = create_autospec(charge, return_value=True)
+
+loose(1, 2, 3)   # call 1
+strict(1)        # call 2
+```"""
+
+_PYTEST_EXTRA: tuple[QuestionSeed, ...] = (
+    _q(
+        "testing-with-pytest-q01",
+        "testing-with-pytest",
+        MC,
+        EASY,
+        ("b",),
+        ("discovery", "basics"),
+        _t(
+            "With its default configuration, how does pytest decide what to run?",
+            "By default pytest collects files named `test_*.py` or `*_test.py`, and inside "
+            "them top-level functions (and methods of `Test*` classes) whose names start with "
+            "`test`. No registration or decorator is needed, and an `assert` alone does not "
+            "make a function a test. A `pytest.ini` can customize these rules but is not "
+            "required.",
+            "It runs every `.py` file and every function that contains an `assert`.",
+            "It collects files named `test_*.py` or `*_test.py` and, inside them, functions "
+            "(or methods of `Test*` classes) whose names start with `test`.",
+            "It only runs the files explicitly listed in `pytest.ini`.",
+            "It only runs functions decorated with `@pytest.mark.test`.",
+        ),
+        _t(
+            "Com a configuração padrão, como o pytest decide o que executar?",
+            "Por padrão o pytest coleta arquivos chamados `test_*.py` ou `*_test.py` e, dentro "
+            "deles, funções de nível superior (e métodos de classes `Test*`) cujos nomes "
+            "começam com `test`. Não é preciso registrar nada nem usar decorator, e um `assert` "
+            "sozinho não torna uma função um teste. Um `pytest.ini` pode personalizar essas "
+            "regras, mas não é obrigatório.",
+            "Executa todo arquivo `.py` e toda função que contenha um `assert`.",
+            "Coleta arquivos chamados `test_*.py` ou `*_test.py` e, dentro deles, funções "
+            "(ou métodos de classes `Test*`) cujos nomes começam com `test`.",
+            "Executa apenas os arquivos listados explicitamente no `pytest.ini`.",
+            "Executa apenas funções decoradas com `@pytest.mark.test`.",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q02",
+        "testing-with-pytest",
+        MC,
+        EASY,
+        ("c",),
+        ("markers", "xfail"),
+        _t(
+            "A test documents a known bug: it fails today, and you want the suite to stay green "
+            "but to be told as soon as the bug is fixed. Which is the best fit?",
+            "`xfail` still runs the test: a failure is reported as an expected failure, and "
+            "with `strict=True` an unexpected pass fails the run, which tells you the bug is "
+            "gone and the marker must be removed. `skip` never runs the test, so you would "
+            "never notice the fix; deleting it loses the documentation; and swallowing the "
+            "`AssertionError` makes the test pass forever.",
+            '`@pytest.mark.skip(reason="known bug")`',
+            "Delete the test until the bug is fixed.",
+            '`@pytest.mark.xfail(reason="known bug", strict=True)`',
+            "Wrap the assertion in `try/except AssertionError: pass`.",
+        ),
+        _t(
+            "Um teste documenta um bug conhecido: ele falha hoje, e você quer que a suíte "
+            "continue verde mas seja avisado assim que o bug for corrigido. Qual é a melhor "
+            "opção?",
+            "O `xfail` ainda executa o teste: uma falha é reportada como falha esperada e, com "
+            "`strict=True`, um sucesso inesperado quebra a execução, avisando que o bug "
+            "sumiu e que o marker deve ser removido. O `skip` nunca executa o teste, então "
+            "você jamais notaria a correção; apagar o teste perde a documentação; e engolir o "
+            "`AssertionError` faz o teste passar para sempre.",
+            '`@pytest.mark.skip(reason="known bug")`',
+            "Apagar o teste até o bug ser corrigido.",
+            '`@pytest.mark.xfail(reason="known bug", strict=True)`',
+            "Envolver o assert em `try/except AssertionError: pass`.",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q03",
+        "testing-with-pytest",
+        MC,
+        EASY,
+        ("a",),
+        ("exceptions", "pytest-raises"),
+        _t(
+            'Which test correctly checks that `int("x")` raises `ValueError`?',
+            "`pytest.raises` is a context manager: the test passes only if the block raises the "
+            "expected exception, and fails if nothing (or something else) is raised. A bare "
+            '`assert int("x") == ...` or `is None` raises `ValueError` before the comparison '
+            "happens, which errors the test instead of verifying it. A `try/except ...: pass` "
+            "with no further check also passes when no exception occurs, so it proves "
+            "nothing.",
+            '`with pytest.raises(ValueError): int("x")`',
+            '`assert int("x") == ValueError`',
+            'A `try` block around `int("x")` with `except ValueError: pass` and nothing else.',
+            '`assert int("x") is None`',
+        ),
+        _t(
+            'Qual teste verifica corretamente que `int("x")` lança `ValueError`?',
+            "`pytest.raises` é um context manager: o teste só passa se o bloco lançar a exceção "
+            'esperada, e falha se nada (ou outra coisa) for lançado. Um `assert int("x") == '
+            "...` ou `is None` lança `ValueError` antes da comparação, o que dá erro no teste em "
+            "vez de verificá-lo. Um `try/except ...: pass` sem outra checagem também passa "
+            "quando nenhuma exceção ocorre, então não prova nada.",
+            '`with pytest.raises(ValueError): int("x")`',
+            '`assert int("x") == ValueError`',
+            'Um bloco `try` em volta de `int("x")` com `except ValueError: pass` e nada mais.',
+            '`assert int("x") is None`',
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q04",
+        "testing-with-pytest",
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("parametrize",),
+        _t(
+            "How many test cases does pytest generate from `test_dashboard`?\n\n"
+            + _STACKED_PARAMETRIZE_CODE,
+            "Stacked `parametrize` decorators multiply: 3 roles x 2 values of `is_active` = 6 "
+            "independent test cases, each with its own id such as `test_dashboard[True-admin]` "
+            "and reported separately. Adding (3 + 2 = 5) would be the result of two separate "
+            "tests, not of stacking.",
+            "5",
+            "6",
+            "3",
+            "2",
+        ),
+        _t(
+            "Quantos casos de teste o pytest gera a partir de `test_dashboard`?\n\n"
+            + _STACKED_PARAMETRIZE_CODE,
+            "Decorators `parametrize` empilhados se multiplicam: 3 roles x 2 valores de "
+            "`is_active` = 6 casos de teste independentes, cada um com seu id, como "
+            "`test_dashboard[True-admin]`, reportados separadamente. Somar (3 + 2 = 5) seria o "
+            "resultado de dois testes separados, não de decorators empilhados.",
+            "5",
+            "6",
+            "3",
+            "2",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q05",
+        "testing-with-pytest",
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("fixtures", "teardown"),
+        _t(
+            "Run with `pytest -s` (output not captured), in what order are these lines "
+            "printed?\n\n" + _FIXTURE_ORDER_CODE,
+            "Fixtures that a test needs are set up dependency-first: `b` requests `a`, so `a` "
+            "is set up before `b`. The code after each `yield` runs after the test, in the "
+            "reverse order of setup (like nested context managers), so `b` is torn down "
+            "before `a`. Teardown never runs before the test body.",
+            "`setup a`, `setup b`, `test body`, `teardown a`, `teardown b`",
+            "`setup b`, `setup a`, `test body`, `teardown b`, `teardown a`",
+            "`setup a`, `setup b`, `test body`, `teardown b`, `teardown a`",
+            "`setup a`, `setup b`, `teardown b`, `teardown a`, `test body`",
+        ),
+        _t(
+            "Executando com `pytest -s` (saída não capturada), em que ordem estas linhas são "
+            "impressas?\n\n" + _FIXTURE_ORDER_CODE,
+            "As fixtures de que um teste precisa são preparadas começando pelas dependências: "
+            "`b` pede `a`, então `a` é preparada antes de `b`. O código depois de cada `yield` "
+            "roda após o teste, na ordem inversa da preparação (como context managers "
+            "aninhados), então `b` é desfeita antes de `a`. O teardown nunca roda antes do "
+            "corpo do teste.",
+            "`setup a`, `setup b`, `test body`, `teardown a`, `teardown b`",
+            "`setup b`, `setup a`, `test body`, `teardown b`, `teardown a`",
+            "`setup a`, `setup b`, `test body`, `teardown b`, `teardown a`",
+            "`setup a`, `setup b`, `teardown b`, `teardown a`, `test body`",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q06",
+        "testing-with-pytest",
+        MC,
+        MEDIUM,
+        ("d",),
+        ("mock", "patch"),
+        _t(
+            "The module `app.services.user_service` does `from app.email import send_email` and "
+            "calls `send_email(...)` inside `create_user`. In a test you want to replace "
+            "`send_email` with a mock. Which target should you give to `patch`?",
+            "`patch` rebinds a *name* in a namespace. Because of the `from ... import`, "
+            "`user_service` holds its own reference to the function, and that is the name "
+            "`create_user` looks up, so you patch it where it is used: "
+            "`app.services.user_service.send_email`. Patching `app.email.send_email` changes a "
+            "different binding and the call still reaches the real function. Both names "
+            "pointing to the same object does not make them the same name, and patching "
+            "the package attribute `app.email` does not touch the already-imported reference.",
+            '`patch("app.email.send_email")`, where the function is defined.',
+            "Either `app.email.send_email` or `app.services.user_service.send_email`, because "
+            "both names refer to the same function object.",
+            '`patch("app.email")`, which replaces the whole module everywhere.',
+            '`patch("app.services.user_service.send_email")`, where the name is looked up.',
+        ),
+        _t(
+            "O módulo `app.services.user_service` faz `from app.email import send_email` e "
+            "chama `send_email(...)` dentro de `create_user`. Em um teste você quer substituir "
+            "`send_email` por um mock. Qual alvo você deve passar ao `patch`?",
+            "O `patch` religa um *nome* em um namespace. Por causa do `from ... import`, o "
+            "`user_service` guarda sua própria referência à função, e é esse o nome que "
+            "`create_user` consulta, então você faz o patch onde ela é usada: "
+            "`app.services.user_service.send_email`. Aplicar patch em `app.email.send_email` "
+            "altera outra ligação e a chamada continua chegando à função real. Dois nomes "
+            "apontarem para o mesmo objeto não os torna o mesmo nome, e aplicar patch no "
+            "atributo `app.email` do pacote não afeta a referência já importada.",
+            '`patch("app.email.send_email")`, onde a função é definida.',
+            "Tanto `app.email.send_email` quanto `app.services.user_service.send_email`, pois "
+            "os dois nomes se referem ao mesmo objeto função.",
+            '`patch("app.email")`, que substitui o módulo inteiro em todo lugar.',
+            '`patch("app.services.user_service.send_email")`, onde o nome é consultado.',
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q07",
+        "testing-with-pytest",
+        MS,
+        MEDIUM,
+        ("a", "b", "d"),
+        ("fixtures", "scope", "monkeypatch"),
+        _t(
+            "Which statements about pytest fixtures and `monkeypatch` are true? Select all "
+            "that apply.",
+            "`monkeypatch` changes (environment variables, attributes, dict items) are undone "
+            'automatically when the test ends. A `scope="session"` fixture is created once per '
+            "run. Code after `yield` is the teardown and runs even when the test fails. A "
+            "wider-scoped fixture cannot depend on a narrower one (pytest reports a "
+            "`ScopeMismatch`), because the wide fixture would outlive what it depends on.",
+            "Changes made with `monkeypatch` are undone automatically when the test ends.",
+            'A fixture with `scope="session"` is created once per test run.',
+            "A session-scoped fixture can safely request a function-scoped fixture.",
+            "Code after `yield` in a fixture still runs when the test fails.",
+            "Code after `yield` in a fixture runs only when the test passes.",
+        ),
+        _t(
+            "Quais afirmações sobre fixtures do pytest e `monkeypatch` são verdadeiras? "
+            "Selecione todas que se aplicam.",
+            "As alterações feitas com `monkeypatch` (variáveis de ambiente, atributos, itens "
+            "de dict) são desfeitas automaticamente quando o teste termina. Uma fixture com "
+            '`scope="session"` é criada uma vez por execução. O código depois do `yield` é o '
+            "teardown e roda mesmo quando o teste falha. Uma fixture de escopo maior não pode "
+            "depender de uma de escopo menor (o pytest reporta `ScopeMismatch`), pois a "
+            "fixture ampla sobreviveria àquilo de que depende.",
+            "As alterações feitas com `monkeypatch` são desfeitas automaticamente quando o "
+            "teste termina.",
+            'Uma fixture com `scope="session"` é criada uma vez por execução de testes.',
+            "Uma fixture de escopo session pode pedir com segurança uma fixture de escopo "
+            "function.",
+            "O código depois do `yield` em uma fixture ainda roda quando o teste falha.",
+            "O código depois do `yield` em uma fixture roda apenas quando o teste passa.",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q08",
+        "testing-with-pytest",
+        MC,
+        MEDIUM,
+        ("d",),
+        ("coverage",),
+        _t(
+            "A function is just `return a / b`, and a single test asserts `div(4, 2) == 2`. "
+            "The coverage report shows 100%. What does that tell you?",
+            "Line coverage only says each line was executed at least once during the tests. It "
+            "does not say the assertions are meaningful, nor that edge cases such as `b == 0` "
+            "were exercised: here the division by zero is untested despite the 100%. Coverage "
+            "is useful to find code that is never run, not to prove correctness, and it does "
+            "not require a test per input value.",
+            "The function is fully tested, including the case `b == 0`.",
+            "No bug is possible in this function.",
+            "The report is wrong, since 100% requires a test for every possible input value.",
+            "Every line ran at least once; it says nothing about edge cases such as `b == 0` "
+            "or about the quality of the assertions.",
+        ),
+        _t(
+            "Uma função é apenas `return a / b`, e um único teste verifica `div(4, 2) == 2`. O "
+            "relatório de cobertura mostra 100%. O que isso diz a você?",
+            "A cobertura de linhas só diz que cada linha foi executada ao menos uma vez nos "
+            "testes. Ela não diz se as asserções são significativas, nem se casos extremos como "
+            "`b == 0` foram exercitados: aqui a divisão por zero está sem teste apesar dos "
+            "100%. Cobertura serve para achar código que nunca roda, não para provar "
+            "correção, e não exige um teste por valor de entrada.",
+            "A função está totalmente testada, inclusive o caso `b == 0`.",
+            "Nenhum bug é possível nesta função.",
+            "O relatório está errado, pois 100% exige um teste para cada valor de entrada "
+            "possível.",
+            "Toda linha rodou ao menos uma vez; isso não diz nada sobre casos extremos como "
+            "`b == 0` nem sobre a qualidade das asserções.",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q09",
+        "testing-with-pytest",
+        CODE,
+        HARD,
+        ("c",),
+        ("mock", "autospec"),
+        _t(
+            "Which of the two calls raises an exception?\n\n" + _AUTOSPEC_CODE,
+            "A plain `Mock` accepts any arguments, so call 1 succeeds even though `charge` "
+            "takes two. `create_autospec(charge)` copies the real signature, so call 2, with "
+            "a missing `currency`, raises `TypeError`. This is why autospec (or `spec=`) makes "
+            "mocks safer: they fail when the real function's signature changes, instead of "
+            "silently drifting away from it.",
+            "Neither call raises.",
+            "Only call 1 (`loose`) raises `TypeError`.",
+            "Only call 2 (`strict`) raises `TypeError`.",
+            "Both calls raise `TypeError`.",
+        ),
+        _t(
+            "Qual das duas chamadas lança uma exceção?\n\n" + _AUTOSPEC_CODE,
+            "Um `Mock` simples aceita quaisquer argumentos, então a chamada 1 funciona mesmo "
+            "que `charge` receba dois. `create_autospec(charge)` copia a assinatura real, então "
+            "a chamada 2, sem `currency`, lança `TypeError`. Por isso autospec (ou `spec=`) "
+            "deixa os mocks mais seguros: eles falham quando a assinatura da função real muda, "
+            "em vez de se afastarem dela silenciosamente.",
+            "Nenhuma das chamadas lança exceção.",
+            "Somente a chamada 1 (`loose`) lança `TypeError`.",
+            "Somente a chamada 2 (`strict`) lança `TypeError`.",
+            "As duas chamadas lançam `TypeError`.",
+        ),
+    ),
+    _q(
+        "testing-with-pytest-q10",
+        "testing-with-pytest",
+        SHORT,
+        HARD,
+        None,
+        ("mock", "test-design"),
+        _t(
+            "\"Don't mock what you don't own.\" Explain the risk of patching a third-party "
+            "library's internals in unit tests, and what to do instead.",
+            "Self-check against the model answer: did you mention (1) assumptions about the "
+            "library's behavior baked into the test, (2) tests that pass while reality "
+            "differs, and (3) a wrapper you own plus a few real integration tests?",
+            model_answer="Patching, for example, an SDK call encodes your guess of its "
+            "internals and return shape into the test. When the library changes, or behaves "
+            "differently from your guess (errors, rate limits, edge cases), the test stays "
+            "green while production breaks, and the test is coupled to implementation details. "
+            "Instead, wrap the third-party call in a small interface you own (a gateway or "
+            "adapter), mock that boundary in unit tests (ideally with `spec`/autospec), and "
+            "cover the real integration with a few separate integration tests against the real "
+            "service or its sandbox.",
+        ),
+        _t(
+            '"Não faça mock do que você não possui." Explique o risco de aplicar patch nos '
+            "internos de uma biblioteca de terceiros em testes unitários e o que fazer em vez "
+            "disso.",
+            "Autoavaliação contra a resposta-modelo: você mencionou (1) suposições sobre o "
+            "comportamento da biblioteca embutidas no teste, (2) testes que passam enquanto a "
+            "realidade é outra e (3) um wrapper próprio mais alguns testes de integração "
+            "reais?",
+            model_answer="Fazer patch, por exemplo, de uma chamada de SDK embute no teste o seu "
+            "palpite sobre os internos e o formato de retorno. Quando a biblioteca muda, ou "
+            "se comporta diferente do palpite (erros, rate limits, casos extremos), o teste "
+            "continua verde enquanto a produção quebra, e o teste fica acoplado a detalhes de "
+            "implementação. Em vez disso, encapsule a chamada de terceiros em uma interface "
+            "pequena que você controla (um gateway ou adapter), faça mock dessa fronteira nos "
+            "testes unitários (de preferência com `spec`/autospec) e cubra a integração real "
+            "com poucos testes de integração separados, contra o serviço real ou seu sandbox.",
+        ),
+    ),
+)
+
 QUESTIONS: tuple[QuestionSeed, ...] = tuple(
     sorted(
-        _PILOT_QUESTIONS + _FUNDAMENTALS_EXTRA + _TYPE_HINTS_EXTRA + _ASYNC_EXTRA,
+        _PILOT_QUESTIONS + _FUNDAMENTALS_EXTRA + _TYPE_HINTS_EXTRA + _ASYNC_EXTRA + _PYTEST_EXTRA,
         key=lambda q: (_COMPETENCY_ORDER.index(q.competency_slug), q.code),
     )
 )
@@ -1337,21 +1738,61 @@ ASSESSMENTS: tuple[AssessmentSeed, ...] = (
         },
     ),
     AssessmentSeed(
+        code="async-python-quiz",
+        title="Async Python Quiz",
+        description="Coroutines, the event loop, gather and TaskGroup, cancellation, blocking "
+        "calls and when async is the wrong tool.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="async-python",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Python Assíncrono",
+                "description": "Coroutines, o event loop, gather e TaskGroup, cancelamento, "
+                "chamadas bloqueantes e quando async é a ferramenta errada.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="testing-with-pytest-quiz",
+        title="Testing with Pytest Quiz",
+        description="Fixtures and scopes, parametrization, markers, mocking and patching, "
+        "exception tests and what coverage really tells you.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="testing-with-pytest",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Testes com Pytest",
+                "description": "Fixtures e escopos, parametrização, markers, mocks e patching, "
+                "testes de exceção e o que a cobertura realmente diz.",
+            }
+        },
+    ),
+    AssessmentSeed(
         code="python-core-checkpoint",
         title="Python Core Checkpoint",
-        description="A short mixed check across fundamentals and type hints.",
+        description="A mixed check across fundamentals, type hints, async and testing.",
         kind=AssessmentKind.MIXED,
         question_codes=(
             "python-fundamentals-q01",
             "python-fundamentals-q04",
+            "python-fundamentals-q08",
+            "python-fundamentals-q10",
             "python-type-hints-q01",
             "python-type-hints-q02",
             "python-type-hints-q04",
+            "python-type-hints-q09",
+            "async-python-q02",
+            "async-python-q05",
+            "async-python-q09",
+            "testing-with-pytest-q03",
+            "testing-with-pytest-q05",
+            "testing-with-pytest-q08",
         ),
         translations={
             "pt-BR": {
                 "title": "Checkpoint do Núcleo de Python",
-                "description": "Uma verificação rápida e mista entre fundamentos e type hints.",
+                "description": "Uma verificação mista entre fundamentos, type hints, código "
+                "assíncrono e testes.",
             }
         },
         pass_threshold=80,
