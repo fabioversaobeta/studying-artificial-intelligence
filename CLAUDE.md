@@ -11,7 +11,7 @@ Monorepo: `backend/` (FastAPI + PostgreSQL) and `frontend/` (React + TypeScript
 `docs/ROADMAP.md` for current status before starting new work.
 
 The original autonomous-development brief is preserved at
-`Claude Code — Master Prompt for Learning Platform.md` in the repo root —
+`docs/archive/master-prompt-learning-platform.md` —
 treat it as background context, not a live spec; `docs/` is the current
 source of truth and supersedes it where they differ.
 

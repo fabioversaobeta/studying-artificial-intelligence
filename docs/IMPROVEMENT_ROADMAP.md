@@ -41,7 +41,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 
 | Fase | Itens | Concluídos |
 |---|---|---|
-| P0 — Fazer agora | 9 | 2 |
+| P0 — Fazer agora | 9 | 6 |
 | P1 — Curto prazo | 16 | 0 |
 | P2 — Médio prazo | 16 | 0 |
 
@@ -69,11 +69,11 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
-| A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | | Não quebrar o link citado no CLAUDE.md. |
-| A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
+| A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | 0a96430 | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
+| A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | 058c848 | Não quebrar o link citado no CLAUDE.md. |
+| A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | 0adefbf | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
 | A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | TODO | | — | `backend/pyproject.toml` | | Verificar se `httpx2` já é a recomendação estável antes de trocar. |
-| A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | | |
+| A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | 03d9596 | |
 
 ## Trilha B — CI/CD
 
@@ -194,6 +194,10 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — A5 — ROADMAP.md: linha de lint/type-check corrigida e verificada — 03d9596
+- 2026-10-06 — A3 — ruff check/format zerados; alembic/versions excluído do lint via extend-exclude — 0adefbf
+- 2026-10-06 — A2 — Master Prompt movido para docs/archive/master-prompt-learning-platform.md; CLAUDE.md atualizado — 058c848
+- 2026-10-06 — A1 — start/second/third-here.txt removidos — 0a96430
 - 2026-10-06 — B1 — CI no GitHub Actions (backend + frontend, Postgres, cache pip/npm); ruff pode ficar vermelho até S1/A3 ser mergeada — 17de298
 - 2026-10-06 — C1 — boot falha em produção com secret_key default/curta (<32) ou debug=True; debug agora default False — 9a1c7ec
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
