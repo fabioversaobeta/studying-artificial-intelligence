@@ -91,3 +91,15 @@ once this is actually deployed to Railway?
 is enough until there's a deployed environment generating real traffic to
 observe. Revisit once `docs/DEPLOYMENT.md` steps have actually been run
 against a live Railway project.
+
+---
+
+## Study sessions under 10 minutes earn no XP (and no streak)
+
+**Question**: a study session shorter than 10 minutes earns 0 XP, so it never
+calls `award_xp`; as a side effect it doesn't count for the streak and can't
+trigger achievements. Is that intended?
+**Current assumption**: unintended side effect, not a decision. Found by the
+backend test pass (roadmap F3, 2026-10-06).
+**Options**: (a) count any session for the streak even with 0 XP;
+(b) keep as is and document it; (c) award a minimum of 1 XP.
