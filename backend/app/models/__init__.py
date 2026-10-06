@@ -5,6 +5,7 @@ populated for Alembic autogeneration and for ``Base.metadata.create_all``
 in tests.
 """
 
+from app.models.ai_usage import AIUsage
 from app.models.base import Base
 from app.models.gamification import (
     Achievement,
@@ -44,6 +45,7 @@ __all__ = [
     "Base",
     "User",
     "RevokedToken",
+    "AIUsage",
     "LearningGoal",
     "GoalStatus",
     "Subject",
