@@ -494,9 +494,423 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
+_FIT_CODE = """```python
+def fit(history, budget, count):
+    kept = []
+    used = 0
+    for msg in reversed(history):
+        cost = count(msg)
+        if used + cost > budget:
+            break
+        kept.append(msg)
+        used += cost
+    return list(reversed(kept))
+
+print(fit(["aa", "bbbb", "cc", "dd"], 6, len))
+```"""
+
+# ----------------------------------------------------------------------
+# context-engineering
+# ----------------------------------------------------------------------
+_CTX = "context-engineering"
+
+CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "context-engineering-q01",
+        _CTX,
+        MC,
+        EASY,
+        ("c",),
+        ("definition",),
+        _t(
+            "Which best describes **context engineering**?",
+            "Context engineering is deciding, for each model call, what information goes into "
+            "the context (instructions, history, retrieved documents, tool results) and in "
+            "what form. A covers only prompt wording, which is one part of it. B is about "
+            "picking a model, not managing what it sees. D (fine-tuning) changes the model, "
+            "not its inputs.",
+            _options(
+                "Writing the cleverest possible wording for a single prompt.",
+                "Choosing the model with the largest context window.",
+                "Deciding, for each model call, what information (instructions, history, "
+                "retrieved documents, tool results) enters the context and in what form.",
+                "Fine-tuning the model on the application's data.",
+            ),
+        ),
+        _t(
+            "Qual alternativa descreve melhor **context engineering**?",
+            "Context engineering é decidir, a cada chamada ao modelo, quais informações entram "
+            "no contexto (instruções, histórico, documentos recuperados, resultados de "
+            "ferramentas) e em que forma. A cobre só a redação do prompt, que é apenas uma "
+            "parte. B trata da escolha do modelo, não de gerenciar o que ele vê. D (fine-tuning) "
+            "altera o modelo, não suas entradas.",
+            _options(
+                "Escrever a redação mais engenhosa possível para um único prompt.",
+                "Escolher o modelo com a maior janela de contexto.",
+                "Decidir, a cada chamada ao modelo, quais informações (instruções, histórico, "
+                "documentos recuperados, resultados de ferramentas) entram no contexto e em "
+                "que forma.",
+                "Fazer fine-tuning do modelo com os dados da aplicação.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q02",
+        _CTX,
+        MC,
+        EASY,
+        ("b",),
+        ("cost", "context-pollution"),
+        _t(
+            "Why not simply fill the context window with everything that might be relevant?",
+            "More input tokens mean more cost and latency, and irrelevant material can "
+            "actively degrade answer quality even when it fits. A is false: models can use "
+            "far more than the first thousand tokens. C and D invent restrictions that do not "
+            "exist.",
+            _options(
+                "The model ignores everything after the first thousand tokens.",
+                "More input raises cost and latency, and irrelevant material can degrade the "
+                "answer even when it fits in the window.",
+                "Users are not allowed to fill the context window.",
+                "Longer prompts disable the sampling parameters.",
+            ),
+        ),
+        _t(
+            "Por que não simplesmente encher a janela de contexto com tudo o que pode ser "
+            "relevante?",
+            "Mais tokens de entrada significam mais custo e latência, e material irrelevante "
+            "pode piorar ativamente a qualidade da resposta mesmo quando cabe na janela. A é "
+            "falsa: modelos usam muito mais do que os primeiros mil tokens. C e D inventam "
+            "restrições que não existem.",
+            _options(
+                "O modelo ignora tudo depois dos primeiros mil tokens.",
+                "Mais entrada aumenta custo e latência, e material irrelevante pode piorar a "
+                "resposta mesmo quando cabe na janela.",
+                "Usuários não têm permissão para encher a janela de contexto.",
+                "Prompts mais longos desativam os parâmetros de amostragem.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q03",
+        _CTX,
+        MC,
+        EASY,
+        ("d",),
+        ("prioritization", "on-demand-retrieval"),
+        _t(
+            "Which of these is the best candidate to fetch **on demand** instead of keeping in "
+            "every request?",
+            "A large reference manual that is only occasionally needed should be retrieved "
+            "when a step requires it. The user's current question, the output-format rules and "
+            "the safety/policy rules are small and needed on every call, so they belong "
+            "permanently in context.",
+            _options(
+                "The user's current question.",
+                "The output-format instructions.",
+                "The safety and policy rules the assistant must always follow.",
+                "A 500-page reference manual that is consulted only occasionally.",
+            ),
+        ),
+        _t(
+            "Qual destes é o melhor candidato a ser buscado **sob demanda** em vez de ficar em "
+            "toda requisição?",
+            "Um manual de referência grande, que só é necessário de vez em quando, deve ser "
+            "recuperado quando uma etapa o exigir. A pergunta atual do usuário, as regras de "
+            "formato de saída e as regras de segurança/política são pequenas e necessárias em "
+            "toda chamada, então ficam permanentemente no contexto.",
+            _options(
+                "A pergunta atual do usuário.",
+                "As instruções de formato de saída.",
+                "As regras de segurança e política que o assistente deve sempre seguir.",
+                "Um manual de referência de 500 páginas, consultado apenas ocasionalmente.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q04",
+        _CTX,
+        MC,
+        MEDIUM,
+        ("a",),
+        ("context-pollution", "rag"),
+        _t(
+            "A team raises the number of retrieved chunks from 5 to 50 'to be safe'. Everything "
+            "still fits in the window, but answer quality drops. What is the most likely cause?",
+            "Extra, mostly irrelevant chunks add noise that distracts the model and dilutes "
+            "the passages that matter (context pollution). B contradicts the premise, since "
+            "everything fits. C is backwards: a larger k usually lowers precision. D is "
+            "nonsense: embeddings of stored chunks do not depend on how many are retrieved.",
+            _options(
+                "The extra, mostly irrelevant chunks add noise that distracts the model and "
+                "dilutes the relevant passages.",
+                "The model forgets chunks because the context window has been exceeded.",
+                "Retrieval becomes more precise as the number of chunks grows.",
+                "The embeddings of stored chunks change when more of them are retrieved.",
+            ),
+        ),
+        _t(
+            "Uma equipe aumenta o número de chunks recuperados de 5 para 50 'por segurança'. "
+            "Tudo ainda cabe na janela, mas a qualidade das respostas cai. Qual é a causa mais "
+            "provável?",
+            "Chunks extras, em sua maioria irrelevantes, adicionam ruído que distrai o modelo e "
+            "dilui as passagens que importam (context pollution). B contradiz a premissa, pois "
+            "tudo cabe. C é o contrário: um k maior normalmente reduz a precisão. D não faz "
+            "sentido: os embeddings dos chunks armazenados não dependem de quantos são "
+            "recuperados.",
+            _options(
+                "Os chunks extras, em sua maioria irrelevantes, adicionam ruído que distrai o "
+                "modelo e dilui as passagens relevantes.",
+                "O modelo esquece chunks porque a janela de contexto foi excedida.",
+                "A recuperação fica mais precisa conforme o número de chunks cresce.",
+                "Os embeddings dos chunks armazenados mudam quando mais deles são recuperados.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q05",
+        _CTX,
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("context-budget", "history-trimming"),
+        _t(
+            "What does this code print?\n\n" + _FIT_CODE,
+            "It walks the history from newest to oldest and stops at the first message that "
+            "does not fit. `dd` (2) and `cc` (2) fit within 6; `bbbb` would bring the total to "
+            "8, so the loop breaks, and the older `aa` is dropped too even though it alone "
+            "would have fit. D is what you would get with `continue` instead of `break`. "
+            "A and B ignore the budget check.",
+            _options(
+                "`['aa', 'bbbb', 'cc', 'dd']`",
+                "`['bbbb', 'cc', 'dd']`",
+                "`['cc', 'dd']`",
+                "`['aa', 'cc', 'dd']`",
+            ),
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _FIT_CODE,
+            "Ele percorre o histórico do mais novo para o mais antigo e para na primeira "
+            "mensagem que não cabe. `dd` (2) e `cc` (2) cabem em 6; `bbbb` levaria o total a 8, "
+            "então o laço é interrompido, e o `aa`, mais antigo, também é descartado mesmo que "
+            "sozinho coubesse. D seria o resultado com `continue` no lugar de `break`. A e B "
+            "ignoram a verificação do orçamento.",
+            _options(
+                "`['aa', 'bbbb', 'cc', 'dd']`",
+                "`['bbbb', 'cc', 'dd']`",
+                "`['cc', 'dd']`",
+                "`['aa', 'cc', 'dd']`",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q06",
+        _CTX,
+        MS,
+        MEDIUM,
+        ("a", "b", "e"),
+        ("compression", "tool-outputs"),
+        _t(
+            "Which techniques reduce context size **without** throwing away what the model "
+            "needs? Select all that apply.",
+            "A (summarizing older turns), B (trimming tool results to the relevant fields) and "
+            "E (fetching documents through a tool when needed instead of preloading them) all "
+            "shrink the context while keeping the essential information. C would remove the "
+            "instructions the model must keep following, and D increases the context instead "
+            "of shrinking it.",
+            _options(
+                "Summarize older conversation turns.",
+                "Return only the relevant fields of a tool result instead of the full payload.",
+                "Drop the system prompt after the first turn.",
+                "Send the whole conversation twice so nothing is missed.",
+                "Retrieve documents through a tool when needed instead of preloading them.",
+            ),
+        ),
+        _t(
+            "Quais técnicas reduzem o tamanho do contexto **sem** descartar o que o modelo "
+            "precisa? Selecione todas que se aplicam.",
+            "A (resumir turnos antigos), B (reduzir resultados de ferramentas aos campos "
+            "relevantes) e E (buscar documentos por meio de uma ferramenta quando necessário, "
+            "em vez de pré-carregá-los) encolhem o contexto mantendo a informação essencial. C "
+            "removeria as instruções que o modelo precisa continuar seguindo, e D aumenta o "
+            "contexto em vez de reduzi-lo.",
+            _options(
+                "Resumir turnos antigos da conversa.",
+                "Devolver apenas os campos relevantes de um resultado de ferramenta, em vez do "
+                "payload completo.",
+                "Descartar o system prompt depois do primeiro turno.",
+                "Enviar a conversa inteira duas vezes para não perder nada.",
+                "Recuperar documentos por meio de uma ferramenta quando necessário, em vez de "
+                "pré-carregá-los.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q07",
+        _CTX,
+        MC,
+        MEDIUM,
+        ("d",),
+        ("cost", "conversation-history"),
+        _t(
+            "A chatbot resends the full conversation history on every turn. Ignoring any "
+            "caching, how does the total number of input tokens processed over a conversation "
+            "of N turns grow?",
+            "Turn k sends roughly k messages, so the total is about 1 + 2 + ... + N, which "
+            "grows roughly quadratically with N. That is why long conversations need trimming "
+            "or summarization. A, B and C all understate the growth, because each turn "
+            "re-reads everything that came before it.",
+            _options(
+                "It stays constant, because only the newest message counts.",
+                "It grows linearly, because each turn adds the same fixed cost.",
+                "It grows logarithmically, because older turns are compressed automatically.",
+                "It grows roughly quadratically, because each turn re-reads all previous turns.",
+            ),
+        ),
+        _t(
+            "Um chatbot reenvia o histórico completo da conversa a cada turno. Ignorando "
+            "qualquer cache, como cresce o total de tokens de entrada processados em uma "
+            "conversa de N turnos?",
+            "O turno k envia cerca de k mensagens, então o total é aproximadamente "
+            "1 + 2 + ... + N, que cresce de forma aproximadamente quadrática em N. Por isso "
+            "conversas longas exigem corte ou sumarização. A, B e C subestimam o crescimento, "
+            "pois cada turno relê tudo o que veio antes.",
+            _options(
+                "Permanece constante, pois só a mensagem mais recente conta.",
+                "Cresce linearmente, pois cada turno acrescenta o mesmo custo fixo.",
+                "Cresce logaritmicamente, pois os turnos antigos são comprimidos "
+                "automaticamente.",
+                "Cresce de forma aproximadamente quadrática, pois cada turno relê todos os "
+                "turnos anteriores.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q08",
+        _CTX,
+        MC,
+        MEDIUM,
+        ("a",),
+        ("summarization", "state"),
+        _t(
+            "A rolling summary of a long support conversation keeps losing the customer's order "
+            "number and an explicit constraint they stated. What is the best fix?",
+            "Summaries are lossy by nature, so exact facts that must survive (identifiers, "
+            "hard constraints) should be kept verbatim in a structured note carried alongside "
+            "the summary. B makes the loss worse. C is irrelevant: temperature does not decide "
+            "what a summary keeps. D throws away far more than it saves.",
+            _options(
+                "Keep exact critical facts (IDs, constraints) in a structured note carried "
+                "verbatim next to the summary.",
+                "Summarize more aggressively so there is less detail to lose.",
+                "Raise the temperature when generating the summary.",
+                "Drop the summary and keep only the last user message.",
+            ),
+        ),
+        _t(
+            "Um resumo contínuo (rolling summary) de uma longa conversa de suporte perde o "
+            "tempo todo o número do pedido do cliente e uma restrição explícita que ele "
+            "informou. Qual é a melhor correção?",
+            "Resumos são com perda por natureza, então fatos exatos que precisam sobreviver "
+            "(identificadores, restrições rígidas) devem ser mantidos literalmente em uma nota "
+            "estruturada, ao lado do resumo. B piora a perda. C é irrelevante: a temperatura "
+            "não define o que um resumo preserva. D descarta muito mais do que economiza.",
+            _options(
+                "Manter os fatos críticos exatos (IDs, restrições) em uma nota estruturada, "
+                "literal, ao lado do resumo.",
+                "Resumir de forma mais agressiva para haver menos detalhes a perder.",
+                "Aumentar a temperatura ao gerar o resumo.",
+                "Descartar o resumo e manter apenas a última mensagem do usuário.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q09",
+        _CTX,
+        MC,
+        HARD,
+        ("b",),
+        ("lost-in-the-middle", "ordering"),
+        _t(
+            "You are assembling a very long prompt that contains one critical instruction. "
+            "Where should that instruction go?",
+            "Models tend to use information in the middle of a very long context less reliably "
+            "than information at the beginning or end (the 'lost in the middle' effect), so "
+            "critical instructions belong at the start and, if needed, are restated near the "
+            "end. A is the weakest position. C is wrong: position matters. D confuses format "
+            "with placement: markup does not fix a position problem.",
+            _options(
+                "In the exact middle, because that is the most protected position.",
+                "At the beginning, and restated near the end if the prompt is very long.",
+                "Anywhere; position never affects how well the model follows it.",
+                "Inside a deeply nested markup block, which makes the model prioritize it.",
+            ),
+        ),
+        _t(
+            "Você está montando um prompt muito longo que contém uma instrução crítica. Onde "
+            "ela deve ficar?",
+            "Modelos tendem a usar informações no meio de um contexto muito longo com menos "
+            "confiabilidade do que as do início ou do fim (o efeito 'lost in the middle'), "
+            "então instruções críticas ficam no início e, se necessário, são repetidas perto "
+            "do fim. A é a pior posição. C está errada: a posição importa. D confunde formato "
+            "com posicionamento: marcação não resolve um problema de posição.",
+            _options(
+                "Exatamente no meio, pois é a posição mais protegida.",
+                "No início, e repetida perto do fim se o prompt for muito longo.",
+                "Em qualquer lugar; a posição nunca afeta o quanto o modelo a segue.",
+                "Dentro de um bloco de marcação bem aninhado, o que faz o modelo priorizá-la.",
+            ),
+        ),
+    ),
+    _q(
+        "context-engineering-q10",
+        _CTX,
+        SHORT,
+        HARD,
+        None,
+        ("context-budget", "agents"),
+        _t(
+            "A coding agent works on a large codebase with a limited context window. Describe a "
+            "policy for what stays in context, what is retrieved on demand, and what is "
+            "summarized or dropped.",
+            "Self-check: did you cover (1) a fixed core that always stays (instructions, task, "
+            "tool definitions), (2) on-demand retrieval of files instead of preloading, "
+            "(3) summarizing or trimming old history and tool output, and (4) a reserved "
+            "budget for the model's output?",
+            model_answer="Keep a small fixed core in every call: the system instructions, the "
+            "current task and the tool definitions. Do not preload the codebase; give the agent "
+            "search and read tools so it pulls in only the files or snippets a step needs, and "
+            "trim large tool outputs to the relevant lines. Summarize older history into a "
+            "compact state note (decisions made, files touched, open questions) while keeping "
+            "exact identifiers and constraints verbatim, and drop stale material such as files "
+            "no longer relevant. Reserve part of the window for the model's output and monitor "
+            "token usage so compaction happens before the limit is hit.",
+        ),
+        _t(
+            "Um agente de programação trabalha em uma base de código grande com uma janela de "
+            "contexto limitada. Descreva uma política para o que fica no contexto, o que é "
+            "recuperado sob demanda e o que é resumido ou descartado.",
+            "Autoavaliação: você cobriu (1) um núcleo fixo que sempre permanece (instruções, "
+            "tarefa, definições de ferramentas), (2) recuperação de arquivos sob demanda em vez "
+            "de pré-carregar, (3) resumo ou corte de histórico antigo e de saídas de "
+            "ferramentas, e (4) um orçamento reservado para a saída do modelo?",
+            model_answer="Manter um núcleo fixo e pequeno em toda chamada: as instruções do "
+            "sistema, a tarefa atual e as definições das ferramentas. Não pré-carregar a base de "
+            "código; dar ao agente ferramentas de busca e leitura para trazer apenas os "
+            "arquivos ou trechos de que cada etapa precisa, e reduzir saídas grandes de "
+            "ferramentas às linhas relevantes. Resumir o histórico antigo em uma nota de estado "
+            "compacta (decisões tomadas, arquivos alterados, dúvidas em aberto), mantendo "
+            "identificadores e restrições exatos de forma literal, e descartar material obsoleto, "
+            "como arquivos que deixaram de ser relevantes. Reservar parte da janela para a "
+            "saída do modelo e monitorar o uso de tokens, para que a compactação ocorra antes de "
+            "o limite ser atingido.",
+        ),
+    ),
+)
+
 # @@NEXT-COMPETENCY@@
 
-QUESTIONS: tuple[QuestionSeed, ...] = (*LLM_QUESTIONS,)
+QUESTIONS: tuple[QuestionSeed, ...] = (*LLM_QUESTIONS, *CONTEXT_QUESTIONS)
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
