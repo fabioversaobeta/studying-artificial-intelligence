@@ -883,9 +883,425 @@ _TYPE_HINTS_EXTRA: tuple[QuestionSeed, ...] = (
     ),
 )
 
+_COROUTINE_OBJECT_CODE = """```python
+async def hello():
+    print("hi")
+    return 1
+
+x = hello()
+print(type(x).__name__)
+```"""
+
+_GATHER_ORDER_CODE = """```python
+import asyncio
+
+async def work(name, delay):
+    await asyncio.sleep(delay)
+    print(name)
+    return name
+
+async def main():
+    results = await asyncio.gather(work("a", 0.3), work("b", 0.1), work("c", 0.2))
+    print(results)
+
+asyncio.run(main())
+```"""
+
+_BLOCKING_SLEEP_CODE = """```python
+import asyncio
+import time
+
+async def tick():
+    for _ in range(3):
+        print("tick")
+        await asyncio.sleep(0.1)
+
+async def blocker():
+    time.sleep(0.5)
+    print("done blocking")
+
+async def main():
+    await asyncio.gather(tick(), blocker())
+
+asyncio.run(main())
+```"""
+
+_ASYNC_COUNTER_CODE = """```python
+import asyncio
+
+counter = 0
+
+async def inc():
+    global counter
+    tmp = counter
+    await asyncio.sleep(0)
+    counter = tmp + 1
+
+async def main():
+    await asyncio.gather(*(inc() for _ in range(100)))
+    print(counter)
+
+asyncio.run(main())
+```"""
+
+_ASYNC_EXTRA: tuple[QuestionSeed, ...] = (
+    _q(
+        "async-python-q01",
+        "async-python",
+        CODE,
+        EASY,
+        ("b",),
+        ("coroutines",),
+        _t(
+            "What does this script print to standard output?\n\n" + _COROUTINE_OBJECT_CODE,
+            "Calling an `async def` function does not run its body: it returns a coroutine "
+            "object that must be awaited (or scheduled as a task) to execute. So `hi` is never "
+            'printed and the type name is `coroutine`. Python also emits a "coroutine was never '
+            'awaited" warning on stderr, which is a classic sign of a missing `await`.',
+            "`hi` and then `int`",
+            "`coroutine`",
+            "`hi` and then `coroutine`",
+            "`function`",
+        ),
+        _t(
+            "O que este script imprime na saída padrão?\n\n" + _COROUTINE_OBJECT_CODE,
+            "Chamar uma função `async def` não executa o corpo: ela retorna um objeto "
+            "coroutine que precisa ser aguardado com `await` (ou agendado como task) para "
+            "rodar. Assim, `hi` nunca é impresso e o nome do tipo é `coroutine`. O Python "
+            'também emite no stderr um aviso "coroutine was never awaited", sinal clássico '
+            "de um `await` esquecido.",
+            "`hi` e depois `int`",
+            "`coroutine`",
+            "`hi` e depois `coroutine`",
+            "`function`",
+        ),
+    ),
+    _q(
+        "async-python-q02",
+        "async-python",
+        MC,
+        EASY,
+        ("c",),
+        ("await", "event-loop"),
+        _t(
+            "What does `await` do inside a coroutine?",
+            "`await` runs the awaited coroutine, future or task, and is the point where the "
+            "current coroutine may be suspended so the event loop can run something else "
+            "while it waits. It does not create a thread, it does not block the whole "
+            "program, and it does not change what kind of function the awaited code is.",
+            "It starts a new OS thread to run the awaited object.",
+            "It blocks the entire program until the awaited object finishes.",
+            "It runs the awaited object and, if that has to wait, suspends this coroutine so "
+            "the event loop can run other tasks.",
+            "It turns the awaited function into a regular synchronous function.",
+        ),
+        _t(
+            "O que o `await` faz dentro de uma coroutine?",
+            "`await` executa a coroutine, future ou task aguardada e é o ponto em que a "
+            "coroutine atual pode ser suspensa para que o event loop rode outra coisa enquanto "
+            "ela espera. Ele não cria uma thread, não bloqueia o programa inteiro e não muda "
+            "o tipo de função do código aguardado.",
+            "Inicia uma nova thread do SO para executar o objeto aguardado.",
+            "Bloqueia o programa inteiro até o objeto aguardado terminar.",
+            "Executa o objeto aguardado e, se ele precisar esperar, suspende esta coroutine "
+            "para que o event loop rode outras tasks.",
+            "Transforma a função aguardada em uma função síncrona comum.",
+        ),
+    ),
+    _q(
+        "async-python-q03",
+        "async-python",
+        MC,
+        EASY,
+        ("d",),
+        ("io-bound", "concurrency"),
+        _t(
+            "A service must make 200 independent HTTP requests and spends almost all of its "
+            "time waiting on the network. Why is `asyncio` a good fit?",
+            "With asyncio, one thread runs other coroutines while a request is waiting for "
+            "the network, so the total time approaches that of the slowest requests instead "
+            "of the sum of all of them. It does not use several CPU cores, it does not remove "
+            "the GIL, and it does not make any single request faster.",
+            "Coroutines run in parallel on several CPU cores.",
+            "`asyncio` removes the GIL, so Python code runs without restrictions.",
+            "Each individual request becomes faster because it is a coroutine.",
+            "While one request waits for the network, the event loop runs the others on the "
+            "same thread, so the waiting time overlaps.",
+        ),
+        _t(
+            "Um serviço precisa fazer 200 requisições HTTP independentes e passa quase todo o "
+            "tempo esperando a rede. Por que o `asyncio` é uma boa escolha?",
+            "Com asyncio, uma única thread executa outras coroutines enquanto uma requisição "
+            "espera a rede, então o tempo total se aproxima do das requisições mais lentas em "
+            "vez da soma de todas. Ele não usa vários núcleos de CPU, não remove o GIL e não "
+            "torna nenhuma requisição individual mais rápida.",
+            "As coroutines rodam em paralelo em vários núcleos de CPU.",
+            "O `asyncio` remove o GIL, então o código Python roda sem restrições.",
+            "Cada requisição individual fica mais rápida por ser uma coroutine.",
+            "Enquanto uma requisição espera a rede, o event loop executa as outras na mesma "
+            "thread, então os tempos de espera se sobrepõem.",
+        ),
+    ),
+    _q(
+        "async-python-q04",
+        "async-python",
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("gather", "ordering"),
+        _t(
+            "What does this program print?\n\n" + _GATHER_ORDER_CODE,
+            "The three coroutines run concurrently, so each prints when its own sleep ends: "
+            "`b` (0.1 s), `c` (0.2 s), then `a` (0.3 s). `asyncio.gather` however returns the "
+            "results in the order the awaitables were passed in, not in completion order, so "
+            "the list is `['a', 'b', 'c']`. Running them one after another would print `a`, "
+            "`b`, `c`.",
+            "`a`, `b`, `c`, then `['a', 'b', 'c']`",
+            "`b`, `c`, `a`, then `['b', 'c', 'a']`",
+            "`b`, `c`, `a`, then `['a', 'b', 'c']`",
+            "`a`, `b`, `c`, then `['b', 'c', 'a']`",
+        ),
+        _t(
+            "O que este programa imprime?\n\n" + _GATHER_ORDER_CODE,
+            "As três coroutines rodam de forma concorrente, então cada uma imprime quando o "
+            "seu próprio sleep termina: `b` (0,1 s), `c` (0,2 s) e depois `a` (0,3 s). Já o "
+            "`asyncio.gather` devolve os resultados na ordem em que os awaitables foram "
+            "passados, não na ordem de conclusão, então a lista é `['a', 'b', 'c']`. Rodá-las "
+            "uma após a outra imprimiria `a`, `b`, `c`.",
+            "`a`, `b`, `c` e depois `['a', 'b', 'c']`",
+            "`b`, `c`, `a` e depois `['b', 'c', 'a']`",
+            "`b`, `c`, `a` e depois `['a', 'b', 'c']`",
+            "`a`, `b`, `c` e depois `['b', 'c', 'a']`",
+        ),
+    ),
+    _q(
+        "async-python-q05",
+        "async-python",
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("blocking", "event-loop"),
+        _t(
+            "In what order does this program print its lines?\n\n" + _BLOCKING_SLEEP_CODE,
+            "`gather` starts `tick` first: it prints `tick` and awaits, handing control to "
+            "`blocker`. `blocker` calls the synchronous `time.sleep(0.5)`, which never yields, "
+            "so the whole event loop is frozen for half a second and `tick` cannot resume. "
+            "Only after `done blocking` does `tick` print its remaining two lines. With "
+            "`await asyncio.sleep(0.5)` (or `asyncio.to_thread`) the ticks would interleave "
+            "normally.",
+            "`tick`, `tick`, `tick`, `done blocking`",
+            "`tick`, `done blocking`, `tick`, `tick`",
+            "`done blocking`, `tick`, `tick`, `tick`",
+            "`tick`, `tick`, `done blocking`, `tick`",
+        ),
+        _t(
+            "Em que ordem este programa imprime suas linhas?\n\n" + _BLOCKING_SLEEP_CODE,
+            "O `gather` inicia `tick` primeiro: ela imprime `tick` e faz `await`, passando o "
+            "controle a `blocker`. `blocker` chama o `time.sleep(0.5)` síncrono, que nunca "
+            "cede o controle, então o event loop inteiro fica congelado por meio segundo e "
+            "`tick` não consegue retomar. Só depois de `done blocking` a `tick` imprime as "
+            "duas linhas restantes. Com `await asyncio.sleep(0.5)` (ou `asyncio.to_thread`) "
+            "os ticks se intercalariam normalmente.",
+            "`tick`, `tick`, `tick`, `done blocking`",
+            "`tick`, `done blocking`, `tick`, `tick`",
+            "`done blocking`, `tick`, `tick`, `tick`",
+            "`tick`, `tick`, `done blocking`, `tick`",
+        ),
+    ),
+    _q(
+        "async-python-q06",
+        "async-python",
+        MC,
+        MEDIUM,
+        ("a",),
+        ("blocking", "to-thread"),
+        _t(
+            "An async request handler must call a legacy synchronous function "
+            "`parse_report(path)` that takes about two seconds and cannot be rewritten. What "
+            "is the best way to call it without freezing the event loop?",
+            "`asyncio.to_thread` (or `loop.run_in_executor`) runs the blocking call in a worker "
+            "thread and gives you an awaitable, so the loop keeps serving other tasks. Calling "
+            "it directly blocks the loop, a plain function cannot be awaited, and merely "
+            "adding `async` to its definition changes nothing about the blocking body.",
+            "`await asyncio.to_thread(parse_report, path)`",
+            "`await parse_report(path)`",
+            "Declare `parse_report` with `async def` and leave its body unchanged.",
+            "Call `parse_report(path)` directly; the event loop will preempt it when needed.",
+        ),
+        _t(
+            "Um handler assíncrono precisa chamar uma função síncrona legada "
+            "`parse_report(path)` que leva cerca de dois segundos e não pode ser reescrita. "
+            "Qual é a melhor forma de chamá-la sem congelar o event loop?",
+            "`asyncio.to_thread` (ou `loop.run_in_executor`) executa a chamada bloqueante em "
+            "uma thread de trabalho e devolve um awaitable, então o loop continua atendendo "
+            "outras tasks. Chamá-la diretamente bloqueia o loop, uma função comum não pode "
+            "ser aguardada e apenas adicionar `async` à definição não muda o corpo bloqueante.",
+            "`await asyncio.to_thread(parse_report, path)`",
+            "`await parse_report(path)`",
+            "Declarar `parse_report` com `async def` e manter o corpo inalterado.",
+            "Chamar `parse_report(path)` diretamente; o event loop a interrompe quando necessário.",
+        ),
+    ),
+    _q(
+        "async-python-q07",
+        "async-python",
+        MS,
+        MEDIUM,
+        ("a", "c", "e"),
+        ("cancellation",),
+        _t(
+            "Which statements about cancelling an asyncio task with `task.cancel()` are true? "
+            "Select all that apply.",
+            "`cancel()` only requests cancellation: the `CancelledError` is raised inside the "
+            "task at the `await` where it is suspended, and the task is not done immediately. "
+            "`finally` blocks run, so cleanup is possible. In modern Python `CancelledError` is "
+            "a `BaseException`, so `except Exception` does not catch it. If the coroutine "
+            "catches it and does not re-raise, the cancellation is swallowed and the task "
+            "ends normally instead of as cancelled.",
+            "It requests cancellation: a `CancelledError` is raised inside the task at the "
+            "`await` where it is currently suspended.",
+            "It stops the task immediately and synchronously, so `task.done()` is already "
+            "`True` right after the call.",
+            "`finally` blocks in the cancelled coroutine still run, so it can release resources.",
+            "`except Exception:` is enough to catch the `CancelledError` and clean up.",
+            "If the coroutine catches `CancelledError` and does not re-raise it, the "
+            "cancellation is swallowed and the task does not end as cancelled.",
+        ),
+        _t(
+            "Quais afirmações sobre cancelar uma task do asyncio com `task.cancel()` são "
+            "verdadeiras? Selecione todas que se aplicam.",
+            "`cancel()` apenas solicita o cancelamento: o `CancelledError` é lançado dentro da "
+            "task no `await` em que ela está suspensa, e a task não termina na hora. Os "
+            "blocos `finally` executam, então é possível fazer limpeza. No Python moderno "
+            "`CancelledError` herda de `BaseException`, então `except Exception` não o "
+            "captura. Se a coroutine o captura e não o relança, o cancelamento é engolido e "
+            "a task termina normalmente em vez de cancelada.",
+            "Solicita o cancelamento: um `CancelledError` é lançado dentro da task no `await` "
+            "em que ela está suspensa no momento.",
+            "Interrompe a task imediatamente e de forma síncrona, então `task.done()` já é "
+            "`True` logo após a chamada.",
+            "Blocos `finally` da coroutine cancelada ainda executam, então ela pode liberar "
+            "recursos.",
+            "`except Exception:` basta para capturar o `CancelledError` e fazer a limpeza.",
+            "Se a coroutine captura `CancelledError` e não o relança, o cancelamento é "
+            "engolido e a task não termina como cancelada.",
+        ),
+    ),
+    _q(
+        "async-python-q08",
+        "async-python",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("taskgroup", "structured-concurrency"),
+        _t(
+            "Using `asyncio.TaskGroup` (Python 3.11+), what happens when one task in the group "
+            "raises an exception while the others are still running?",
+            "A `TaskGroup` implements structured concurrency: the first failure cancels the "
+            "sibling tasks, the group waits for all of them to finish, and then the `async "
+            "with` block raises an `ExceptionGroup` carrying the errors (handled with "
+            "`except*`). The error is therefore never silently dropped and no task is left "
+            "running after the block exits.",
+            "The other tasks keep running to completion and the exception is ignored.",
+            "Only the failing task stops; its exception is stored on it and the group exits "
+            "normally.",
+            "The remaining tasks are cancelled and, once all have finished, the `async with` "
+            "block raises an `ExceptionGroup`.",
+            "The interpreter exits immediately, without letting the other tasks clean up.",
+        ),
+        _t(
+            "Usando `asyncio.TaskGroup` (Python 3.11+), o que acontece quando uma task do "
+            "grupo lança uma exceção enquanto as outras ainda estão rodando?",
+            "Um `TaskGroup` implementa structured concurrency: a primeira falha cancela as "
+            "tasks irmãs, o grupo espera todas terminarem e então o bloco `async with` lança "
+            "um `ExceptionGroup` com os erros (tratado com `except*`). Assim o erro nunca é "
+            "descartado em silêncio e nenhuma task fica rodando depois que o bloco termina.",
+            "As outras tasks continuam até o fim e a exceção é ignorada.",
+            "Só a task com falha para; a exceção fica guardada nela e o grupo termina normalmente.",
+            "As demais tasks são canceladas e, quando todas terminam, o bloco `async with` "
+            "lança um `ExceptionGroup`.",
+            "O interpretador encerra imediatamente, sem deixar as outras tasks fazerem limpeza.",
+        ),
+    ),
+    _q(
+        "async-python-q09",
+        "async-python",
+        CODE,
+        HARD,
+        ("d",),
+        ("race-condition", "shared-state"),
+        _t(
+            "What does this program print?\n\n" + _ASYNC_COUNTER_CODE,
+            "There is only one thread, but the `await` sits between the read and the write of "
+            "`counter`. `gather` starts all 100 coroutines; each reads `counter` (still 0) and "
+            "suspends at `await asyncio.sleep(0)`. When they resume, every one writes `0 + 1`, "
+            "so the final value is 1, not 100. A read-modify-write that spans an `await` needs "
+            "an `asyncio.Lock`, or the update must happen without awaiting in between.",
+            "`100`",
+            "`0`",
+            "A value between 1 and 100 that changes from run to run.",
+            "`1`",
+        ),
+        _t(
+            "O que este programa imprime?\n\n" + _ASYNC_COUNTER_CODE,
+            "Há uma única thread, mas o `await` fica entre a leitura e a escrita de "
+            "`counter`. O `gather` inicia as 100 coroutines; cada uma lê `counter` (ainda 0) e "
+            "suspende em `await asyncio.sleep(0)`. Quando retomam, todas escrevem `0 + 1`, "
+            "então o valor final é 1, não 100. Um read-modify-write que atravessa um `await` "
+            "precisa de um `asyncio.Lock`, ou a atualização deve ocorrer sem `await` no meio.",
+            "`100`",
+            "`0`",
+            "Um valor entre 1 e 100 que muda a cada execução.",
+            "`1`",
+        ),
+    ),
+    _q(
+        "async-python-q10",
+        "async-python",
+        SHORT,
+        HARD,
+        None,
+        ("async-vs-threads", "cpu-bound"),
+        _t(
+            "A team must (1) call 1,000 slow HTTP endpoints, (2) resize 10,000 large images, "
+            "and (3) use a legacy blocking database driver from an async web service. Which "
+            "concurrency tool fits each job, and why?",
+            "Self-check against the model answer: did you pair each job with a tool, explain "
+            "the reason (waiting vs computing vs blocking call), and mention the GIL for the "
+            "CPU-bound case?",
+            model_answer="(1) Many network waits: asyncio, with a semaphore to bound "
+            "concurrency; one thread overlaps the waiting, with very low per-task cost. (2) "
+            "CPU-bound work: a process pool (`ProcessPoolExecutor`, possibly via "
+            "`run_in_executor`) because the GIL prevents threads, and coroutines, from running "
+            "Python bytecode in parallel; a CPU loop without `await` would also freeze the "
+            "event loop. (3) A blocking driver: run it in a worker thread "
+            "(`asyncio.to_thread`) so it does not block the loop; threads are enough because "
+            "the driver releases the GIL while waiting on I/O, or move to a native async driver.",
+        ),
+        _t(
+            "Uma equipe precisa (1) chamar 1.000 endpoints HTTP lentos, (2) redimensionar "
+            "10.000 imagens grandes e (3) usar um driver de banco de dados bloqueante e legado "
+            "em um serviço web assíncrono. Qual ferramenta de concorrência serve para cada "
+            "tarefa, e por quê?",
+            "Autoavaliação contra a resposta-modelo: você associou cada tarefa a uma "
+            "ferramenta, explicou o motivo (espera vs computação vs chamada bloqueante) e "
+            "mencionou o GIL no caso limitado por CPU?",
+            model_answer="(1) Muitas esperas de rede: asyncio, com um semáforo para limitar a "
+            "concorrência; uma thread sobrepõe as esperas, com custo muito baixo por task. "
+            "(2) Trabalho limitado por CPU: um pool de processos (`ProcessPoolExecutor`, "
+            "possivelmente via `run_in_executor`), pois o GIL impede que threads e coroutines "
+            "executem bytecode Python em paralelo; um laço de CPU sem `await` também "
+            "congelaria o event loop. (3) Um driver bloqueante: executá-lo em uma thread de "
+            "trabalho (`asyncio.to_thread`) para não bloquear o loop; threads bastam porque o "
+            "driver libera o GIL enquanto espera por I/O, ou migrar para um driver async "
+            "nativo.",
+        ),
+    ),
+)
+
 QUESTIONS: tuple[QuestionSeed, ...] = tuple(
     sorted(
-        _PILOT_QUESTIONS + _FUNDAMENTALS_EXTRA + _TYPE_HINTS_EXTRA,
+        _PILOT_QUESTIONS + _FUNDAMENTALS_EXTRA + _TYPE_HINTS_EXTRA + _ASYNC_EXTRA,
         key=lambda q: (_COMPETENCY_ORDER.index(q.competency_slug), q.code),
     )
 )
