@@ -29,6 +29,11 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class LogoutRequest(BaseModel):
+    # Optional so a client that lost its refresh token can still revoke the access token.
+    refresh_token: str | None = None
+
+
 class RegistrationInfo(BaseModel):
     enabled: bool
     invite_required: bool

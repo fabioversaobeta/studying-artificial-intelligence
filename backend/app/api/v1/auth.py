@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, status
 
-from app.api.deps import CurrentUser, DbSession, SettingsDep, rate_limit_by_ip
+from app.api.deps import AccessClaims, CurrentUser, DbSession, SettingsDep, rate_limit_by_ip
 from app.core.rate_limit import rate_limit_login_email
 from app.schemas.user import (
     LoginRequest,
+    LogoutRequest,
     RefreshRequest,
     RegisterRequest,
     RegistrationInfo,
@@ -56,6 +57,15 @@ def login(payload: LoginRequest, db: DbSession, settings: SettingsDep) -> TokenR
 )
 def refresh(payload: RefreshRequest, db: DbSession) -> TokenResponse:
     return auth_service.refresh_access_token(db, refresh_token=payload.refresh_token)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    payload: LogoutRequest, db: DbSession, current_user: CurrentUser, claims: AccessClaims
+) -> None:
+    auth_service.logout(
+        db, user=current_user, access_claims=claims, refresh_token=payload.refresh_token
+    )
 
 
 @router.get("/me", response_model=UserRead)
