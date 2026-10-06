@@ -37,9 +37,9 @@ real backend and database.**
 
 | Feature | Status | Notes |
 |---|---|---|
-| Spaced-repetition review UI (due list, recall submission) | NOT_STARTED | `GET /reviews/due` and `POST /reviews/{id}/recall` exist and are tested; no page consumes them yet |
-| Achievements / quests UI | NOT_STARTED | `/gamification/achievements` and `/gamification/quests` exist and are tested; not yet shown anywhere in the frontend |
-| Learning paths UI | NOT_STARTED | `/learning-paths` endpoints exist; no page browses them yet |
+| Spaced-repetition review UI (due list, recall submission) | DONE | `/reviews` page (G1) + dashboard shortcut |
+| Achievements / quests UI | DONE | `/achievements` page (G2) |
+| Learning paths UI | DONE | `/learning-paths` and `/learning-paths/:slug` (G3) |
 
 ## Explicitly deferred past v1
 

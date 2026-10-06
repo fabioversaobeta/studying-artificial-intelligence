@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 3 |
+| P1 — Curto prazo | 16 | 6 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -130,9 +130,9 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| G1 | **UI de revisão espaçada**: página com a fila de `GET /reviews/due` e envio de recall (`quality` 0–5) em `POST /reviews/{id}/recall`; estado vazio; atalho no dashboard. | P1 | M | IN_PROGRESS | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/reviews-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | | É o diferencial de retenção do produto. |
-| G2 | **UI de conquistas e quests** (`/gamification/achievements`, `/gamification/quests`): progresso, desbloqueadas vs bloqueadas. | P1 | M | IN_PROGRESS | S11 (`fix/s11-frontend-screens`) | D4 (idealmente) | `frontend/src/pages/achievements-page.tsx` (novo), `frontend/src/services/gamification-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | | Pode começar antes de D4; o contrato não muda. |
-| G3 | **UI de learning paths** (`/learning-paths`): listagem e detalhe, com progresso por etapa. | P1 | M | IN_PROGRESS | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/learning-paths-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | | G1/G2/G3 colidem em `router.tsx`, `app-layout.tsx` e `types/api.ts` — são edições pequenas, mas **faça rebase frequente**. |
+| G1 | **UI de revisão espaçada**: página com a fila de `GET /reviews/due` e envio de recall (`quality` 0–5) em `POST /reviews/{id}/recall`; estado vazio; atalho no dashboard. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/reviews-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d0842bd | É o diferencial de retenção do produto. |
+| G2 | **UI de conquistas e quests** (`/gamification/achievements`, `/gamification/quests`): progresso, desbloqueadas vs bloqueadas. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | D4 (idealmente) | `frontend/src/pages/achievements-page.tsx` (novo), `frontend/src/services/gamification-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d3f0755 | Pode começar antes de D4; o contrato não muda. |
+| G3 | **UI de learning paths** (`/learning-paths`): listagem e detalhe, com progresso por etapa. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/learning-paths-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | e77c3ea | Sem "progresso por etapa" (maestria por competência exigiria N chamadas); links levam à matéria. G1/G2/G3 colidem em `router.tsx`, `app-layout.tsx` e `types/api.ts` — são edições pequenas, mas **faça rebase frequente**. |
 | G4 | Tratamento global de erros no frontend: Error Boundary, toasts de erro de API, estados de loading/erro consistentes (`use-async`). | P2 | M | TODO | | — | `frontend/src/app/app.tsx`, `frontend/src/hooks/use-async.ts`, `frontend/src/components/ui/*` | | |
 | G5 | Revisão de acessibilidade (WCAG AA): foco, contraste do tema escuro, labels, navegação por teclado. | P2 | M | TODO | | — | `frontend/src/**` | | Usar a skill `design:accessibility-review`. |
 
@@ -194,6 +194,9 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — G3 — páginas de learning paths (lista + detalhe por slug) com link para a matéria de cada etapa — e77c3ea
+- 2026-10-06 — G2 — página de conquistas (desbloqueadas vs bloqueadas) e quests com barra de progresso — d3f0755
+- 2026-10-06 — G1 — página de revisões (fila de vencidas, recall 0–5, próximo intervalo) + atalho no dashboard — d0842bd
 - 2026-10-06 — F3 + F4 — testes dedicados de challenge/quest/review/dashboard/gamification e `test_authorization.py` (+130 testes, 1 xfail estrito documentando bug de conquistas duplicadas) — `444d509`..`88f54a8`
 - 2026-10-06 — F1 — Vitest + Testing Library + jsdom; testes de api-client, token-storage e protected-route (20 testes); corrigido crash do api-client com corpo de erro sem `error` — `6a1358b`..`42dfaab`
 - 2026-10-06 — E1 — N+1 eliminado em learning_service (queries em lote; detalhe 62→5, lista 10→4 em 15 competências); testes de caracterização e contagem de queries — de8d0b9
