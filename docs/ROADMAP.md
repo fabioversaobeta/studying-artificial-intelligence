@@ -26,7 +26,7 @@ real backend and database.**
 | Seed data (7 subjects, 30 competencies, 3 paths, 9 achievements, 4 quests) | COMPLETED | Idempotent (`app.seeds.run`); verified against a fresh DB |
 | In-platform lesson content (all 30 competencies) | COMPLETED | 77 markdown modules (`backend/app/seeds/lessons/`), module count scaled to real topic complexity (1-6 per competency) — see docs/DOMAIN.md |
 | Backend test suite | COMPLETED | 51 tests: domain unit tests + API integration tests |
-| Backend lint/type-check clean (ruff + mypy) | COMPLETED | |
+| Backend lint/type-check clean (ruff + mypy) | COMPLETED | Verified clean after the S1 lint pass (alembic/versions excluded via ruff extend-exclude) |
 | Frontend scaffold (React + TS + Vite + Tailwind) | COMPLETED | Dark theme adapted from fabiobandacheski.com |
 | Frontend auth flow | COMPLETED | Register/login/logout, protected routes, auto token refresh on 401 |
 | Frontend dashboard + learning UI | COMPLETED | Dashboard, subjects, skill tree, study sessions, challenges, goals, and rendered lesson content (react-markdown + remark-gfm) — verified live in-browser, zero console errors |
