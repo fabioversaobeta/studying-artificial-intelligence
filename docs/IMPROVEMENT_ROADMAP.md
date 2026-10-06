@@ -69,17 +69,17 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | TODO | | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | | O conteúdo é contexto pessoal do dono; **confirmar com ele** antes de apagar definitivamente. Avaliar se o repo vai ficar público (limpar histórico?). |
-| A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | TODO | | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | | Não quebrar o link citado no CLAUDE.md. |
-| A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | TODO | | — | `backend/pyproject.toml`, `backend/alembic/**` | | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
+| A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
+| A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | | Não quebrar o link citado no CLAUDE.md. |
+| A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
 | A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | TODO | | — | `backend/pyproject.toml` | | Verificar se `httpx2` já é a recomendação estável antes de trocar. |
-| A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | TODO | | A3 | `docs/ROADMAP.md` | | |
+| A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | IN_PROGRESS | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | | |
 
 ## Trilha B — CI/CD
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| B1 | Criar GitHub Actions (`.github/workflows/ci.yml`) com dois jobs. **Backend:** serviço Postgres, `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` em banco limpo, `pytest`. **Frontend:** `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`. Rodar em PR e push na `master`. | P0 | M | TODO | | A3 (para o CI já nascer verde) | `.github/workflows/ci.yml` | | Os testes usam `TEST_DATABASE_URL` (ver `tests/conftest.py`). Cachear pip/npm. |
+| B1 | Criar GitHub Actions (`.github/workflows/ci.yml`) com dois jobs. **Backend:** serviço Postgres, `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` em banco limpo, `pytest`. **Frontend:** `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`. Rodar em PR e push na `master`. | P0 | M | IN_PROGRESS | S2 (`fix/s2-secret-guard-and-ci`) | A3 (para o CI já nascer verde) | `.github/workflows/ci.yml` | | Os testes usam `TEST_DATABASE_URL` (ver `tests/conftest.py`). Cachear pip/npm. |
 | B2 | Ativar proteção de branch na `master` exigindo CI verde. | P1 | S | TODO | | B1 | (config do GitHub) | | Ação manual do dono no GitHub; a sessão apenas documenta o passo. |
 | B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | TODO | | B1 | `.github/workflows/ci.yml` | | |
 
@@ -90,7 +90,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| C1 | **Falhar o boot em produção** se `secret_key` for o valor default (ou curto demais) ou se `debug=True`. Default de `debug` deve ser seguro. Atualizar `.env.example` e `docs/DEPLOYMENT.md`. Cobrir com testes. | P0 | S | TODO | | — | `backend/app/core/config.py`, `backend/.env.example`, `docs/DEPLOYMENT.md`, novo teste | | Risco atual: sem a env var, qualquer um forja JWT. |
+| C1 | **Falhar o boot em produção** se `secret_key` for o valor default (ou curto demais) ou se `debug=True`. Default de `debug` deve ser seguro. Atualizar `.env.example` e `docs/DEPLOYMENT.md`. Cobrir com testes. | P0 | S | IN_PROGRESS | S2 (`fix/s2-secret-guard-and-ci`) | — | `backend/app/core/config.py`, `backend/.env.example`, `docs/DEPLOYMENT.md`, novo teste | | Risco atual: sem a env var, qualquer um forja JWT. |
 | C2 | **Rate limiting** em `/auth/login`, `/auth/register` e `/auth/refresh` (ex.: `slowapi`, por IP e/ou por e-mail). Limites configuráveis via env. Retornar 429 no formato de erro padrão. | P1 | M | TODO | | — | `backend/app/main.py`, `backend/app/api/v1/auth.py`, `backend/pyproject.toml`, `backend/app/core/config.py` | | Atrás de proxy (Railway), usar o IP correto (`X-Forwarded-For`). |
 | C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | TODO | | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
 | C4 | **Política de cadastro**: flag `REGISTRATION_ENABLED` e/ou código de convite, para o deploy público não aceitar signups arbitrários. | P1 | S | TODO | | — | `backend/app/core/config.py`, `backend/app/services/auth_service.py`, `backend/app/api/v1/auth.py`, `frontend/src/pages/register-page.tsx` | | Conflita com C2/C3 em `auth.py` — combinar ordem. |
@@ -101,8 +101,8 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| D1 | Tratar `IntegrityError` → 409 (race condition no registro com e-mail duplicado) e adicionar um handler global para exceções não tratadas (500 com corpo padrão `{error:{code,message}}`, sem vazar stack). Teste da corrida. | P0 | S | TODO | | — | `backend/app/main.py`, `backend/app/core/exceptions.py`, `backend/app/services/auth_service.py`, novo teste | | Conflita com C2/C6 em `main.py` — coordenar. |
-| D2 | `/health/ready` deve devolver **503** (não 500) quando o banco falhar, e usar a dependência `get_db` em vez de `SessionLocal` manual. | P0 | S | TODO | | — | `backend/app/main.py`, novo teste | | |
+| D1 | Tratar `IntegrityError` → 409 (race condition no registro com e-mail duplicado) e adicionar um handler global para exceções não tratadas (500 com corpo padrão `{error:{code,message}}`, sem vazar stack). Teste da corrida. | P0 | S | IN_PROGRESS | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, `backend/app/core/exceptions.py`, `backend/app/services/auth_service.py`, novo teste | | Conflita com C2/C6 em `main.py` — coordenar. |
+| D2 | `/health/ready` deve devolver **503** (não 500) quando o banco falhar, e usar a dependência `get_db` em vez de `SessionLocal` manual. | P0 | S | IN_PROGRESS | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, novo teste | | |
 | D3 | Corrigir a recursão `award_xp` ↔ `check_and_award_achievements`: atualizar `earned_codes` dentro do loop / tornar a avaliação iterativa e idempotente. Teste com duas conquistas desbloqueadas na mesma passada. | P1 | M | TODO | | — | `backend/app/services/gamification_service.py`, `backend/tests/` | | Hoje termina por acaso, não por design. |
 | D4 | **Tirar efeito colateral do `GET`** das quests: concluir quests em evento (quando o XP é concedido) e deixar `GET /quests` somente leitura. Atualizar `DECISIONS.md` (a decisão atual diz o contrário). | P1 | M | TODO | | D3 (mesmo serviço) | `backend/app/services/quest_service.py`, `backend/app/services/gamification_service.py`, `backend/app/api/v1/gamification.py`, `docs/DECISIONS.md` | | |
 | D5 | **Paginação** (`limit`/`offset` ou cursor, com teto máximo) nas listagens: study sessions, XP awards, goals, reviews, submissions. Schema de resposta consistente. | P1 | M | TODO | | — | `backend/app/api/v1/*.py`, `backend/app/repositories/*.py`, `backend/app/schemas/*.py`, `docs/API.md` | | Mudança de contrato: avisar o frontend (G1–G3). |
@@ -113,17 +113,17 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| E1 | **Eliminar N+1** em `learning_service`: `_competency_with_state` (3–4 queries por competência + loop de pré-requisitos) e `list_subjects` (1 query por subject). Carregar mastery, minutos e pré-requisitos em lote (`IN`), por subject/usuário. Manter o contrato da API; adicionar teste que conta queries. | P1 | M | TODO | | — | `backend/app/services/learning_service.py`, `backend/app/repositories/{learning_catalog,mastery,study}_repository.py`, `backend/tests/` | | Hoje funciona (30 competências), mas não escala. Verificar também `dashboard_service`. |
+| E1 | **Eliminar N+1** em `learning_service`: `_competency_with_state` (3–4 queries por competência + loop de pré-requisitos) e `list_subjects` (1 query por subject). Carregar mastery, minutos e pré-requisitos em lote (`IN`), por subject/usuário. Manter o contrato da API; adicionar teste que conta queries. | P1 | M | IN_PROGRESS | S6 (`fix/s6-n-plus-one`) | — | `backend/app/services/learning_service.py`, `backend/app/repositories/{learning_catalog,mastery,study}_repository.py`, `backend/tests/` | | Hoje funciona (30 competências), mas não escala. Verificar também `dashboard_service`. |
 | E2 | Índices: revisar queries mais frequentes (por `user_id` + data/competência) e adicionar índices ausentes via migration. | P2 | S | TODO | | E1 | nova migration, `backend/app/models/*.py` | | Medir com `EXPLAIN` antes. |
 
 ## Trilha F — Testes
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | TODO | | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | | Maior risco de regressão hoje. |
+| F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | IN_PROGRESS | S4 (`fix/s4-frontend-tests`) | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | | Maior risco de regressão hoje. |
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | TODO | | F1 | `frontend/src/pages/*.test.tsx` | | |
-| F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | TODO | | — | `backend/tests/**` | | Só adiciona arquivos novos → baixo risco de conflito. |
-| F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | TODO | | — | `backend/tests/test_authorization.py` | | |
+| F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | | Só adiciona arquivos novos → baixo risco de conflito. |
+| F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | | |
 | F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | TODO | | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
 
 ## Trilha G — Funcionalidades de frontend (backend já pronto)
@@ -140,7 +140,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| H1 | **Deploy real** em Railway (backend + Postgres) e Vercel (frontend), seguindo `docs/DEPLOYMENT.md`; verificar o fluxo completo em produção; corrigir o doc com o que for diferente da prática. | P1 | L | TODO | | C1, C6, D2 | `docs/DEPLOYMENT.md`, configs de deploy | | **Requer ações do dono** (contas/segredos). A sessão guia e verifica; não insere credenciais. |
+| H1 | **Deploy real (ADIADO até o fim do roadmap)** em Railway (backend + Postgres) e Vercel (frontend), seguindo `docs/DEPLOYMENT.md`; verificar o fluxo completo em produção; corrigir o doc com o que for diferente da prática. | P1 | L | TODO | | C1, C6, D2 | `docs/DEPLOYMENT.md`, configs de deploy | | **Decisão do dono (2026-10-06): o deploy só acontece quando todo o resto deste roadmap estiver concluído.** Não iniciar antes. Requer ações do dono (contas/segredos); a sessão guia e verifica, sem inserir credenciais. |
 | H2 | Observabilidade mínima: `request_id` nos logs (middleware), logging estruturado e Sentry (opcional, via DSN em env). | P2 | M | TODO | | H1 | `backend/app/main.py`, `backend/app/core/`, `backend/pyproject.toml` | | Conflita com outros itens em `main.py`. |
 | H3 | Backup/restore do Postgres de produção documentado (Railway) e teste de restauração. | P2 | S | TODO | | H1 | `docs/DEPLOYMENT.md` | | |
 
@@ -195,3 +195,4 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
+- 2026-10-06 — decisões do dono: A1 autorizado; deploy (H1) adiado para o fim; sessões S1–S6 iniciadas (reivindicadas em lote pelo coordenador)
