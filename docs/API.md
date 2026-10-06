@@ -18,6 +18,25 @@ has the same shape:
 
 Unhandled exceptions return `500` with `{ "error": { "code": "internal_error", "message": "Internal server error" } }`; the stack trace is only logged server-side. `GET /health/ready` returns `503` with `{ "status": "unavailable" }` when the database is unreachable.
 
+## Pagination
+
+Lists that grow per user are paginated with `limit`/`offset` query params
+(helper: `app/api/pagination.py`). The response body is still a plain JSON
+array; the total number of matching rows is in the `X-Total-Count` response
+header (exposed via CORS).
+
+| Param | Default | Constraints |
+|---|---|---|
+| `limit` | `50` | `1..200`; outside that range returns `422` |
+| `offset` | `0` | `>= 0`; negative returns `422` |
+
+Paginated: `GET /study-sessions` (newest first), `GET /goals` (newest first),
+`GET /reviews/due` (oldest due first). Ordering is deterministic (ties broken
+by `id`). Small catalogs (subjects, competencies, achievements, learning
+paths, quests, challenges, resources) are not paginated. There are currently
+no list endpoints for XP awards or challenge submissions; add the same
+dependency when they are introduced.
+
 ## Endpoints
 
 | Method & Path | Auth | Purpose |

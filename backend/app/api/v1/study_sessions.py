@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from app.api.deps import CurrentUser, DbSession
+from app.api.pagination import Pagination, set_total_count
 from app.schemas.learning import StudySessionCreate, StudySessionRead
 from app.services import learning_service
 
@@ -24,5 +25,11 @@ def create_study_session(
 
 
 @router.get("", response_model=list[StudySessionRead])
-def list_study_sessions(current_user: CurrentUser, db: DbSession) -> list:
-    return learning_service.list_study_sessions(db, current_user.id)
+def list_study_sessions(
+    current_user: CurrentUser, db: DbSession, page: Pagination, response: Response
+) -> list:
+    items, total = learning_service.list_study_sessions(
+        db, current_user.id, limit=page.limit, offset=page.offset
+    )
+    set_total_count(response, total)
+    return items

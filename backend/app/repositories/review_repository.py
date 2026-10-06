@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.learning import Review
@@ -12,13 +12,32 @@ def get_review(db: Session, user_id: uuid.UUID, competency_id: uuid.UUID) -> Rev
     return db.execute(stmt).scalar_one_or_none()
 
 
-def list_due_reviews(db: Session, user_id: uuid.UUID, *, as_of: datetime) -> list[Review]:
+def list_due_reviews(
+    db: Session,
+    user_id: uuid.UUID,
+    *,
+    as_of: datetime,
+    limit: int | None = None,
+    offset: int = 0,
+) -> list[Review]:
     stmt = (
         select(Review)
         .where(Review.user_id == user_id, Review.due_at <= as_of)
-        .order_by(Review.due_at)
+        .order_by(Review.due_at, Review.id)
+        .offset(offset)
     )
+    if limit is not None:
+        stmt = stmt.limit(limit)
     return list(db.execute(stmt).scalars().all())
+
+
+def count_due_reviews(db: Session, user_id: uuid.UUID, *, as_of: datetime) -> int:
+    stmt = (
+        select(func.count())
+        .select_from(Review)
+        .where(Review.user_id == user_id, Review.due_at <= as_of)
+    )
+    return int(db.execute(stmt).scalar_one())
 
 
 def ensure_review_scheduled(

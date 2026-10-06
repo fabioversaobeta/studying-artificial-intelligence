@@ -37,14 +37,22 @@ def create_study_session(
     return session
 
 
-def list_study_sessions(db: Session, user_id: uuid.UUID, *, limit: int = 50) -> list[StudySession]:
+def list_study_sessions(
+    db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: int = 0
+) -> list[StudySession]:
     stmt = (
         select(StudySession)
         .where(StudySession.user_id == user_id)
-        .order_by(StudySession.occurred_at.desc())
+        .order_by(StudySession.occurred_at.desc(), StudySession.id)
         .limit(limit)
+        .offset(offset)
     )
     return list(db.execute(stmt).scalars().all())
+
+
+def count_study_sessions(db: Session, user_id: uuid.UUID) -> int:
+    stmt = select(func.count()).select_from(StudySession).where(StudySession.user_id == user_id)
+    return int(db.execute(stmt).scalar_one())
 
 
 def total_study_minutes_for_competency(

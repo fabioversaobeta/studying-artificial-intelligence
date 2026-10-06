@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 9 |
+| P1 — Curto prazo | 19 | 10 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -103,6 +103,9 @@ ou combinar com cuidado** (ver coluna Arquivos).
 |---|---|---|---|---|---|---|---|---|---|
 | D1 | Tratar `IntegrityError` → 409 (race condition no registro com e-mail duplicado) e adicionar um handler global para exceções não tratadas (500 com corpo padrão `{error:{code,message}}`, sem vazar stack). Teste da corrida. | P0 | S | DONE | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, `backend/app/core/exceptions.py`, `backend/app/services/auth_service.py`, novo teste | 0d8c244 | Conflita com C2/C6 em `main.py` — coordenar. |
 | D2 | `/health/ready` deve devolver **503** (não 500) quando o banco falhar, e usar a dependência `get_db` em vez de `SessionLocal` manual. | P0 | S | DONE | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, novo teste | 0d8c244 | |
+| D3 | Corrigir a recursão `award_xp` ↔ `check_and_award_achievements`: atualizar `earned_codes` dentro do loop / tornar a avaliação iterativa e idempotente. Teste com duas conquistas desbloqueadas na mesma passada. | P1 | M | IN_PROGRESS | S8 (`fix/s8-gamification`) | — | `backend/app/services/gamification_service.py`, `backend/tests/` | | **Bug real confirmado pela S5** (teste `xfail(strict=True)` em `tests/test_gamification_service.py::TestAchievements::test_two_achievements_unlock_in_the_same_pass`): o loop usa um snapshot de `earned_codes`; quando a conquista A paga XP, o `award_xp` reentra e concede B; o loop externo chega em B com snapshot velho e viola `uq_user_achievement` (500). Correção: reler `earned_codes` dentro do loop (ou pagar XP após o loop e reavaliar) e adicionar `order_by` em `list_achievements`. Ao corrigir, **remover o marcador xfail**. |
+| D4 | **Tirar efeito colateral do `GET`** das quests: concluir quests em evento (quando o XP é concedido) e deixar `GET /quests` somente leitura. Atualizar `DECISIONS.md` (a decisão atual diz o contrário). | P1 | M | IN_PROGRESS | S8 (`fix/s8-gamification`) | D3 (mesmo serviço) | `backend/app/services/quest_service.py`, `backend/app/services/gamification_service.py`, `backend/app/api/v1/gamification.py`, `docs/DECISIONS.md` | | |
+| D5 | **Paginação** (`limit`/`offset` ou cursor, com teto máximo) nas listagens: study sessions, XP awards, goals, reviews, submissions. Schema de resposta consistente. | P1 | M | DONE | S9 (`fix/s9-pagination`) | — | `backend/app/api/v1/*.py`, `backend/app/repositories/*.py`, `backend/app/schemas/*.py`, `docs/API.md` | 9f1e08f | Contrato do corpo inalterado (array); total no header `X-Total-Count`. Frontend (G1–G3) pode adotar `limit`/`offset`. |
 | D3 | Corrigir a recursão `award_xp` ↔ `check_and_award_achievements`: atualizar `earned_codes` dentro do loop / tornar a avaliação iterativa e idempotente. Teste com duas conquistas desbloqueadas na mesma passada. | P1 | M | DONE | S8 (`fix/s8-gamification`) | — | `backend/app/services/gamification_service.py`, `backend/tests/` | ba1b72e | **Bug real confirmado pela S5** (teste `xfail(strict=True)` em `tests/test_gamification_service.py::TestAchievements::test_two_achievements_unlock_in_the_same_pass`): o loop usa um snapshot de `earned_codes`; quando a conquista A paga XP, o `award_xp` reentra e concede B; o loop externo chega em B com snapshot velho e viola `uq_user_achievement` (500). Correção: reler `earned_codes` dentro do loop (ou pagar XP após o loop e reavaliar) e adicionar `order_by` em `list_achievements`. Ao corrigir, **remover o marcador xfail**. |
 | D4 | **Tirar efeito colateral do `GET`** das quests: concluir quests em evento (quando o XP é concedido) e deixar `GET /quests` somente leitura. Atualizar `DECISIONS.md` (a decisão atual diz o contrário). | P1 | M | DONE | S8 (`fix/s8-gamification`) | D3 (mesmo serviço) | `backend/app/services/quest_service.py`, `backend/app/services/gamification_service.py`, `backend/app/api/v1/gamification.py`, `docs/DECISIONS.md` | 86e0912 | |
 | D5 | **Paginação** (`limit`/`offset` ou cursor, com teto máximo) nas listagens: study sessions, XP awards, goals, reviews, submissions. Schema de resposta consistente. | P1 | M | IN_PROGRESS | S9 (`fix/s9-pagination`) | — | `backend/app/api/v1/*.py`, `backend/app/repositories/*.py`, `backend/app/schemas/*.py`, `docs/API.md` | | Mudança de contrato: avisar o frontend (G1–G3). |
@@ -193,6 +196,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
+- 2026-10-06 — D5 — paginação limit/offset (default 50, máx 200) + X-Total-Count em study-sessions, goals e reviews/due; corpo segue array; XP awards/submissions não têm endpoint de listagem — 9f1e08f
 - 2026-10-06 — F2 — testes de frontend (Vitest + fetch mock) para auth-context, login, register, dashboard, goals, subjects e subject-detail (43 testes novos) — 12984e4
 
 - 2026-10-06 — G3 — páginas de learning paths (lista + detalhe por slug) com link para a matéria de cada etapa — e77c3ea

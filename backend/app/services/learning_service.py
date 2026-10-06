@@ -79,8 +79,12 @@ def log_study_session(
     return session
 
 
-def list_study_sessions(db: Session, user_id: uuid.UUID) -> list[StudySession]:
-    return study_repository.list_study_sessions(db, user_id)
+def list_study_sessions(
+    db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: int = 0
+) -> tuple[list[StudySession], int]:
+    """One page of the user's sessions plus the total count."""
+    items = study_repository.list_study_sessions(db, user_id, limit=limit, offset=offset)
+    return items, study_repository.count_study_sessions(db, user_id)
 
 
 def list_subjects_with_progress(db: Session, user_id: uuid.UUID) -> list[dict]:
@@ -188,8 +192,12 @@ def create_goal(
     return goal
 
 
-def list_goals(db: Session, user_id: uuid.UUID) -> list[LearningGoal]:
-    return goal_repository.list_goals_for_user(db, user_id)
+def list_goals(
+    db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: int = 0
+) -> tuple[list[LearningGoal], int]:
+    """One page of the user's goals plus the total count."""
+    items = goal_repository.list_goals_for_user(db, user_id, limit=limit, offset=offset)
+    return items, goal_repository.count_goals_for_user(db, user_id)
 
 
 def update_goal_status(

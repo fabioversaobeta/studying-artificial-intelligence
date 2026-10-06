@@ -28,6 +28,14 @@ def list_due_reviews(db: Session, user_id: uuid.UUID) -> list[Review]:
     return review_repository.list_due_reviews(db, user_id, as_of=datetime.now(UTC))
 
 
+def list_due_reviews_page(
+    db: Session, user_id: uuid.UUID, *, limit: int, offset: int
+) -> tuple[list[Review], int]:
+    now = datetime.now(UTC)
+    items = review_repository.list_due_reviews(db, user_id, as_of=now, limit=limit, offset=offset)
+    return items, review_repository.count_due_reviews(db, user_id, as_of=now)
+
+
 def submit_recall(
     db: Session, *, user_id: uuid.UUID, competency_id: uuid.UUID, quality: int
 ) -> Review:
