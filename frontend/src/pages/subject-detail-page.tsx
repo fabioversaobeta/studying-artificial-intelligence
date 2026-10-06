@@ -13,7 +13,7 @@ export function SubjectDetailPage() {
   )
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
   if (!data) return null
 
   return (

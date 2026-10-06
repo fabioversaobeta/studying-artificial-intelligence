@@ -92,7 +92,7 @@ function ReviewCard({
             ))}
           </div>
           {error && (
-            <div role="alert" className="mt-3">
+            <div className="mt-3">
               <ErrorAlert message={error} />
             </div>
           )}
@@ -103,12 +103,12 @@ function ReviewCard({
 }
 
 export function ReviewsPage() {
-  const { data, error, isLoading } = useAsync(() => learningService.listDueReviews(), [])
+  const { data, error, isLoading, refetch } = useAsync(() => learningService.listDueReviews(), [])
   const { data: index } = useAsync(() => loadCompetencyIndex().catch(() => ({} as Record<string, CompetencyRef>)), [])
   const [results, setResults] = useState<Record<string, Review>>({})
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
   if (!data) return null
 
   const remaining = data.filter((r) => !results[r.id]).length

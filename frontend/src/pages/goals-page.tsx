@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useAsync } from '@/hooks/use-async'
 import { learningService } from '@/services/learning-service'
 import { ApiError } from '@/services/api-client'
+import { useToast } from '@/features/feedback/toast-context'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ const statusTone: Record<GoalStatus, 'accent' | 'success' | 'neutral'> = {
 
 export function GoalsPage() {
   const { data: goals, error, isLoading, refetch } = useAsync(() => learningService.listGoals(), [])
+  const toast = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -43,8 +45,12 @@ export function GoalsPage() {
   }
 
   async function updateStatus(goalId: string, status: GoalStatus) {
-    await learningService.updateGoalStatus(goalId, status)
-    refetch()
+    try {
+      await learningService.updateGoalStatus(goalId, status)
+      refetch()
+    } catch (err) {
+      toast.showError(err, 'Could not update goal')
+    }
   }
 
   return (

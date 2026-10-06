@@ -11,10 +11,10 @@ const sortedItems = (path: LearningPath) =>
   [...path.items].sort((a, b) => a.sort_order - b.sort_order)
 
 export function LearningPathsPage() {
-  const { data, error, isLoading } = useAsync(() => learningService.listLearningPaths(), [])
+  const { data, error, isLoading, refetch } = useAsync(() => learningService.listLearningPaths(), [])
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
   if (!data) return null
 
   return (
@@ -56,10 +56,10 @@ export function LearningPathsPage() {
 
 export function LearningPathDetailPage() {
   const { slug } = useParams<{ slug: string }>()
-  const { data, error, isLoading } = useAsync(() => learningService.getLearningPath(slug!), [slug])
+  const { data, error, isLoading, refetch } = useAsync(() => learningService.getLearningPath(slug!), [slug])
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
   if (!data) return null
 
   const items = sortedItems(data)
