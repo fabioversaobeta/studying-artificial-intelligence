@@ -66,6 +66,15 @@ npm run dev
 
 Run everything: `cd backend && ./.venv/Scripts/python.exe -m pytest`
 
+### Coverage
+
+CI runs `pytest --cov=app --cov-report=term-missing` and fails when total
+coverage of `app/` drops below `fail_under` (set in `[tool.coverage.report]`
+in `backend/pyproject.toml`). Run the same command locally to see uncovered
+lines. The floor (80, measured 85%) is a multiple of 5 below the measured value; raise it
+when coverage grows, never lower it to make a change pass. Frontend has no
+coverage gate.
+
 Frontend: Vitest + Testing Library + jsdom. `cd frontend && npm test` (single run)
 or `npm run test:watch`. Tests live next to the code as `*.test.ts(x)`; the
 jest-dom setup is in `src/test/setup.ts`.
