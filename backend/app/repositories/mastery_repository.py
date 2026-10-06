@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Collection
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -34,3 +35,16 @@ def upsert_mastery(
         record.updated_at = datetime.now(UTC)
     db.flush()
     return record
+
+
+def get_scores_by_competency(
+    db: Session, user_id: uuid.UUID, competency_ids: Collection[uuid.UUID]
+) -> dict[uuid.UUID, float]:
+    """Mastery score per competency for one user, in a single query. Competencies
+    without a mastery record are absent from the result."""
+    if not competency_ids:
+        return {}
+    stmt = select(Mastery.competency_id, Mastery.score).where(
+        Mastery.user_id == user_id, Mastery.competency_id.in_(competency_ids)
+    )
+    return {competency_id: score for competency_id, score in db.execute(stmt).all()}

@@ -4,6 +4,7 @@ edges, learning paths, and resources. This content is authored via seeds
 """
 
 import uuid
+from collections.abc import Collection
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -86,3 +87,35 @@ def list_resources_by_competency(db: Session, competency_id: uuid.UUID) -> list[
         .order_by(LearningResource.sort_order)
     )
     return list(db.execute(stmt).scalars().all())
+
+
+def list_competencies_by_subjects(
+    db: Session, subject_ids: Collection[uuid.UUID]
+) -> dict[uuid.UUID, list[Competency]]:
+    """Batch variant of `list_competencies_by_subject`: one query for all subjects."""
+    grouped: dict[uuid.UUID, list[Competency]] = {sid: [] for sid in subject_ids}
+    if not grouped:
+        return grouped
+    stmt = (
+        select(Competency)
+        .where(Competency.subject_id.in_(grouped.keys()))
+        .order_by(Competency.sort_order, Competency.name)
+    )
+    for competency in db.execute(stmt).scalars():
+        grouped[competency.subject_id].append(competency)
+    return grouped
+
+
+def get_prerequisite_ids_by_competency(
+    db: Session, competency_ids: Collection[uuid.UUID]
+) -> dict[uuid.UUID, list[uuid.UUID]]:
+    """Batch variant of `get_prerequisite_ids`: one query for all competencies."""
+    grouped: dict[uuid.UUID, list[uuid.UUID]] = {cid: [] for cid in competency_ids}
+    if not grouped:
+        return grouped
+    stmt = select(
+        CompetencyPrerequisite.competency_id, CompetencyPrerequisite.prerequisite_id
+    ).where(CompetencyPrerequisite.competency_id.in_(grouped.keys()))
+    for competency_id, prerequisite_id in db.execute(stmt).all():
+        grouped[competency_id].append(prerequisite_id)
+    return grouped

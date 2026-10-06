@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Collection
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
@@ -116,3 +117,18 @@ def count_challenges_passed_for_competency(
         )
     )
     return int(db.execute(stmt).scalar_one())
+
+
+def total_study_minutes_by_competency(
+    db: Session, user_id: uuid.UUID, competency_ids: Collection[uuid.UUID]
+) -> dict[uuid.UUID, int]:
+    """Total minutes studied per competency for one user, in a single GROUP BY query.
+    Competencies with no sessions are absent from the result."""
+    if not competency_ids:
+        return {}
+    stmt = (
+        select(StudySession.competency_id, func.sum(StudySession.duration_minutes))
+        .where(StudySession.user_id == user_id, StudySession.competency_id.in_(competency_ids))
+        .group_by(StudySession.competency_id)
+    )
+    return {competency_id: int(total) for competency_id, total in db.execute(stmt).all()}
