@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 0 |
-| P1 — Curto prazo | 16 | 0 |
+| P1 — Curto prazo | 16 | 1 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -113,7 +113,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| E1 | **Eliminar N+1** em `learning_service`: `_competency_with_state` (3–4 queries por competência + loop de pré-requisitos) e `list_subjects` (1 query por subject). Carregar mastery, minutos e pré-requisitos em lote (`IN`), por subject/usuário. Manter o contrato da API; adicionar teste que conta queries. | P1 | M | IN_PROGRESS | S6 (`fix/s6-n-plus-one`) | — | `backend/app/services/learning_service.py`, `backend/app/repositories/{learning_catalog,mastery,study}_repository.py`, `backend/tests/` | | Hoje funciona (30 competências), mas não escala. Verificar também `dashboard_service`. |
+| E1 | **Eliminar N+1** em `learning_service`: `_competency_with_state` (3–4 queries por competência + loop de pré-requisitos) e `list_subjects` (1 query por subject). Carregar mastery, minutos e pré-requisitos em lote (`IN`), por subject/usuário. Manter o contrato da API; adicionar teste que conta queries. | P1 | M | DONE | S6 (`fix/s6-n-plus-one`) | — | `backend/app/services/learning_service.py`, `backend/app/repositories/{learning_catalog,mastery,study}_repository.py`, `backend/tests/` | de8d0b9 | Hoje funciona (30 competências), mas não escala. Verificar também `dashboard_service`. |
 | E2 | Índices: revisar queries mais frequentes (por `user_id` + data/competência) e adicionar índices ausentes via migration. | P2 | S | TODO | | E1 | nova migration, `backend/app/models/*.py` | | Medir com `EXPLAIN` antes. |
 
 ## Trilha F — Testes
@@ -194,5 +194,6 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — E1 — N+1 eliminado em learning_service (queries em lote; detalhe 62→5, lista 10→4 em 15 competências); testes de caracterização e contagem de queries — de8d0b9
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — decisões do dono: A1 autorizado; deploy (H1) adiado para o fim; sessões S1–S6 iniciadas (reivindicadas em lote pelo coordenador)
