@@ -42,8 +42,8 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 17 | 14 |
-| P2 — Médio prazo | 23 | 11 |
+| P1 — Curto prazo | 17 | 15 |
+| P2 — Médio prazo | 23 | 12 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -153,7 +153,7 @@ estáveis.
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | IN_PROGRESS | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai_service.py` (novo), `backend/app/core/config.py` | | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
-| I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | | Aditivo; nada do schema atual muda. |
+| I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | DONE | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | 8a76ad7, 85b7bbe, 1722124, 8163355, 3b2f255 | Aditivo. Migration `c9d2f6a1e4b7` (down_revision `b7e1c4a9d3f5`), compartilhada com J6. Piloto de 12 questões; geração em massa = I6. |
 | I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | TODO | | G1, G3 | novo service/endpoint/UI | | |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
@@ -172,7 +172,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | 0714c3f | O D5 manteve o corpo como array; falta consumir o header. |
 | J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
-| J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | | Entregue junto com o I2 (mesma sessão/migration). |
+| J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | DONE | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | 88ebed6, 24590f9 | Entregue junto com o I2 (mesma migration). |
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | TODO | | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
@@ -209,6 +209,8 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — I2 — banco de questões traduzíveis (en/pt-BR), assessments, tentativas, correção determinística + autoavaliação de resposta curta, regra de XP anti-farm, Practice do mastery com quizzes, revisão espaçada em erro, UI `/quizzes`, seeds + validador (piloto de 12 questões) — `8a76ad7`, `85b7bbe`, `1722124`, `8163355`, `3b2f255`
+- 2026-10-06 — J6 — `users.preferred_language`, `PATCH /users/me`, página Settings com seletor de idioma — `88ebed6`, `24590f9`
 - 2026-10-06 — J2 — `GET /learning-paths[/{slug}]` com `mastery_score`/`state` por etapa e `progress` agregado (auth opcional, constante em queries); UI mostra barras, estado e resumo — `3f30c13`, `36d6921`
 - 2026-10-06 — J1 — `GET /reviews/due` devolve `competency_name`, `subject_id`, `subject_name` (um join); `competency-index.ts` removido — `368440a`, `d24a045`
 - 2026-10-06 — D6 — DELETE /goals/{id} e /study-sessions/{id} (204/404, hard delete, sem estorno de XP, mastery recalculado) — d634623

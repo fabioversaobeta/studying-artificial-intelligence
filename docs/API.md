@@ -31,7 +31,9 @@ header (exposed via CORS).
 | `offset` | `0` | `>= 0`; negative returns `422` |
 
 Paginated: `GET /study-sessions` (newest first), `GET /goals` (newest first),
-`GET /reviews/due` (oldest due first). Ordering is deterministic (ties broken
+`GET /reviews/due` (oldest due first), `GET /assessments`,
+`GET /competencies/{id}/assessments`, `GET /attempts` (newest first) and
+`GET /assessments/stats/by-competency`. Ordering is deterministic (ties broken
 by `id`). Small catalogs (subjects, competencies, achievements, learning
 paths, quests, challenges, resources) are not paginated. There are currently
 no list endpoints for XP awards or challenge submissions; add the same
@@ -46,7 +48,8 @@ dependency when they are introduced.
 | `POST /auth/login` | — | Returns tokens |
 | `POST /auth/refresh` | — | Rotate: exchange a refresh token for a new access+refresh pair; the presented token is invalidated. Reusing it returns 401 and revokes all the user's sessions |
 | `POST /auth/logout` | Bearer | Body `{refresh_token?}`. Revokes the current access token and the given refresh token. 204 |
-| `GET /auth/me` | ✓ | Current user |
+| `GET /auth/me` | ✓ | Current user (`id, email, display_name, preferred_language, is_active`) |
+| `PATCH /users/me` | ✓ | Change `display_name` and/or `preferred_language` (`en` \| `pt-BR`; others 422). Only the fields sent change |
 | `GET /subjects` | ✓ | List subjects with competency count + average mastery |
 | `GET /subjects/{id}` | ✓ | Subject detail: competencies with computed skill-tree state |
 | `GET /learning-paths` | optional | List learning paths with their competency sequence. With a valid bearer token each path has `progress` (`total_steps`, `mastered_steps`, `average_mastery` 0-100) and each item `mastery_score` + `state` (`locked`/`available`/`learning`/`mastered`); all `null` when anonymous. An invalid token returns 401 |
@@ -66,11 +69,36 @@ dependency when they are introduced.
 | `GET /gamification/achievements` | ✓ | All achievements with earned/unearned status |
 | `GET /gamification/quests` | ✓ | Active quests with live progress (auto-completes on target) |
 | `GET /dashboard` | ✓ | Aggregate: level/XP/streak + active goals + due reviews + weakest competencies + recent sessions |
+| `GET /assessments` | ✓ | Paginated active quizzes with your progress (`attempts_completed`, `best_score_percent`, `passed`, `open_attempt_id`). Filters: `competency_id`, `kind`. Title/description follow the language |
+| `GET /competencies/{id}/assessments` | ✓ | Same, for one competency (404 if unknown) |
+| `POST /assessments/{id}/attempts` | ✓ | Start an attempt (201) or resume the open one (200). Returns the questions in your language **without** correct answers or explanations. 409 if the quiz has no active questions |
+| `GET /attempts` | ✓ | Paginated history of your attempts (filter `assessment_id`) |
+| `GET /attempts/{id}` | ✓ | One attempt: open (no answers revealed) or finished (each question has a `review` with correct options, explanation, verdict, XP). 404 if not yours |
+| `PATCH /attempts/{id}/responses/{question_id}` | ✓ | Save/replace your answer (`option_ids` for choice questions, `text` for short answers, optional `time_spent_seconds`). **Does not reveal correctness**; a short answer returns its `model_answer` for self-grading. 409 once finished, 422 for invalid options |
+| `POST /attempts/{id}/responses/{question_id}/self-grade` | ✓ | `{is_correct}` for a saved short answer, while the attempt is open |
+| `POST /attempts/{id}/finish` | ✓ | Score, pay XP (see below), update mastery/review/streak, reveal results. Idempotent |
+| `GET /assessments/stats/by-competency` | ✓ | Paginated per-competency stats: coverage, accuracy, attempts, XP |
 | `GET /health` | — | Liveness probe |
 | `GET /health/ready` | — | Readiness probe (checks DB connectivity) |
 
+## Content language
+
+Question content is served in `?lang=` (`en` or `pt-BR`) when given on any
+assessment/attempt endpoint, otherwise in the user's `preferred_language`.
+Questions without a translation fall back to English per question (each
+`AttemptQuestion.language` says what was actually served). Grading never
+depends on the language.
+
+## Assessment XP
+
+XP is only paid by `POST /attempts/{id}/finish`, only when `score_percent >=
+pass_threshold` (default 70): the `xp_value` of the questions answered
+correctly that never paid XP before for you, plus the assessment's
+`completion_bonus_xp` on its first pass. Repeating pays nothing for paid
+questions (it still counts for mastery and streak). Ledger source
+`assessment`, `reference_id` = attempt id. XP is never refunded.
+
 ## Not yet exposed (see docs/PENDING.md / docs/ROADMAP.md)
 
-Assessments/question-bank endpoints, project tracking, and interview-session
-endpoints are not implemented in v1 — see `docs/PRODUCT.md` for what's
+Project tracking and interview-session endpoints are not implemented — see `docs/PRODUCT.md` for what's
 planned versus built.

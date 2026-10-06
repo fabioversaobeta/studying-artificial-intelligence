@@ -74,7 +74,9 @@ function QuestionReviewCard({ question }: { question: AttemptQuestion }) {
           {review?.model_answer && (
             <div>
               <h4 className="font-medium text-fg-subtle">Model answer</h4>
-              <p className="text-fg">{review.model_answer}</p>
+              <p className="text-fg">
+                <InlineMarkdown>{review.model_answer}</InlineMarkdown>
+              </p>
             </div>
           )}
         </div>
@@ -83,7 +85,9 @@ function QuestionReviewCard({ question }: { question: AttemptQuestion }) {
       {review && (
         <div className="rounded-xl bg-surface-raised p-3 text-sm">
           <h4 className="mb-1 font-medium text-heading">Explanation</h4>
-          <p className="text-fg-muted">{review.explanation}</p>
+          <p className="text-fg-muted">
+            <InlineMarkdown>{review.explanation}</InlineMarkdown>
+          </p>
         </div>
       )}
     </Card>

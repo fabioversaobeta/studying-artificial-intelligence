@@ -339,9 +339,13 @@ export function QuizRunner({
             {savedShort && reveal && (
               <div className="space-y-3 rounded-xl border border-border bg-surface-raised p-4">
                 <h3 className="text-sm font-semibold text-heading">Model answer</h3>
-                <p className="text-sm text-fg">{reveal.model_answer}</p>
+                <p className="text-sm text-fg">
+                  <InlineMarkdown>{reveal.model_answer ?? ''}</InlineMarkdown>
+                </p>
                 {reveal.explanation && (
-                  <p className="text-sm text-fg-muted">{reveal.explanation}</p>
+                  <p className="text-sm text-fg-muted">
+                    <InlineMarkdown>{reveal.explanation}</InlineMarkdown>
+                  </p>
                 )}
                 <div role="group" aria-label="Grade your own answer" className="flex gap-2">
                   <Button

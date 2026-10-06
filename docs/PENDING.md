@@ -57,12 +57,26 @@ brief's "AI Architecture" section.
 **Question**: the original domain brief lists `Assessment` and `Question`
 as core entities (quizzes distinct from self-assessed challenges). Should
 these be modeled now or deferred?
-**Current assumption**: deferred. Not in the v1 schema. Challenges cover
+**Status**: RESOLVED by roadmap item I2 (see `docs/DOMAIN.md`
+"Assessments"). The text below is the original, now historical, question.
+**Original assumption**: deferred. Not in the v1 schema. Challenges cover
 the "prove you understand this" need for v1; a formal quiz/assessment
 system with a question bank is a distinct, larger feature.
 **Impact**: `docs/ROADMAP.md` tracks this as `NOT_STARTED`. Adding it later
 is additive (new tables, new endpoints) — nothing in the current schema
 needs to change to support it.
+
+**Follow-ups left by I2**:
+- Short answers are self-graded; the judge extension point is
+  `assessment_service.short_answer_judge` (item I5, needs the golden dataset).
+- Questions removed from the seeds are not deactivated automatically
+  (the loader only upserts); retire them with `is_active=false` by hand.
+- The answer endpoint is `PATCH` (not `PUT`) because the frontend
+  `apiClient` has no `put`; switch back once S17's api-client rewrite lands.
+- After `PATCH /users/me` the header display name updates on next load
+  (the auth context cannot be refreshed without touching `auth-context`).
+- Mastery Practice now halves for competencies with both challenges and a
+  question bank until both are done; recomputed lazily on the next event.
 
 ---
 
