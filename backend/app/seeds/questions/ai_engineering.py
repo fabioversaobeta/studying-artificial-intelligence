@@ -908,9 +908,427 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
+_CHUNK_CODE = """```python
+def chunk(words, size, overlap):
+    step = size - overlap
+    return [words[i:i + size] for i in range(0, len(words), step)]
+
+pieces = chunk(list(range(10)), 4, 1)
+print(len(pieces), pieces[-1])
+```"""
+
+# ----------------------------------------------------------------------
+# rag-architecture
+# ----------------------------------------------------------------------
+_RAG = "rag-architecture"
+
+RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "rag-architecture-q01",
+        _RAG,
+        MC,
+        EASY,
+        ("b",),
+        ("rag", "motivation"),
+        _t(
+            "What core problem does retrieval-augmented generation (RAG) address?",
+            "RAG fetches relevant documents at query time and puts them in the prompt, so the "
+            "model can answer from current or private knowledge without being retrained. A is "
+            "unrelated to RAG. C is backwards: retrieved text consumes context window. D "
+            "overstates it: grounding reduces hallucination but does not guarantee its absence.",
+            _options(
+                "It makes the model train faster.",
+                "It lets the model answer using current or private knowledge supplied at "
+                "query time, without retraining.",
+                "It removes the context window limit.",
+                "It guarantees that the model never hallucinates.",
+            ),
+        ),
+        _t(
+            "Que problema central a geração aumentada por recuperação (RAG) resolve?",
+            "O RAG busca documentos relevantes no momento da consulta e os coloca no prompt, "
+            "de modo que o modelo responda com conhecimento atual ou privado sem ser "
+            "retreinado. A não tem relação com RAG. C é o oposto: o texto recuperado consome "
+            "janela de contexto. D exagera: o grounding reduz a alucinação, mas não garante "
+            "sua ausência.",
+            _options(
+                "Faz o modelo treinar mais rápido.",
+                "Permite que o modelo responda com conhecimento atual ou privado fornecido no "
+                "momento da consulta, sem retreinar.",
+                "Remove o limite da janela de contexto.",
+                "Garante que o modelo nunca alucine.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q02",
+        _RAG,
+        MC,
+        EASY,
+        ("d",),
+        ("ingestion", "pipeline"),
+        _t(
+            "Which sequence describes the ingestion side of a typical RAG pipeline?",
+            "Documents are first loaded and parsed into text, then split into chunks, each "
+            "chunk is embedded, and the vectors are stored together with metadata. The other "
+            "orders are impossible: you cannot embed before you have chunks, nor chunk text "
+            "that has not been parsed yet.",
+            _options(
+                "Embed, then chunk, then parse, then store.",
+                "Store, then chunk, then embed, then parse.",
+                "Chunk, then store, then parse, then embed.",
+                "Load and parse documents, split into chunks, embed each chunk, store the "
+                "vectors with metadata.",
+            ),
+        ),
+        _t(
+            "Qual sequência descreve a etapa de ingestão de um pipeline RAG típico?",
+            "Os documentos são primeiro carregados e convertidos em texto, depois divididos em "
+            "chunks, cada chunk recebe um embedding e os vetores são armazenados junto com "
+            "metadados. As outras ordens são impossíveis: não dá para gerar embeddings antes de "
+            "ter chunks, nem dividir um texto que ainda não foi extraído.",
+            _options(
+                "Gerar embeddings, depois dividir em chunks, depois extrair o texto, depois "
+                "armazenar.",
+                "Armazenar, depois dividir em chunks, depois gerar embeddings, depois extrair "
+                "o texto.",
+                "Dividir em chunks, depois armazenar, depois extrair o texto, depois gerar "
+                "embeddings.",
+                "Carregar e extrair o texto dos documentos, dividir em chunks, gerar o "
+                "embedding de cada chunk e armazenar os vetores com metadados.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q03",
+        _RAG,
+        MC,
+        EASY,
+        ("a",),
+        ("sparse-retrieval", "bm25"),
+        _t(
+            "Users often search a support knowledge base for exact error codes such as "
+            "`ERR_4021`. Which retrieval approach is most reliable for these queries?",
+            "Keyword (sparse) retrieval such as BM25 matches exact terms, so it finds the "
+            "literal code. Dense retrieval encodes meaning and can miss rare identifiers that "
+            "have no semantic content, which is why hybrid retrieval combines both. C and D "
+            "do not retrieve anything on their own.",
+            _options(
+                "Keyword (sparse) retrieval such as BM25, which matches exact terms.",
+                "Dense retrieval only, because embeddings always capture exact strings.",
+                "Raising the temperature of the generation model.",
+                "Increasing the context window of the generation model.",
+            ),
+        ),
+        _t(
+            "Usuários costumam buscar em uma base de conhecimento de suporte por códigos de "
+            "erro exatos, como `ERR_4021`. Qual abordagem de recuperação é a mais confiável "
+            "para essas consultas?",
+            "A recuperação por palavras-chave (esparsa), como o BM25, casa termos exatos e "
+            "encontra o código literal. A recuperação densa codifica significado e pode "
+            "perder identificadores raros sem conteúdo semântico, por isso a recuperação "
+            "híbrida combina as duas. C e D não recuperam nada por si só.",
+            _options(
+                "Recuperação por palavras-chave (esparsa), como o BM25, que casa termos "
+                "exatos.",
+                "Somente recuperação densa, pois embeddings sempre capturam strings exatas.",
+                "Aumentar a temperatura do modelo de geração.",
+                "Aumentar a janela de contexto do modelo de geração.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q04",
+        _RAG,
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("chunking", "overlap"),
+        _t(
+            "What does this code print?\n\n" + _CHUNK_CODE,
+            "The window starts at 0, 3, 6 and 9 (step = 4 - 1 = 3), giving four chunks. The "
+            "last window contains only `[9]`, which is already inside the overlap of the "
+            "previous chunk, a common redundancy in naive sliding-window chunkers. A and B get "
+            "the chunk count or sizes wrong, and D would require a step of 2.",
+            _options(
+                "`3 [6, 7, 8, 9]`",
+                "`4 [6, 7, 8, 9]`",
+                "`4 [9]`",
+                "`5 [8, 9]`",
+            ),
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _CHUNK_CODE,
+            "A janela começa em 0, 3, 6 e 9 (passo = 4 - 1 = 3), gerando quatro chunks. A "
+            "última janela contém apenas `[9]`, que já está na sobreposição do chunk anterior, "
+            "uma redundância comum em chunkers ingênuos de janela deslizante. A e B erram a "
+            "quantidade ou o tamanho dos chunks, e D exigiria um passo de 2.",
+            _options(
+                "`3 [6, 7, 8, 9]`",
+                "`4 [6, 7, 8, 9]`",
+                "`4 [9]`",
+                "`5 [8, 9]`",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q05",
+        _RAG,
+        MC,
+        MEDIUM,
+        ("b",),
+        ("chunking", "tradeoffs"),
+        _t(
+            "Evaluating a RAG system, you see that the retrieved chunks are on-topic, but the "
+            "answers keep missing details that sit just before or after the retrieved text. "
+            "What is the most likely problem and fix?",
+            "Chunks that are too small cut related information apart, so each hit is on-topic "
+            "but incomplete. Larger chunks, more overlap, or expanding hits with neighboring "
+            "(parent) text address this. A describes the opposite problem: oversized chunks "
+            "produce diluted embeddings and waste context, not missing neighbors. C and D do "
+            "not affect which text is retrieved.",
+            _options(
+                "Chunks are too large; make them smaller.",
+                "Chunks are too small and split related information; use larger chunks, more "
+                "overlap, or expand hits with neighboring text.",
+                "The embedding vectors have too many dimensions; reduce them.",
+                "The generation temperature is too low; raise it.",
+            ),
+        ),
+        _t(
+            "Ao avaliar um sistema RAG, você nota que os chunks recuperados são do assunto "
+            "certo, mas as respostas perdem detalhes que estão logo antes ou depois do texto "
+            "recuperado. Qual é o problema mais provável e a correção?",
+            "Chunks pequenos demais separam informações relacionadas, então cada resultado é "
+            "do assunto certo, porém incompleto. Chunks maiores, mais sobreposição ou "
+            "expandir os resultados com o texto vizinho (parent) resolvem. A descreve o "
+            "problema oposto: chunks grandes demais geram embeddings diluídos e desperdiçam "
+            "contexto, não perdem vizinhos. C e D não afetam qual texto é recuperado.",
+            _options(
+                "Os chunks são grandes demais; torná-los menores.",
+                "Os chunks são pequenos demais e separam informações relacionadas; usar chunks "
+                "maiores, mais sobreposição ou expandir os resultados com o texto vizinho.",
+                "Os vetores de embedding têm dimensões demais; reduzi-las.",
+                "A temperatura de geração está baixa demais; aumentá-la.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q06",
+        _RAG,
+        MC,
+        MEDIUM,
+        ("a",),
+        ("reranking", "cross-encoder"),
+        _t(
+            "Why is a cross-encoder reranker typically applied only to a shortlist of "
+            "candidates instead of the whole corpus?",
+            "A cross-encoder scores the query together with each candidate chunk, which is "
+            "more precise but far too expensive to run over every chunk on every query, so a "
+            "fast first stage retrieves a shortlist and the reranker reorders it. B is false: "
+            "joint scoring is usually more accurate than comparing precomputed vectors. C and "
+            "D invent restrictions.",
+            _options(
+                "Scoring every chunk jointly with the query is too expensive per request, so "
+                "it runs only on a shortlist from a fast first stage.",
+                "Cross-encoders are less accurate than comparing precomputed vectors.",
+                "Cross-encoders only work on keyword indexes.",
+                "Vector databases forbid reranking.",
+            ),
+        ),
+        _t(
+            "Por que um reranker do tipo cross-encoder costuma ser aplicado apenas a uma lista "
+            "curta de candidatos, e não ao corpus inteiro?",
+            "Um cross-encoder avalia a consulta junto com cada chunk candidato, o que é mais "
+            "preciso, porém caro demais para rodar em todos os chunks a cada consulta; então "
+            "uma primeira etapa rápida recupera uma lista curta e o reranker a reordena. B é "
+            "falsa: a avaliação conjunta costuma ser mais precisa do que comparar vetores "
+            "pré-calculados. C e D inventam restrições.",
+            _options(
+                "Avaliar cada chunk em conjunto com a consulta é caro demais por requisição, "
+                "então ele roda só em uma lista curta vinda de uma primeira etapa rápida.",
+                "Cross-encoders são menos precisos do que comparar vetores pré-calculados.",
+                "Cross-encoders só funcionam em índices de palavras-chave.",
+                "Bancos de dados vetoriais proíbem reranking.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q07",
+        _RAG,
+        MS,
+        MEDIUM,
+        ("a", "b", "c"),
+        ("metadata-filtering", "retrieval"),
+        _t(
+            "Which are legitimate benefits of **metadata filtering** in retrieval? Select all "
+            "that apply.",
+            "Filtering can restrict results to what a tenant or user may see (enforced in the "
+            "retrieval query, not left to the model), restrict to the right version, date or "
+            "product, and shrink the candidate set so fewer irrelevant hits compete. D is "
+            "false: filters do not replace chunking. E is false: nothing about filtering "
+            "guarantees the generated answer is grounded.",
+            _options(
+                "Restricting results to documents the current user or tenant is allowed to see.",
+                "Restricting results to the right product, version or date range.",
+                "Reducing the number of irrelevant candidates, which improves precision.",
+                "Removing the need to chunk documents.",
+                "Guaranteeing that the generated answer is grounded in the context.",
+            ),
+        ),
+        _t(
+            "Quais são benefícios legítimos da **filtragem por metadados** na recuperação? "
+            "Selecione todos que se aplicam.",
+            "A filtragem pode restringir os resultados ao que um tenant ou usuário pode ver "
+            "(aplicada na própria consulta de recuperação, e não deixada a cargo do modelo), "
+            "restringir à versão, data ou produto corretos e reduzir o conjunto de candidatos, "
+            "de modo que menos resultados irrelevantes concorram. D é falsa: filtros não "
+            "substituem o chunking. E é falsa: nada na filtragem garante que a resposta "
+            "gerada esteja ancorada.",
+            _options(
+                "Restringir os resultados aos documentos que o usuário ou tenant atual pode "
+                "ver.",
+                "Restringir os resultados ao produto, versão ou intervalo de datas corretos.",
+                "Reduzir o número de candidatos irrelevantes, o que melhora a precisão.",
+                "Eliminar a necessidade de dividir os documentos em chunks.",
+                "Garantir que a resposta gerada esteja ancorada no contexto.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q08",
+        _RAG,
+        MC,
+        MEDIUM,
+        ("c",),
+        ("embeddings", "migration"),
+        _t(
+            "A team wants to switch to a different embedding model for their RAG index. What "
+            "must they do?",
+            "Vectors from different embedding models live in different, incompatible spaces, "
+            "so the whole corpus must be re-embedded with the new model and queries must use "
+            "the same model. A is wrong: old and new vectors cannot be compared. B is wrong: "
+            "there is no shared space across models. D fails because stored vectors would "
+            "still be in the old space.",
+            _options(
+                "Embed only new documents; old vectors stay comparable with the new ones.",
+                "Nothing, because all embedding models share the same vector space.",
+                "Re-embed the entire corpus with the new model and embed queries with it too.",
+                "Re-embed only the queries; stored vectors can stay as they are.",
+            ),
+        ),
+        _t(
+            "Uma equipe quer trocar o modelo de embedding do índice do seu RAG. O que ela "
+            "precisa fazer?",
+            "Vetores de modelos de embedding diferentes vivem em espaços distintos e "
+            "incompatíveis, então todo o corpus precisa ser reindexado com o novo modelo, e as "
+            "consultas devem usar o mesmo modelo. A está errada: vetores antigos e novos não "
+            "podem ser comparados. B está errada: não existe um espaço compartilhado entre "
+            "modelos. D falha porque os vetores armazenados continuariam no espaço antigo.",
+            _options(
+                "Gerar embeddings só dos documentos novos; os vetores antigos continuam "
+                "comparáveis com os novos.",
+                "Nada, pois todos os modelos de embedding compartilham o mesmo espaço vetorial.",
+                "Refazer o embedding de todo o corpus com o novo modelo e usá-lo também nas "
+                "consultas.",
+                "Refazer só o embedding das consultas; os vetores armazenados podem ficar como "
+                "estão.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q09",
+        _RAG,
+        MC,
+        HARD,
+        ("d",),
+        ("failure-analysis", "retrieval-recall"),
+        _t(
+            "A RAG system gives a confidently wrong answer. The logs show that the passage "
+            "with the correct answer exists in the index but was **not** among the chunks "
+            "sent to the model. Which change addresses the root cause?",
+            "The failure is in retrieval recall: the right passage never reached the model. "
+            "Improving retrieval (hybrid search, better chunking, a wider candidate pool "
+            "followed by a reranker) and then re-measuring recall fixes it. A and C change "
+            "generation, and a larger model cannot use text it never received. B can make the "
+            "system abstain more gracefully, but the question is still unanswerable because "
+            "the evidence is missing.",
+            _options(
+                "Lower the generation temperature to 0.",
+                "Add an instruction to say 'I don't know' when unsure.",
+                "Switch to a larger generation model.",
+                "Improve retrieval, for example with hybrid search, better chunking or a "
+                "reranker over a wider candidate pool, and re-measure recall.",
+            ),
+        ),
+        _t(
+            "Um sistema RAG dá uma resposta errada com muita confiança. Os logs mostram que a "
+            "passagem com a resposta correta existe no índice, mas **não** estava entre os "
+            "chunks enviados ao modelo. Qual mudança ataca a causa raiz?",
+            "A falha está no recall da recuperação: a passagem certa nunca chegou ao modelo. "
+            "Melhorar a recuperação (busca híbrida, chunking melhor, um conjunto maior de "
+            "candidatos seguido de um reranker) e medir o recall novamente resolve. A e C "
+            "mudam a geração, e um modelo maior não consegue usar um texto que nunca recebeu. "
+            "B pode fazer o sistema se abster com mais elegância, mas a pergunta continua sem "
+            "resposta porque falta a evidência.",
+            _options(
+                "Reduzir a temperatura de geração para 0.",
+                "Adicionar uma instrução para dizer 'não sei' quando estiver em dúvida.",
+                "Trocar por um modelo de geração maior.",
+                "Melhorar a recuperação, por exemplo com busca híbrida, chunking melhor ou um "
+                "reranker sobre um conjunto maior de candidatos, e medir o recall novamente.",
+            ),
+        ),
+    ),
+    _q(
+        "rag-architecture-q10",
+        _RAG,
+        SHORT,
+        HARD,
+        None,
+        ("design", "groundedness"),
+        _t(
+            "Outline a RAG pipeline for a 10,000-page documentation set: chunking, metadata, "
+            "retrieval, and how you would evaluate groundedness.",
+            "Self-check: did you cover (1) structure-aware chunking with some overlap, (2) "
+            "useful metadata, (3) hybrid retrieval plus reranking, and (4) evaluating both "
+            "retrieval and whether answers are supported by the retrieved text?",
+            model_answer="Parse the docs and chunk along their structure (headings, sections, "
+            "code blocks) with moderate size and some overlap, keeping each chunk's title "
+            "path, product, version and date as metadata. Embed the chunks and also keep a "
+            "keyword index, then use hybrid retrieval with metadata filters, retrieve a wide "
+            "candidate set and rerank it down to a few chunks for the prompt. Instruct the "
+            "model to answer only from the context and cite the chunks it used. Evaluate on a "
+            "golden set of real questions: retrieval recall (was the right passage "
+            "retrieved?), and groundedness (is every claim in the answer supported by the "
+            "cited chunks, checked by humans or a validated judge), plus whether it abstains "
+            "when the docs do not cover the question.",
+        ),
+        _t(
+            "Descreva um pipeline RAG para um conjunto de documentação de 10.000 páginas: "
+            "chunking, metadados, recuperação e como avaliar o groundedness.",
+            "Autoavaliação: você cobriu (1) chunking que respeita a estrutura, com alguma "
+            "sobreposição, (2) metadados úteis, (3) recuperação híbrida com reranking e (4) "
+            "avaliação tanto da recuperação quanto de a resposta ser sustentada pelo texto "
+            "recuperado?",
+            model_answer="Extrair o texto e dividir em chunks seguindo a estrutura "
+            "(títulos, seções, blocos de código), com tamanho moderado e alguma sobreposição, "
+            "guardando como metadados o caminho de títulos, o produto, a versão e a data de "
+            "cada chunk. Gerar os embeddings e manter também um índice de palavras-chave; usar "
+            "recuperação híbrida com filtros por metadados, buscar um conjunto amplo de "
+            "candidatos e reranqueá-lo até poucos chunks para o prompt. Instruir o modelo a "
+            "responder apenas com base no contexto e a citar os chunks usados. Avaliar com um "
+            "conjunto golden de perguntas reais: recall da recuperação (a passagem certa foi "
+            "recuperada?) e groundedness (cada afirmação da resposta é sustentada pelos chunks "
+            "citados, verificada por humanos ou por um juiz validado), além de verificar se o "
+            "sistema se abstém quando a documentação não cobre a pergunta.",
+        ),
+    ),
+)
+
 # @@NEXT-COMPETENCY@@
 
-QUESTIONS: tuple[QuestionSeed, ...] = (*LLM_QUESTIONS, *CONTEXT_QUESTIONS)
+QUESTIONS: tuple[QuestionSeed, ...] = (*LLM_QUESTIONS, *CONTEXT_QUESTIONS, *RAG_QUESTIONS)
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
