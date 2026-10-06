@@ -68,8 +68,9 @@ npm run dev
 ```
 
 Backend tests: `cd backend && ./.venv/Scripts/python.exe -m pytest`
-Frontend: no automated test suite yet (see docs/ROADMAP.md) — verify
-changes manually in-browser via the `run` skill or `npm run dev`.
+Frontend tests (Vitest): `cd frontend && npm test` — covers the API client,
+token storage and route guards; verify UI changes manually in-browser via the
+`run` skill or `npm run dev`.
 
 ## Quality gates before calling anything "done"
 
