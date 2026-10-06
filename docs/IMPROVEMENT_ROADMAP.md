@@ -154,10 +154,10 @@ estáveis.
 |---|---|---|---|---|---|---|---|---|---|
 | I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | DONE | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | 8a76ad7, 85b7bbe, 1722124, 8163355, 3b2f255 | Aditivo. Migration `c9d2f6a1e4b7` (down_revision `b7e1c4a9d3f5`), compartilhada com J6. Piloto de 12 questões; geração em massa = I6. |
 | I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | DONE | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai/` (pacote), `backend/app/core/config.py`, `ai_usage` + migration | a88f76e..d94c5f5 | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
-| I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | TODO | | G1, G3 | novo service/endpoint/UI | | |
+| I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | IN_PROGRESS | S28 (`feat/s28-recommendations`) | G1, G3 | novo service/endpoint/UI | | |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
-| I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | TODO | | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. |
+| I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | IN_PROGRESS | S21–S27, uma por matéria (`feat/s21-…` a `feat/s27-…`) | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. |
 
 ---
 
@@ -248,6 +248,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
 - 2026-10-06 — D6 (frontend) — `apiClient.delete` adicionado pelo coordenador após o merge do C5 (api-client.ts era da S17)
+- 2026-10-06 — Fase 1 concluída e mergeada (I1, I2, J6). Fase 2 iniciada: S21–S27 (I6: questões por matéria) e S28 (I3: recomendação)
 - 2026-10-06 — J4 — sessões < 10 min mantêm o streak sem XP (`gamification_service.record_activity`); decisão do dono (opção a)
 - 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
 - 2026-10-06 — wave 4 iniciada: S16 (E2,D6), S17 (C5), S18 (J1,J2) reivindicadas; decisões do dono: sem estorno de XP no D6; C5 deve usar a melhor solução (cookie httpOnly + proxy same-origin)
