@@ -5,10 +5,12 @@ codebase) keeps every module testable and makes the full list of required
 settings discoverable in one place.
 """
 
+import json
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 INSECURE_DEFAULT_SECRET_KEY = "dev-secret-key-change-me-in-production"
 MIN_SECRET_KEY_LENGTH = 32
@@ -51,12 +53,45 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24  # 24h access token
     refresh_token_expire_minutes: int = 60 * 24 * 30  # 30 days refresh token
 
-    cors_allow_origins: list[str] = Field(
+    # Accepts a JSON array or a comma-separated list in the env var
+    # (NoDecode disables pydantic-settings' JSON-only parsing for this field).
+    cors_allow_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",
         ]
     )
+    # Only what the API and the frontend actually use, instead of "*".
+    cors_allow_methods: list[str] = Field(
+        default_factory=lambda: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    )
+    cors_allow_headers: list[str] = Field(
+        default_factory=lambda: ["Authorization", "Content-Type", "Accept"]
+    )
+
+    @field_validator("cors_allow_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value: object) -> object:
+        if isinstance(value, str):
+            text = value.strip()
+            if text.startswith("["):
+                return json.loads(text)
+            return [item.strip() for item in text.split(",") if item.strip()]
+        return value
+
+    # Rate limiting for /auth/login, /auth/register and /auth/refresh
+    # (in-memory, per process, per client IP; login is also limited per e-mail).
+    rate_limit_enabled: bool = True
+    rate_limit_max_requests: int = Field(default=10, ge=1)
+    rate_limit_window_seconds: int = Field(default=60, ge=1)
+    # Only enable behind a trusted reverse proxy (e.g. Railway) that sets
+    # X-Forwarded-For; otherwise clients could spoof their IP.
+    trust_proxy_headers: bool = False
+
+    # Registration policy.
+    registration_enabled: bool = True
+    # When set, /auth/register requires this code in the request body.
+    registration_invite_code: str | None = None
 
     @model_validator(mode="after")
     def _forbid_insecure_production_config(self) -> "Settings":
@@ -70,6 +105,8 @@ class Settings(BaseSettings):
             problems.append(f"SECRET_KEY is shorter than {MIN_SECRET_KEY_LENGTH} characters")
         if self.debug:
             problems.append("DEBUG must be false")
+        if "*" in self.cors_allow_origins:
+            problems.append("CORS_ALLOW_ORIGINS must list explicit origins, not '*'")
         if problems:
             raise ValueError("Insecure production configuration: " + "; ".join(problems))
         return self

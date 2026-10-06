@@ -54,3 +54,25 @@ def test_reads_from_environment(monkeypatch):
     monkeypatch.setenv("DEBUG", "true")
     with pytest.raises(ValidationError):
         make()
+
+
+def test_cors_origins_parse_json_and_csv(monkeypatch):
+    monkeypatch.setenv("CORS_ALLOW_ORIGINS", '["https://a.example","https://b.example"]')
+    assert make().cors_allow_origins == ["https://a.example", "https://b.example"]
+    monkeypatch.setenv("CORS_ALLOW_ORIGINS", "https://a.example, https://b.example")
+    assert make().cors_allow_origins == ["https://a.example", "https://b.example"]
+
+
+def test_production_rejects_wildcard_cors_origin():
+    with pytest.raises(ValidationError, match="explicit origins"):
+        make(environment="production", secret_key=GOOD_SECRET, cors_allow_origins=["*"])
+
+
+def test_development_allows_wildcard_cors_origin():
+    assert make(cors_allow_origins=["*"]).cors_allow_origins == ["*"]
+
+
+def test_cors_methods_and_headers_are_restricted_by_default():
+    s = make()
+    assert "*" not in s.cors_allow_methods
+    assert "*" not in s.cors_allow_headers
