@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -28,11 +29,22 @@ def list_due_reviews(db: Session, user_id: uuid.UUID) -> list[Review]:
     return review_repository.list_due_reviews(db, user_id, as_of=datetime.now(UTC))
 
 
+@dataclass(frozen=True)
+class DueReview:
+    review: Review
+    competency_name: str
+    subject_id: uuid.UUID
+    subject_name: str
+
+
 def list_due_reviews_page(
     db: Session, user_id: uuid.UUID, *, limit: int, offset: int
-) -> tuple[list[Review], int]:
+) -> tuple[list[DueReview], int]:
     now = datetime.now(UTC)
-    items = review_repository.list_due_reviews(db, user_id, as_of=now, limit=limit, offset=offset)
+    rows = review_repository.list_due_reviews_with_context(
+        db, user_id, as_of=now, limit=limit, offset=offset
+    )
+    items = [DueReview(r, cn, sid, sn) for r, cn, sid, sn in rows]
     return items, review_repository.count_due_reviews(db, user_id, as_of=now)
 
 

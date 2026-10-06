@@ -167,6 +167,15 @@ class ReviewRead(BaseModel):
     last_recall_quality: int | None
 
 
+class ReviewDueRead(ReviewRead):
+    """A due review enriched with the competency/subject context, so clients
+    don't need extra calls to render it. Additive over ReviewRead."""
+
+    competency_name: str
+    subject_id: uuid.UUID
+    subject_name: str
+
+
 class ReviewRecallSubmit(BaseModel):
     quality: int = Field(ge=0, le=5)
 
