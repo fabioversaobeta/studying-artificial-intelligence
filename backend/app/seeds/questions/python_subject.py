@@ -82,7 +82,44 @@ def first(items: list[int]) -> int:
 ```"""
 
 
-QUESTIONS: tuple[QuestionSeed, ...] = (
+_COMPETENCY_ORDER = ("python-fundamentals", "type-hints", "async-python", "testing-with-pytest")
+
+
+def _t(
+    prompt: str, explanation: str, *options: str, model_answer: str | None = None
+) -> QuestionText:
+    """Compact QuestionText: options (if any) get the ids a, b, c..."""
+    return QuestionText(
+        prompt=prompt,
+        explanation=explanation,
+        options=_options(*options) if options else None,
+        model_answer=model_answer,
+    )
+
+
+def _q(
+    code: str,
+    slug: str,
+    qtype: QuestionType,
+    difficulty: QuestionDifficulty,
+    correct: tuple[str, ...] | None,
+    tags: tuple[str, ...],
+    en: QuestionText,
+    pt: QuestionText,
+) -> QuestionSeed:
+    return QuestionSeed(
+        code=code,
+        competency_slug=slug,
+        type=qtype,
+        difficulty=difficulty,
+        correct=correct,
+        tags=tags,
+        source=AI,
+        text={Language.EN: en, Language.PT_BR: pt},
+    )
+
+
+_PILOT_QUESTIONS: tuple[QuestionSeed, ...] = (
     # ------------------------------------------------------------------
     # python-fundamentals
     # ------------------------------------------------------------------
@@ -535,6 +572,322 @@ QUESTIONS: tuple[QuestionSeed, ...] = (
             ),
         },
     ),
+)
+
+
+_IDENTITY_CODE = """```python
+a = [1, 2]
+b = [1, 2]
+c = a
+print(a == b, a is b, a is c)
+```"""
+
+_EXHAUSTED_GEN_CODE = """```python
+nums = (n for n in range(3))
+total = sum(nums)
+print(total, list(nums))
+```"""
+
+_LATE_BINDING_CODE = """```python
+funcs = [lambda: i for i in range(3)]
+print([f() for f in funcs])
+```"""
+
+_NARROWING_CODE = """```python
+def classify(x: int | str | None) -> str:
+    if x is None:
+        return "none"
+    if isinstance(x, int):
+        return "int"
+    reveal_type(x)
+    return x
+```"""
+
+_FUNDAMENTALS_EXTRA: tuple[QuestionSeed, ...] = (
+    _q(
+        "python-fundamentals-q07",
+        "python-fundamentals",
+        CODE,
+        EASY,
+        ("d",),
+        ("identity", "equality"),
+        _t(
+            "What does this code print?\n\n" + _IDENTITY_CODE,
+            "`==` compares values, `is` compares object identity. `a` and `b` are two separate "
+            "lists that happen to hold equal items, so `a == b` is `True` but `a is b` is "
+            "`False`. `c = a` creates a second name for the same object, so `a is c` is `True`. "
+            "The other options confuse equality with identity or treat `c` as a copy.",
+            "`True True True`",
+            "`False False True`",
+            "`True True False`",
+            "`True False True`",
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _IDENTITY_CODE,
+            "`==` compara valores e `is` compara a identidade do objeto. `a` e `b` são duas "
+            "listas distintas que têm itens iguais, então `a == b` é `True`, mas `a is b` é "
+            "`False`. `c = a` cria só outro nome para o mesmo objeto, logo `a is c` é `True`. "
+            "As outras opções confundem igualdade com identidade ou tratam `c` como uma cópia.",
+            "`True True True`",
+            "`False False True`",
+            "`True True False`",
+            "`True False True`",
+        ),
+    ),
+    _q(
+        "python-fundamentals-q08",
+        "python-fundamentals",
+        MC,
+        MEDIUM,
+        ("b",),
+        ("eafp", "exceptions"),
+        _t(
+            "Why do Python programmers often prefer `try: open(path) ... except "
+            "FileNotFoundError` over `if os.path.exists(path): open(path)`?",
+            "The `if` check only describes the filesystem at one instant: the file can be "
+            "deleted (or created) before `open` runs, so you must handle the exception anyway. "
+            "EAFP (easier to ask forgiveness than permission) avoids that race and the extra "
+            "lookup. `os.path.exists` is not deprecated, `open` does raise for a missing file, "
+            "and a raised exception is actually slower than a failed `if`, so speed is not "
+            "the argument.",
+            "Because `os.path.exists` is deprecated and emits a warning.",
+            "Because the file may disappear or appear between the check and the `open` call, so "
+            "the check does not make `open` safe; handling the exception covers that race.",
+            "Because `try/except` is always faster than an `if` check.",
+            "Because `open` never raises an error when the file does not exist.",
+        ),
+        _t(
+            "Por que programadores Python costumam preferir `try: open(path) ... except "
+            "FileNotFoundError` a `if os.path.exists(path): open(path)`?",
+            "O `if` só descreve o sistema de arquivos em um instante: o arquivo pode ser "
+            "apagado (ou criado) antes de o `open` executar, então você precisa tratar a "
+            "exceção de qualquer forma. EAFP (easier to ask forgiveness than permission) evita "
+            "essa race condition e a consulta extra. `os.path.exists` não está obsoleta, o "
+            "`open` lança erro para arquivo ausente, e lançar uma exceção é na verdade mais "
+            "lento que um `if` que falha, então velocidade não é o argumento.",
+            "Porque `os.path.exists` está obsoleta e emite um aviso.",
+            "Porque o arquivo pode sumir ou aparecer entre a verificação e a chamada a `open`, "
+            "então a verificação não torna o `open` seguro; tratar a exceção cobre essa corrida.",
+            "Porque `try/except` é sempre mais rápido que um `if`.",
+            "Porque `open` nunca lança erro quando o arquivo não existe.",
+        ),
+    ),
+    _q(
+        "python-fundamentals-q09",
+        "python-fundamentals",
+        CODE,
+        MEDIUM,
+        ("a",),
+        ("generators", "iterators"),
+        _t(
+            "What does this code print?\n\n" + _EXHAUSTED_GEN_CODE,
+            "A generator is a one-shot iterator. `sum(nums)` consumes it entirely (0 + 1 + 2 = "
+            "3), leaving it exhausted, so `list(nums)` is `[]`. Iterating an exhausted "
+            "generator does not raise: `list()` handles the `StopIteration` internally. To "
+            "reuse the values, store them in a list or build a new generator.",
+            "`3 []`",
+            "`3 [0, 1, 2]`",
+            "A `TypeError`, because a generator cannot be passed to `sum`.",
+            "A `StopIteration` propagates out of `list(nums)`.",
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _EXHAUSTED_GEN_CODE,
+            "Um generator é um iterador de uso único. `sum(nums)` o consome por inteiro "
+            "(0 + 1 + 2 = 3) e o deixa esgotado, então `list(nums)` é `[]`. Iterar um "
+            "generator esgotado não lança erro: `list()` trata o `StopIteration` internamente. "
+            "Para reutilizar os valores, guarde-os em uma lista ou crie um novo generator.",
+            "`3 []`",
+            "`3 [0, 1, 2]`",
+            "Um `TypeError`, pois um generator não pode ser passado para `sum`.",
+            "Um `StopIteration` se propaga para fora de `list(nums)`.",
+        ),
+    ),
+    _q(
+        "python-fundamentals-q10",
+        "python-fundamentals",
+        CODE,
+        HARD,
+        ("b",),
+        ("closures", "late-binding"),
+        _t(
+            "What does this code print?\n\n" + _LATE_BINDING_CODE,
+            "Each lambda closes over the *variable* `i`, not its value at creation time. The "
+            "lambdas run after the comprehension has finished, when `i` holds its last value, "
+            "2 (the loop variable is never 3, since `range(3)` stops at 2). All three "
+            "therefore return 2. Bind the value at definition time with a default argument "
+            "(`lambda i=i: i`) or `functools.partial`.",
+            "`[0, 1, 2]`",
+            "`[2, 2, 2]`",
+            "`[3, 3, 3]`",
+            "`[0, 0, 0]`",
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _LATE_BINDING_CODE,
+            "Cada lambda captura a *variável* `i`, não o valor que ela tinha na criação. As "
+            "lambdas executam depois que a comprehension terminou, quando `i` guarda o último "
+            "valor, 2 (a variável do laço nunca chega a 3, pois `range(3)` para em 2). As três "
+            "retornam, portanto, 2. Fixe o valor na definição com um argumento padrão "
+            "(`lambda i=i: i`) ou com `functools.partial`.",
+            "`[0, 1, 2]`",
+            "`[2, 2, 2]`",
+            "`[3, 3, 3]`",
+            "`[0, 0, 0]`",
+        ),
+    ),
+)
+
+_TYPE_HINTS_EXTRA: tuple[QuestionSeed, ...] = (
+    _q(
+        "python-type-hints-q07",
+        "type-hints",
+        MC,
+        EASY,
+        ("d",),
+        ("callable", "basics"),
+        _t(
+            "What does the annotation `Callable[[int, str], bool]` describe?",
+            "The first item is the list of parameter types and the second is the return type, "
+            "so this is any callable that takes an `int` and a `str`, in that order, and "
+            "returns a `bool`. The other options misread the parameter list as a single list "
+            "argument, swap parameters and return type, or treat the return type as a "
+            "parameter.",
+            "A function with one argument, a list holding an `int` and a `str`, returning a "
+            "`bool`.",
+            "A function that returns a collection with an `int`, a `str` and a `bool`.",
+            "A function that takes an `int` and a `bool` and returns a `str`.",
+            "A callable taking an `int` and a `str`, in that order, and returning a `bool`.",
+        ),
+        _t(
+            "O que a anotação `Callable[[int, str], bool]` descreve?",
+            "O primeiro item é a lista de tipos dos parâmetros e o segundo é o tipo de "
+            "retorno, então isto é qualquer callable que recebe um `int` e uma `str`, nessa "
+            "ordem, e retorna um `bool`. As outras opções leem a lista de parâmetros como um "
+            "único argumento do tipo lista, trocam parâmetros e retorno, ou tratam o tipo de "
+            "retorno como parâmetro.",
+            "Uma função com um argumento, uma lista contendo um `int` e uma `str`, que retorna "
+            "um `bool`.",
+            "Uma função que retorna uma coleção com um `int`, uma `str` e um `bool`.",
+            "Uma função que recebe um `int` e um `bool` e retorna uma `str`.",
+            "Um callable que recebe um `int` e uma `str`, nessa ordem, e retorna um `bool`.",
+        ),
+    ),
+    _q(
+        "python-type-hints-q08",
+        "type-hints",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("any", "object"),
+        _t(
+            "What is the key difference between annotating a parameter as `Any` and as `object`?",
+            "`Any` is an escape hatch: the checker allows any operation on the value and "
+            "accepts it anywhere. `object` also accepts every value, but you may only do what "
+            "is valid for all objects, so `x.upper()` is flagged until you narrow the type "
+            "(for example with `isinstance`). Neither one is enforced at runtime, and `object` "
+            "is not limited to user-defined classes.",
+            "None: they are aliases for the same type.",
+            "`object` accepts only instances of user-defined classes, while `Any` also accepts "
+            "built-in types.",
+            "`Any` disables type checking for that value, while `object` accepts any value but "
+            "still lets the checker reject operations that not every object supports.",
+            "`Any` is verified by the interpreter at runtime, while `object` is only checked "
+            "statically.",
+        ),
+        _t(
+            "Qual é a diferença essencial entre anotar um parâmetro como `Any` e como `object`?",
+            "`Any` é uma válvula de escape: o verificador permite qualquer operação sobre o "
+            "valor e o aceita em qualquer lugar. `object` também aceita todo valor, mas você "
+            "só pode fazer o que vale para qualquer objeto, então `x.upper()` é apontado até "
+            "você restringir o tipo (por exemplo com `isinstance`). Nenhum dos dois é imposto "
+            "em tempo de execução, e `object` não se limita a classes definidas pelo usuário.",
+            "Nenhuma: são apelidos para o mesmo tipo.",
+            "`object` aceita apenas instâncias de classes definidas pelo usuário, enquanto "
+            "`Any` aceita também tipos embutidos.",
+            "`Any` desliga a checagem de tipos para aquele valor, enquanto `object` aceita "
+            "qualquer valor mas ainda deixa o verificador rejeitar operações que nem todo "
+            "objeto suporta.",
+            "`Any` é verificado pelo interpretador em tempo de execução, enquanto `object` só "
+            "é checado estaticamente.",
+        ),
+    ),
+    _q(
+        "python-type-hints-q09",
+        "type-hints",
+        MS,
+        MEDIUM,
+        ("a", "c", "e"),
+        ("optional", "none"),
+        _t(
+            "Which statements about `Optional[int]` are true? Select all that apply.",
+            "`Optional[int]` is just another spelling of `int | None`, and a checker makes you "
+            "rule out `None` (for example with `is not None`) before using the value as an "
+            "`int`. Typing a parameter that way and giving it `= None` is the usual signature. "
+            "Two common misconceptions: `Optional` says nothing about whether the argument may "
+            "be omitted (that is decided by having a default), and nothing is enforced at "
+            "runtime, so passing `None` raises no `TypeError` by itself.",
+            "It means the same as `int | None`.",
+            "A parameter annotated this way may be omitted by the caller even without a "
+            "default value.",
+            "Before using such a value in an `int`-only operation, the checker requires you to "
+            "rule out `None`, for example with `if x is not None`.",
+            "At runtime, passing `None` to such a parameter raises `TypeError`.",
+            "`def f(x: Optional[int] = None)` is a valid signature.",
+        ),
+        _t(
+            "Quais afirmações sobre `Optional[int]` são verdadeiras? Selecione todas que se "
+            "aplicam.",
+            "`Optional[int]` é só outra grafia de `int | None`, e o verificador obriga você a "
+            "descartar `None` (por exemplo com `is not None`) antes de usar o valor como "
+            "`int`. Tipar um parâmetro assim e dar a ele `= None` é a assinatura habitual. Dois "
+            "equívocos comuns: `Optional` não diz nada sobre o argumento poder ser omitido "
+            "(isso é decidido por haver um valor padrão), e nada é imposto em tempo de "
+            "execução, então passar `None` não gera `TypeError` por si só.",
+            "Significa o mesmo que `int | None`.",
+            "Um parâmetro anotado assim pode ser omitido pelo chamador mesmo sem valor padrão.",
+            "Antes de usar o valor em uma operação exclusiva de `int`, o verificador exige "
+            "descartar `None`, por exemplo com `if x is not None`.",
+            "Em tempo de execução, passar `None` a esse parâmetro lança `TypeError`.",
+            "`def f(x: Optional[int] = None)` é uma assinatura válida.",
+        ),
+    ),
+    _q(
+        "python-type-hints-q10",
+        "type-hints",
+        CODE,
+        MEDIUM,
+        ("a",),
+        ("narrowing", "mypy"),
+        _t(
+            "What type does `mypy` reveal for `x` at the `reveal_type` line?\n\n" + _NARROWING_CODE,
+            "Type checkers narrow a union along each branch. The early `return` removes `None` "
+            "(after the `is None` check) and then `int` (after the `isinstance` check), so only "
+            "`str` is left, which is also what makes `return x` valid. `Never` would mean the "
+            "line is unreachable, and the other unions ignore the narrowing.",
+            "`str`",
+            "`int | str`",
+            "`int | str | None`",
+            "`Never`",
+        ),
+        _t(
+            "Qual tipo o `mypy` revela para `x` na linha do `reveal_type`?\n\n" + _NARROWING_CODE,
+            "Verificadores de tipos restringem (narrow) uma união a cada ramo. O `return` "
+            "antecipado remove `None` (depois do teste `is None`) e depois `int` (depois do "
+            "`isinstance`), sobrando apenas `str`, o que também torna `return x` válido. "
+            "`Never` significaria que a linha é inalcançável, e as outras uniões ignoram o "
+            "narrowing.",
+            "`str`",
+            "`int | str`",
+            "`int | str | None`",
+            "`Never`",
+        ),
+    ),
+)
+
+QUESTIONS: tuple[QuestionSeed, ...] = tuple(
+    sorted(
+        _PILOT_QUESTIONS + _FUNDAMENTALS_EXTRA + _TYPE_HINTS_EXTRA,
+        key=lambda q: (_COMPETENCY_ORDER.index(q.competency_slug), q.code),
+    )
 )
 
 
