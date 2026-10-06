@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AuthenticationError, ConflictError
@@ -19,11 +20,18 @@ def register_user(db: Session, *, email: str, password: str, display_name: str) 
     if user_repository.get_by_email(db, email) is not None:
         raise ConflictError("An account with this email already exists")
 
-    user = user_repository.create(
-        db, email=email, hashed_password=hash_password(password), display_name=display_name
-    )
-    gamification_repository.create_profile(db, user.id)
-    db.commit()
+    try:
+        user = user_repository.create(
+            db, email=email, hashed_password=hash_password(password), display_name=display_name
+        )
+        gamification_repository.create_profile(db, user.id)
+        db.commit()
+    except IntegrityError as exc:
+        # Lost a race with a concurrent registration of the same email: the
+        # unique constraint is the real guard, the get_by_email check above
+        # is only a fast path.
+        db.rollback()
+        raise ConflictError("An account with this email already exists") from exc
     db.refresh(user)
     return user
 
