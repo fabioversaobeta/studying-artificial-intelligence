@@ -52,6 +52,7 @@ npm run dev
 | Build frontend | `cd frontend && npm run build` |
 | Lint frontend | `cd frontend && npm run lint` |
 | Type-check frontend | `cd frontend && npm run typecheck` |
+| Test frontend (Vitest) | `cd frontend && npm test` (watch: `npm run test:watch`) |
 
 ## Testing strategy
 
@@ -64,6 +65,10 @@ npm run dev
   touch the dev database.
 
 Run everything: `cd backend && ./.venv/Scripts/python.exe -m pytest`
+
+Frontend: Vitest + Testing Library + jsdom. `cd frontend && npm test` (single run)
+or `npm run test:watch`. Tests live next to the code as `*.test.ts(x)`; the
+jest-dom setup is in `src/test/setup.ts`.
 
 ## Before calling a change "done"
 

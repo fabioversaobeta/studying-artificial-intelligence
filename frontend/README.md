@@ -30,3 +30,14 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Tests
+
+Vitest + Testing Library + jsdom (config in `vite.config.ts`, setup in `src/test/setup.ts`).
+
+```bash
+npm test           # single run
+npm run test:watch # watch mode
+```
+
+Test files live next to the code as `*.test.ts` / `*.test.tsx`.

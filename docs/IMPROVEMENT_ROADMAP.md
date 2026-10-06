@@ -41,7 +41,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 
 | Fase | Itens | Concluídos |
 |---|---|---|
-| P0 — Fazer agora | 9 | 0 |
+| P0 — Fazer agora | 9 | 1 |
 | P1 — Curto prazo | 16 | 0 |
 | P2 — Médio prazo | 16 | 0 |
 
@@ -120,7 +120,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | IN_PROGRESS | S4 (`fix/s4-frontend-tests`) | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | | Maior risco de regressão hoje. |
+| F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | DONE | S4 (`fix/s4-frontend-tests`) | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | `6a1358b`..`42dfaab` (branch `fix/s4-frontend-tests`) | Maior risco de regressão hoje. |
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | TODO | | F1 | `frontend/src/pages/*.test.tsx` | | |
 | F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | | Só adiciona arquivos novos → baixo risco de conflito. |
 | F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | | |
@@ -194,5 +194,6 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — F1 — Vitest + Testing Library + jsdom; testes de api-client, token-storage e protected-route (20 testes); corrigido crash do api-client com corpo de erro sem `error` — `6a1358b`..`42dfaab`
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — decisões do dono: A1 autorizado; deploy (H1) adiado para o fim; sessões S1–S6 iniciadas (reivindicadas em lote pelo coordenador)
