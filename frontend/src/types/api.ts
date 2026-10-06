@@ -9,6 +9,11 @@ export interface User {
   is_active: boolean
 }
 
+export interface RegistrationInfo {
+  enabled: boolean
+  invite_required: boolean
+}
+
 export interface TokenResponse {
   access_token: string
   refresh_token: string

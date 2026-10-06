@@ -35,3 +35,14 @@ class AuthenticationError(AppError):
 class AuthorizationError(AppError):
     status_code = 403
     error_code = "authorization_error"
+
+
+class RateLimitError(AppError):
+    status_code = 429
+    error_code = "rate_limited"
+
+    def __init__(
+        self, retry_after: int, message: str = "Too many requests. Try again later."
+    ) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after

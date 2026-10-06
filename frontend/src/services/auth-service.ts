@@ -1,12 +1,21 @@
 import { apiClient } from '@/services/api-client'
 import { tokenStorage } from '@/lib/token-storage'
-import type { TokenResponse, User } from '@/types/api'
+import type { RegistrationInfo, TokenResponse, User } from '@/types/api'
 
 export const authService = {
-  async register(email: string, password: string, displayName: string): Promise<void> {
+  registrationInfo(): Promise<RegistrationInfo> {
+    return apiClient.get<RegistrationInfo>('/api/v1/auth/registration-info')
+  },
+
+  async register(
+    email: string,
+    password: string,
+    displayName: string,
+    inviteCode?: string,
+  ): Promise<void> {
     const tokens = await apiClient.post<TokenResponse>(
       '/api/v1/auth/register',
-      { email, password, display_name: displayName },
+      { email, password, display_name: displayName, invite_code: inviteCode || undefined },
       true,
     )
     tokenStorage.setTokens(tokens.access_token, tokens.refresh_token)

@@ -41,7 +41,8 @@ dependency when they are introduced.
 
 | Method & Path | Auth | Purpose |
 |---|---|---|
-| `POST /auth/register` | — | Create account, returns tokens |
+| `GET /auth/registration-info` | — | `{enabled, invite_required}` signup policy |
+| `POST /auth/register` | — | Create account, returns tokens. Optional `invite_code`; 403 if closed or bad code; 429 when rate limited |
 | `POST /auth/login` | — | Returns tokens |
 | `POST /auth/refresh` | — | Exchange refresh token for a new access token |
 | `GET /auth/me` | ✓ | Current user |

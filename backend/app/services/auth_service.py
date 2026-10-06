@@ -1,7 +1,10 @@
+import secrets
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import AuthenticationError, ConflictError
+from app.core.config import Settings
+from app.core.exceptions import AuthenticationError, AuthorizationError, ConflictError
 from app.core.security import (
     InvalidTokenError,
     TokenType,
@@ -14,6 +17,18 @@ from app.core.security import (
 from app.models.user import User
 from app.repositories import gamification_repository, user_repository
 from app.schemas.user import TokenResponse
+
+
+def ensure_registration_allowed(settings: Settings, invite_code: str | None) -> None:
+    """Enforce the signup policy (REGISTRATION_ENABLED / REGISTRATION_INVITE_CODE)."""
+    if not settings.registration_enabled:
+        raise AuthorizationError("Registration is currently closed")
+    expected = settings.registration_invite_code
+    # Constant-time comparison; same message for missing and wrong codes.
+    if expected and (
+        invite_code is None or not secrets.compare_digest(invite_code.encode(), expected.encode())
+    ):
+        raise AuthorizationError("A valid invite code is required to register")
 
 
 def register_user(db: Session, *, email: str, password: str, display_name: str) -> User:
