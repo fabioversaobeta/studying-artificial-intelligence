@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.domain.leveling import compute_level
 from app.models.gamification import AchievementCriterion, GamificationProfile, XPSource
 from app.repositories import gamification_repository
+from app.services import quest_service
 
 
 def _update_streak(profile: GamificationProfile, activity_date: date) -> None:
@@ -29,16 +30,17 @@ def _update_streak(profile: GamificationProfile, activity_date: date) -> None:
     profile.last_activity_date = activity_date
 
 
-def award_xp(
+def _apply_xp(
     db: Session,
     *,
     user_id: uuid.UUID,
     amount: int,
     source: XPSource,
-    reference_id: uuid.UUID | None = None,
-    description: str | None = None,
-    counts_for_streak: bool = True,
+    reference_id: uuid.UUID | None,
+    description: str | None,
+    counts_for_streak: bool,
 ) -> GamificationProfile:
+    """Ledger entry + profile mutation. Never evaluates rewards (no recursion)."""
     if amount <= 0:
         raise ValueError("XP amount must be positive")
 
@@ -62,40 +64,103 @@ def award_xp(
     profile.updated_at = datetime.now(UTC)
 
     db.flush()
-    check_and_award_achievements(db, user_id)
-    db.flush()
     return profile
 
 
-def check_and_award_achievements(db: Session, user_id: uuid.UUID) -> list[str]:
-    """Evaluate every achievement not yet earned; award the ones whose
-    criteria are now met. Returns the codes of newly earned achievements."""
-    earned_codes = gamification_repository.get_earned_achievement_codes(db, user_id)
+def award_xp(
+    db: Session,
+    *,
+    user_id: uuid.UUID,
+    amount: int,
+    source: XPSource,
+    reference_id: uuid.UUID | None = None,
+    description: str | None = None,
+    counts_for_streak: bool = True,
+) -> GamificationProfile:
+    profile = _apply_xp(
+        db,
+        user_id=user_id,
+        amount=amount,
+        source=source,
+        reference_id=reference_id,
+        description=description,
+        counts_for_streak=counts_for_streak,
+    )
+    settle_rewards(db, user_id)
+    return profile
+
+
+def settle_rewards(db: Session, user_id: uuid.UUID) -> list[str]:
+    """Event-driven reward evaluation: unlock every achievement and complete
+    every quest whose criteria are now met, pay their XP rewards, and repeat
+    until nothing new unlocks (a reward can itself satisfy another criterion).
+
+    Idempotent: earned achievements / completed quests are re-read on every
+    pass and the rewards are paid without re-entering this function, so there
+    is no recursion and no stale snapshot. Returns the newly earned
+    achievement codes. Call it after any activity that may advance progress,
+    including activity that awards no XP.
+    """
     newly_earned: list[str] = []
 
-    for achievement in gamification_repository.list_achievements(db):
-        if achievement.code in earned_codes:
-            continue
+    while True:
+        rewards: list[tuple[int, XPSource, uuid.UUID, str]] = []
 
-        if _achievement_criteria_met(
-            db, user_id, achievement.criteria_type, achievement.criteria_value
-        ):
-            gamification_repository.award_achievement(
-                db, user_id=user_id, achievement_id=achievement.id
-            )
-            newly_earned.append(achievement.code)
-            if achievement.xp_reward > 0:
-                award_xp(
-                    db,
-                    user_id=user_id,
-                    amount=achievement.xp_reward,
-                    source=XPSource.ACHIEVEMENT,
-                    reference_id=achievement.id,
-                    description=f"Achievement unlocked: {achievement.name}",
-                    counts_for_streak=False,
+        earned_codes = gamification_repository.get_earned_achievement_codes(db, user_id)
+        for achievement in gamification_repository.list_achievements(db):
+            if achievement.code in earned_codes:
+                continue
+            if _achievement_criteria_met(
+                db, user_id, achievement.criteria_type, achievement.criteria_value
+            ):
+                gamification_repository.award_achievement(
+                    db, user_id=user_id, achievement_id=achievement.id
+                )
+                newly_earned.append(achievement.code)
+                if achievement.xp_reward > 0:
+                    rewards.append(
+                        (
+                            achievement.xp_reward,
+                            XPSource.ACHIEVEMENT,
+                            achievement.id,
+                            f"Achievement unlocked: {achievement.name}",
+                        )
+                    )
+
+        for quest in quest_service.complete_due_quests(db, user_id):
+            if quest.xp_reward > 0:
+                rewards.append(
+                    (
+                        quest.xp_reward,
+                        XPSource.QUEST,
+                        quest.id,
+                        f"Quest completed: {quest.title}",
+                    )
                 )
 
+        for amount, source, reference_id, description in rewards:
+            _apply_xp(
+                db,
+                user_id=user_id,
+                amount=amount,
+                source=source,
+                reference_id=reference_id,
+                description=description,
+                counts_for_streak=False,
+            )
+
+        if not rewards:
+            # Nothing paid XP, so no criterion can have changed after this pass
+            # (a reward-less unlock was already recorded above).
+            break
+
+    db.flush()
     return newly_earned
+
+
+def check_and_award_achievements(db: Session, user_id: uuid.UUID) -> list[str]:
+    """Evaluate achievements (and quests); returns newly earned achievement codes."""
+    return settle_rewards(db, user_id)
 
 
 def _achievement_criteria_met(

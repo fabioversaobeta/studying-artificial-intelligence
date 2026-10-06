@@ -164,14 +164,6 @@ class TestAchievements:
         assert by_code["low"]["earned_at"] is not None
         assert by_code["high"]["earned"] is False
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "BUG: check_and_award_achievements iterates with a stale `earned_codes` snapshot; "
-            "awarding achievement A's XP reward re-enters the check, which awards B, and then "
-            "the outer loop awards B again -> IntegrityError (uq_user_achievement)"
-        ),
-    )
     def test_two_achievements_unlock_in_the_same_pass(self, db: Session, user_id: uuid.UUID):
         # The first one pays an XP reward; awarding it re-enters the achievement
         # check, which must not cause the second one to be awarded twice.
@@ -182,3 +174,35 @@ class TestAchievements:
             select(UserAchievement).where(UserAchievement.user_id == user_id)
         ).scalars()
         assert len(list(rows)) == 2
+
+    def test_chain_of_three_achievements_unlocks_in_one_pass(self, db: Session, user_id: uuid.UUID):
+        make_achievement(db, "a", AchievementCriterion.XP_MILESTONE, 10, xp_reward=5)
+        make_achievement(db, "b", AchievementCriterion.XP_MILESTONE, 10, xp_reward=5)
+        make_achievement(db, "c", AchievementCriterion.XP_MILESTONE, 10, xp_reward=5)
+        profile = _award(db, user_id, 10)
+        assert gamification_repository.get_earned_achievement_codes(db, user_id) == {"a", "b", "c"}
+        assert profile.total_xp == 25
+
+    def test_reward_xp_can_trigger_another_achievement(self, db: Session, user_id: uuid.UUID):
+        make_achievement(db, "first", AchievementCriterion.XP_MILESTONE, 10, xp_reward=20)
+        make_achievement(db, "second", AchievementCriterion.XP_MILESTONE, 30, xp_reward=0)
+        profile = _award(db, user_id, 10)  # 10 -> first (+20) -> 30 -> second
+        assert gamification_repository.get_earned_achievement_codes(db, user_id) == {
+            "first",
+            "second",
+        }
+        assert profile.total_xp == 30
+
+    def test_settle_rewards_is_idempotent(self, db: Session, user_id: uuid.UUID):
+        make_achievement(db, "a", AchievementCriterion.XP_MILESTONE, 10, xp_reward=5)
+        profile = _award(db, user_id, 10)
+        assert gamification_service.settle_rewards(db, user_id) == []
+        db.commit()
+        db.refresh(profile)
+        assert profile.total_xp == 15
+
+    def test_list_achievements_is_ordered_by_code(self, db: Session):
+        for code in ("zeta", "alpha", "mid"):
+            make_achievement(db, code, AchievementCriterion.XP_MILESTONE, 10)
+        codes = [a.code for a in gamification_repository.list_achievements(db)]
+        assert codes == sorted(codes)
