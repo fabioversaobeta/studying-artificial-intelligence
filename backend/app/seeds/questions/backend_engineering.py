@@ -991,7 +991,497 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
-QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS + AUTH_QUESTIONS
+# ----------------------------------------------------------------------
+# postgresql-fundamentals
+# ----------------------------------------------------------------------
+
+_COMPOSITE_INDEX_SQL = """```sql
+CREATE INDEX events_user_created ON events (user_id, created_at);
+
+-- Query 1
+SELECT * FROM events WHERE user_id = 5 ORDER BY created_at DESC LIMIT 10;
+
+-- Query 2
+SELECT * FROM events WHERE created_at > now() - interval '1 minute';
+```"""
+
+_LOWER_EMAIL_SQL = """```sql
+-- users(id serial PRIMARY KEY, email text UNIQUE), about 100,000 rows
+EXPLAIN SELECT * FROM users WHERE lower(email) = 'user5@example.com';
+```
+
+```text
+Seq Scan on users  (cost=0.00..2235.00 rows=500 width=25)
+  Filter: (lower(email) = 'user5@example.com'::text)
+```"""
+
+_NOT_IN_SQL = """```sql
+-- users(id), orders(id, user_id); guest orders have user_id = NULL
+-- and the table contains at least one such row.
+SELECT id FROM users
+WHERE id NOT IN (SELECT user_id FROM orders);
+```"""
+
+_PG = "postgresql-fundamentals"
+
+PG_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "postgresql-fundamentals-q01",
+        _PG,
+        MC,
+        EASY,
+        ("c",),
+        ("sql", "null"),
+        _t(
+            "The `users` table has a nullable column `nickname`. Which query returns the "
+            "users that have no nickname?",
+            "`NULL` means \"unknown or missing\", and any comparison with `NULL` using `=` "
+            "yields `NULL` (not true), so `nickname = NULL` matches no rows at all, even "
+            "when nicknames are missing. The correct test is `IS NULL`. An empty string is a "
+            "real value different from `NULL`, and `==` is not SQL.",
+            _options(
+                "`SELECT * FROM users WHERE nickname = NULL;`",
+                "`SELECT * FROM users WHERE nickname = '';`",
+                "`SELECT * FROM users WHERE nickname IS NULL;`",
+                "`SELECT * FROM users WHERE nickname == NULL;`",
+            ),
+        ),
+        _t(
+            "A tabela `users` tem uma coluna anulável `nickname`. Qual consulta retorna os "
+            "usuários que não têm apelido?",
+            "`NULL` significa \"desconhecido ou ausente\", e qualquer comparação com `NULL` "
+            "usando `=` resulta em `NULL` (não verdadeiro), então `nickname = NULL` não "
+            "retorna nenhuma linha, mesmo quando há apelidos ausentes. O teste correto é "
+            "`IS NULL`. Uma string vazia é um valor real, diferente de `NULL`, e `==` não é "
+            "SQL.",
+            _options(
+                "`SELECT * FROM users WHERE nickname = NULL;`",
+                "`SELECT * FROM users WHERE nickname = '';`",
+                "`SELECT * FROM users WHERE nickname IS NULL;`",
+                "`SELECT * FROM users WHERE nickname == NULL;`",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q02",
+        _PG,
+        MC,
+        EASY,
+        ("a",),
+        ("sql", "joins"),
+        _t(
+            "With tables `users(id)` and `orders(id, user_id)`, which query lists the users "
+            "who have never placed an order?",
+            "A `LEFT JOIN` keeps every user and fills the order columns with `NULL` when "
+            "there is no match, so filtering `o.id IS NULL` leaves exactly the users without "
+            "orders. With an `INNER JOIN` unmatched users are discarded before the filter, so "
+            "the result is always empty. `LEFT JOIN ... IS NOT NULL` returns the opposite "
+            "set (users with orders), and the last option does not even involve the users "
+            "table.",
+            _options(
+                "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
+                "IS NULL;`",
+                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS "
+                "NULL;`",
+                "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
+                "IS NOT NULL;`",
+                "`SELECT user_id FROM orders WHERE user_id IS NULL;`",
+            ),
+        ),
+        _t(
+            "Com as tabelas `users(id)` e `orders(id, user_id)`, qual consulta lista os "
+            "usuários que nunca fizeram um pedido?",
+            "Um `LEFT JOIN` mantém todos os usuários e preenche as colunas do pedido com "
+            "`NULL` quando não há correspondência, então filtrar `o.id IS NULL` deixa "
+            "exatamente os usuários sem pedidos. Com um `INNER JOIN`, usuários sem "
+            "correspondência são descartados antes do filtro, e o resultado é sempre vazio. "
+            "`LEFT JOIN ... IS NOT NULL` retorna o conjunto oposto (usuários com pedidos), "
+            "e a última opção nem envolve a tabela de usuários.",
+            _options(
+                "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
+                "IS NULL;`",
+                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS "
+                "NULL;`",
+                "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
+                "IS NOT NULL;`",
+                "`SELECT user_id FROM orders WHERE user_id IS NULL;`",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q03",
+        _PG,
+        MC,
+        EASY,
+        ("b",),
+        ("indexes", "write-cost"),
+        _t(
+            "What is the main cost of adding an index to a table?",
+            "An index is a separate data structure: it takes disk space, and every `INSERT`, "
+            "`UPDATE` of an indexed column and `DELETE` must also maintain it, so writes get "
+            "slower. That is why you index for the queries you actually run, not every "
+            "column. Indexes do not slow down reads, do not force rows into index order "
+            "on disk, do not make the table read-only and do not prevent duplicates (only "
+            "`UNIQUE` indexes do that, by design).",
+            _options(
+                "Reads on that table become slower.",
+                "Extra storage, plus every write must also update the index, which makes "
+                "writes slower.",
+                "The table can no longer contain duplicate rows.",
+                "The table becomes read-only while the index exists.",
+            ),
+        ),
+        _t(
+            "Qual é o principal custo de adicionar um índice a uma tabela?",
+            "Um índice é uma estrutura de dados separada: ocupa espaço em disco, e todo "
+            "`INSERT`, `UPDATE` de coluna indexada e `DELETE` também precisa mantê-lo, então "
+            "as escritas ficam mais lentas. Por isso se indexa para as consultas que "
+            "realmente existem, não todas as colunas. Índices não deixam as leituras mais "
+            "lentas, não forçam as linhas a ficar em ordem no disco, não tornam a tabela "
+            "somente leitura e não impedem duplicatas (só índices `UNIQUE` fazem isso, "
+            "por definição).",
+            _options(
+                "As leituras nessa tabela ficam mais lentas.",
+                "Espaço extra de armazenamento, e toda escrita também precisa atualizar o "
+                "índice, o que a deixa mais lenta.",
+                "A tabela não pode mais conter linhas duplicadas.",
+                "A tabela fica somente leitura enquanto o índice existir.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q04",
+        _PG,
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("indexes", "composite-index", "explain"),
+        _t(
+            "Given this composite index, which statement is correct?\n\n" + _COMPOSITE_INDEX_SQL,
+            "A B-tree on `(user_id, created_at)` is sorted by `user_id` first and, inside "
+            "each user, by `created_at`. Query 1 can seek straight to `user_id = 5` and read "
+            "rows already in `created_at` order (backwards), so it needs no separate sort "
+            "and stops after 10 rows. Query 2 filters only on the second column, so the "
+            "index cannot be used as an efficient seek on it (a separate index on "
+            "`created_at` would be needed). Mentioning an indexed column is not enough: "
+            "column order matters, and `LIMIT` does not disable indexes.",
+            _options(
+                "Both queries use the index equally well, because both mention indexed "
+                "columns.",
+                "Query 2 uses the index, but Query 1 does not because `ORDER BY` always needs "
+                "a separate sort.",
+                "Query 1 can seek by `user_id` and read rows already ordered by `created_at`; "
+                "Query 2 filters only on the second column, so it cannot use the index as an "
+                "efficient seek.",
+                "Neither can use it, because indexes are ignored when `LIMIT` is present.",
+            ),
+        ),
+        _t(
+            "Dado este índice composto, qual afirmação está correta?\n\n"
+            + _COMPOSITE_INDEX_SQL,
+            "Uma B-tree em `(user_id, created_at)` é ordenada primeiro por `user_id` e, "
+            "dentro de cada usuário, por `created_at`. A Query 1 pode ir direto a "
+            "`user_id = 5` e ler as linhas já em ordem de `created_at` (de trás para "
+            "frente), então não precisa de ordenação separada e para após 10 linhas. A "
+            "Query 2 filtra apenas pela segunda coluna, então o índice não pode ser usado "
+            "como uma busca eficiente nela (seria preciso um índice separado em "
+            "`created_at`). Citar uma coluna indexada não basta: a ordem das colunas "
+            "importa, e `LIMIT` não desativa índices.",
+            _options(
+                "Ambas as consultas usam o índice igualmente bem, pois ambas citam colunas "
+                "indexadas.",
+                "A Query 2 usa o índice, mas a Query 1 não, pois `ORDER BY` sempre exige uma "
+                "ordenação separada.",
+                "A Query 1 pode buscar por `user_id` e ler linhas já ordenadas por "
+                "`created_at`; a Query 2 filtra só pela segunda coluna, então não consegue "
+                "usar o índice como busca eficiente.",
+                "Nenhuma pode usá-lo, porque índices são ignorados quando há `LIMIT`.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q05",
+        _PG,
+        MC,
+        MEDIUM,
+        ("b",),
+        ("isolation", "read-committed", "mvcc"),
+        _t(
+            "In PostgreSQL's default isolation level, a transaction runs the same `SELECT` "
+            "twice. Between the two statements, another transaction commits an `UPDATE` to "
+            "one of the matching rows. What happens?",
+            "The default is `READ COMMITTED`: each statement gets a fresh snapshot, so the "
+            "second `SELECT` sees the newly committed value (a non-repeatable read). Reading "
+            "the same value twice requires `REPEATABLE READ` or higher. Under MVCC, plain "
+            "reads never block on writers, and no serialization error is raised at this "
+            "level for this scenario.",
+            _options(
+                "Both reads return the same data, because the transaction keeps one snapshot "
+                "from its first statement.",
+                "The second read sees the new committed value, because each statement takes "
+                "a new snapshot.",
+                "The second read blocks until the other transaction's session is closed.",
+                "The second read fails with a serialization error.",
+            ),
+        ),
+        _t(
+            "No nível de isolamento padrão do PostgreSQL, uma transação executa o mesmo "
+            "`SELECT` duas vezes. Entre os dois comandos, outra transação faz commit de um "
+            "`UPDATE` em uma das linhas retornadas. O que acontece?",
+            "O padrão é `READ COMMITTED`: cada comando recebe um snapshot novo, então o "
+            "segundo `SELECT` vê o valor recém-commitado (uma non-repeatable read). Ler o "
+            "mesmo valor duas vezes exige `REPEATABLE READ` ou superior. No MVCC, leituras "
+            "simples não bloqueiam por causa de escritores, e nenhum erro de serialização é "
+            "lançado nesse nível para este cenário.",
+            _options(
+                "As duas leituras retornam os mesmos dados, pois a transação mantém um único "
+                "snapshot desde o primeiro comando.",
+                "A segunda leitura vê o novo valor commitado, pois cada comando obtém um "
+                "snapshot novo.",
+                "A segunda leitura bloqueia até a sessão da outra transação ser encerrada.",
+                "A segunda leitura falha com um erro de serialização.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q06",
+        _PG,
+        MS,
+        MEDIUM,
+        ("a", "c", "d"),
+        ("transactions", "lost-update", "locking"),
+        _t(
+            "Many requests increment `accounts.balance` for the same row concurrently, at "
+            "PostgreSQL's default isolation level. Which approaches avoid lost updates? "
+            "Select all that apply.",
+            "A single `UPDATE ... SET balance = balance + 10` is atomic: the row lock "
+            "serializes the writers and each one re-reads the latest value. `SELECT ... FOR "
+            "UPDATE` makes the second transaction wait for the first to finish before "
+            "reading. Under `REPEATABLE READ`, the second writer gets a serialization error "
+            "and must retry. Reading the value in the application and writing back a computed "
+            "one is the lost-update race itself, and wrapping a plain `SELECT` and `UPDATE` "
+            "in `BEGIN`/`COMMIT` at the default level does not change that, since the plain "
+            "read takes no lock.",
+            _options(
+                "A single statement: `UPDATE accounts SET balance = balance + 10 WHERE id = "
+                "1`.",
+                "`SELECT balance` in the application, add 10, then `UPDATE accounts SET "
+                "balance = <computed value>`.",
+                "Inside a transaction, `SELECT balance ... FOR UPDATE`, then update the row.",
+                "Run the transaction at `REPEATABLE READ` and retry it when a serialization "
+                "failure occurs.",
+                "Wrap the plain `SELECT` and the `UPDATE` in `BEGIN`/`COMMIT` at the default "
+                "isolation level.",
+            ),
+        ),
+        _t(
+            "Muitas requisições incrementam `accounts.balance` da mesma linha ao mesmo "
+            "tempo, no nível de isolamento padrão do PostgreSQL. Quais abordagens evitam "
+            "lost updates? Selecione todas que se aplicam.",
+            "Um único `UPDATE ... SET balance = balance + 10` é atômico: o lock da linha "
+            "serializa os escritores e cada um relê o valor mais recente. `SELECT ... FOR "
+            "UPDATE` faz a segunda transação esperar a primeira terminar antes de ler. Em "
+            "`REPEATABLE READ`, o segundo escritor recebe um erro de serialização e precisa "
+            "tentar de novo. Ler o valor na aplicação e gravar de volta um valor calculado é "
+            "a própria race do lost update, e envolver um `SELECT` simples e o `UPDATE` em "
+            "`BEGIN`/`COMMIT` no nível padrão não muda isso, pois a leitura simples não "
+            "toma lock.",
+            _options(
+                "Um único comando: `UPDATE accounts SET balance = balance + 10 WHERE id = "
+                "1`.",
+                "`SELECT balance` na aplicação, somar 10 e então `UPDATE accounts SET "
+                "balance = <valor calculado>`.",
+                "Dentro de uma transação, `SELECT balance ... FOR UPDATE` e depois atualizar "
+                "a linha.",
+                "Executar a transação em `REPEATABLE READ` e repeti-la quando ocorrer uma "
+                "falha de serialização.",
+                "Envolver o `SELECT` simples e o `UPDATE` em `BEGIN`/`COMMIT` no nível de "
+                "isolamento padrão.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q07",
+        _PG,
+        CODE,
+        MEDIUM,
+        ("d",),
+        ("indexes", "explain", "expression-index"),
+        _t(
+            "The `email` column is `UNIQUE` (so it has an index), yet this query does a "
+            "sequential scan. What is the reason and the usual fix?\n\n" + _LOWER_EMAIL_SQL,
+            "The index is on `email`, but the query filters on the expression `lower(email)`, "
+            "a different value the plain index cannot answer. The fix is an expression index, "
+            "`CREATE INDEX ON users (lower(email))` (or a case-insensitive type such as "
+            "`citext`). Unique indexes do serve equality lookups, text columns are indexable, "
+            "and `EXPLAIN` does not need any special data type.",
+            _options(
+                "`UNIQUE` indexes cannot be used for equality lookups.",
+                "PostgreSQL never uses indexes on `text` columns.",
+                "`EXPLAIN` disables index usage; the real query would use the index.",
+                "The filter applies `lower()` to the column, so the index on `email` cannot "
+                "be used; create an expression index on `lower(email)`.",
+            ),
+        ),
+        _t(
+            "A coluna `email` é `UNIQUE` (logo, tem um índice), mas esta consulta faz uma "
+            "varredura sequencial. Qual é o motivo e a correção usual?\n\n" + _LOWER_EMAIL_SQL,
+            "O índice é sobre `email`, mas a consulta filtra pela expressão `lower(email)`, "
+            "um valor diferente que o índice simples não consegue responder. A correção é "
+            "um índice de expressão, `CREATE INDEX ON users (lower(email))` (ou um tipo "
+            "insensível a maiúsculas, como `citext`). Índices únicos servem, sim, para buscas "
+            "de igualdade, colunas `text` podem ser indexadas, e o `EXPLAIN` não exige "
+            "nenhum tipo de dado especial.",
+            _options(
+                "Índices `UNIQUE` não podem ser usados em buscas de igualdade.",
+                "O PostgreSQL nunca usa índices em colunas `text`.",
+                "O `EXPLAIN` desativa o uso de índices; a consulta real usaria o índice.",
+                "O filtro aplica `lower()` à coluna, então o índice em `email` não pode ser "
+                "usado; crie um índice de expressão em `lower(email)`.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q08",
+        _PG,
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("sql", "null", "subqueries"),
+        _t(
+            "What does this query return?\n\n" + _NOT_IN_SQL,
+            "`id NOT IN (...)` expands to `id <> v1 AND id <> v2 AND ...`. When one of the "
+            "values is `NULL`, `id <> NULL` is unknown, so the whole condition can never be "
+            "true and the query returns no rows at all, instead of the users without "
+            "orders. The robust forms are `NOT EXISTS (SELECT 1 FROM orders o WHERE "
+            "o.user_id = u.id)` or a `LEFT JOIN ... IS NULL` anti-join.",
+            _options(
+                "The users that have no orders; the `NULL` row is simply ignored.",
+                "Every user, since `NULL` matches nothing.",
+                "No rows at all, because the comparison with `NULL` makes the condition "
+                "unknown for every user.",
+                "An error, because `NOT IN` does not accept subqueries with `NULL`.",
+            ),
+        ),
+        _t(
+            "O que esta consulta retorna?\n\n" + _NOT_IN_SQL,
+            "`id NOT IN (...)` se expande para `id <> v1 AND id <> v2 AND ...`. Quando um dos "
+            "valores é `NULL`, `id <> NULL` é desconhecido, então a condição inteira nunca "
+            "pode ser verdadeira e a consulta não retorna nenhuma linha, em vez dos usuários "
+            "sem pedidos. As formas robustas são `NOT EXISTS (SELECT 1 FROM orders o WHERE "
+            "o.user_id = u.id)` ou um anti-join com `LEFT JOIN ... IS NULL`.",
+            _options(
+                "Os usuários sem pedidos; a linha com `NULL` é simplesmente ignorada.",
+                "Todos os usuários, pois `NULL` não casa com nada.",
+                "Nenhuma linha, pois a comparação com `NULL` torna a condição desconhecida "
+                "para todos os usuários.",
+                "Um erro, pois `NOT IN` não aceita subconsultas com `NULL`.",
+            ),
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q09",
+        _PG,
+        SHORT,
+        HARD,
+        None,
+        ("isolation", "write-skew", "serializable"),
+        _t(
+            "A hospital rule says at least one doctor must stay on call. Two transactions run "
+            "at `REPEATABLE READ`: each counts the doctors on call, sees two, and then sets "
+            "its own doctor (a different row in each) to off call. Both commit and nobody is "
+            "left on call. Why did this happen and how do you prevent it?",
+            "Self-check: did you mention (1) write skew under snapshot isolation, (2) that "
+            "the transactions update different rows so there is no write-write conflict, "
+            "(3) `SERIALIZABLE` with retry on serialization failure, and (4) an alternative "
+            "such as explicit locking of the rows that were read?",
+            model_answer="This is write skew. At `REPEATABLE READ` each transaction works on "
+            "its own snapshot, where both doctors are still on call. They write to different "
+            "rows, so PostgreSQL sees no write-write conflict and both commits succeed, even "
+            "though together they violate the invariant. Fixes: run the transaction at "
+            "`SERIALIZABLE`, where PostgreSQL detects the read-write dependency cycle and "
+            "aborts one transaction with a serialization failure (SQLSTATE 40001), which the "
+            "application must retry; or make the read lock what it depends on, for example "
+            "`SELECT ... FOR UPDATE` on all on-call rows (or on a shared parent row), so the "
+            "transactions serialize.",
+        ),
+        _t(
+            "Uma regra de um hospital diz que pelo menos um médico deve ficar de plantão. "
+            "Duas transações rodam em `REPEATABLE READ`: cada uma conta os médicos de "
+            "plantão, vê dois e então marca o seu próprio médico (uma linha diferente em "
+            "cada) como fora de plantão. Ambas fazem commit e ninguém fica de plantão. Por "
+            "que isso aconteceu e como evitar?",
+            "Autoavaliação: você mencionou (1) write skew sob snapshot isolation, (2) que as "
+            "transações atualizam linhas diferentes, então não há conflito escrita-escrita, "
+            "(3) `SERIALIZABLE` com nova tentativa após falha de serialização e (4) uma "
+            "alternativa como bloquear explicitamente as linhas lidas?",
+            model_answer="Isso é write skew. Em `REPEATABLE READ`, cada transação trabalha "
+            "em seu próprio snapshot, no qual os dois médicos ainda estão de plantão. Elas "
+            "escrevem em linhas diferentes, então o PostgreSQL não vê conflito "
+            "escrita-escrita e os dois commits têm sucesso, embora juntos violem a "
+            "invariante. Correções: executar a transação em `SERIALIZABLE`, onde o "
+            "PostgreSQL detecta o ciclo de dependências leitura-escrita e aborta uma das "
+            "transações com falha de serialização (SQLSTATE 40001), que a aplicação deve "
+            "repetir; ou fazer a leitura bloquear aquilo de que depende, por exemplo "
+            "`SELECT ... FOR UPDATE` em todas as linhas de plantão (ou em uma linha pai "
+            "compartilhada), de modo que as transações se serializem.",
+        ),
+    ),
+    _q(
+        "postgresql-fundamentals-q10",
+        _PG,
+        MC,
+        HARD,
+        ("a",),
+        ("transactions", "deadlock", "locking"),
+        _t(
+            "Transaction T1 updates row A and then row B. Concurrently, T2 updates row B and "
+            "then row A, and the two interleave so each holds one lock and waits for the "
+            "other. What happens in PostgreSQL, and what is the standard prevention?",
+            "PostgreSQL's deadlock detector finds the wait cycle (after `deadlock_timeout`, "
+            "one second by default), aborts one of the transactions with a `deadlock "
+            "detected` error and lets the other proceed; the application should retry the "
+            "victim. The standard prevention is to acquire locks in a consistent order in "
+            "all code paths. MVCC does not let writers on the same row run in parallel, "
+            "transactions do not wait forever, and a locked row is never silently skipped by "
+            "a plain `UPDATE`.",
+            _options(
+                "One transaction is aborted with a deadlock error and the other continues; "
+                "prevent it by always locking rows in the same order.",
+                "Both wait forever, because PostgreSQL has no deadlock detection; prevent it "
+                "with a longer `statement_timeout`.",
+                "Both succeed, since MVCC lets writers update the same rows without "
+                "blocking each other.",
+                "Each `UPDATE` silently skips the row locked by the other transaction.",
+            ),
+        ),
+        _t(
+            "A transação T1 atualiza a linha A e depois a linha B. Ao mesmo tempo, T2 "
+            "atualiza a linha B e depois a A, e as duas se intercalam de modo que cada uma "
+            "segura um lock e espera pelo outro. O que acontece no PostgreSQL e qual é a "
+            "prevenção padrão?",
+            "O detector de deadlocks do PostgreSQL encontra o ciclo de espera (após "
+            "`deadlock_timeout`, um segundo por padrão), aborta uma das transações com o "
+            "erro `deadlock detected` e deixa a outra seguir; a aplicação deve repetir a "
+            "vítima. A prevenção padrão é adquirir locks em uma ordem consistente em todos "
+            "os caminhos de código. O MVCC não deixa escritores da mesma linha rodarem em "
+            "paralelo, transações não esperam para sempre, e uma linha bloqueada nunca é "
+            "silenciosamente ignorada por um `UPDATE` simples.",
+            _options(
+                "Uma transação é abortada com erro de deadlock e a outra continua; evita-se "
+                "isso bloqueando sempre as linhas na mesma ordem.",
+                "Ambas esperam para sempre, pois o PostgreSQL não detecta deadlocks; evita-se "
+                "com um `statement_timeout` maior.",
+                "Ambas têm sucesso, pois o MVCC permite que escritores atualizem as mesmas "
+                "linhas sem bloquear uns aos outros.",
+                "Cada `UPDATE` ignora silenciosamente a linha bloqueada pela outra "
+                "transação.",
+            ),
+        ),
+    ),
+)
+
+QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS + AUTH_QUESTIONS + PG_QUESTIONS
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = ()
 
