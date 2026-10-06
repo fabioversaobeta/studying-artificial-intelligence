@@ -67,7 +67,7 @@ jobs:
         run: PGPASSWORD=learning_platform psql -h localhost -U learning_platform -d learning_platform -c "CREATE DATABASE learning_platform_test"
 
       - name: Pytest
-        run: pytest
+        run: pytest --cov=app --cov-report=term-missing
 
   frontend:
     runs-on: ubuntu-latest
