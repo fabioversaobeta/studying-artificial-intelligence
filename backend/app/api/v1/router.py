@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.v1 import (
     ai,
+    assessments,
     auth,
     challenges,
     dashboard,
@@ -12,6 +13,7 @@ from app.api.v1 import (
     reviews,
     study_sessions,
     subjects,
+    users,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -26,3 +28,5 @@ api_router.include_router(reviews.router)
 api_router.include_router(gamification.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(ai.router)
+api_router.include_router(users.router)
+api_router.include_router(assessments.router)

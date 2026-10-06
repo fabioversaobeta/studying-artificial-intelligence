@@ -53,12 +53,14 @@ class AchievementCriterion(StrEnum):
     STREAK_DAYS = "streak_days"
     COMPETENCY_MASTERED_COUNT = "competency_mastered_count"
     CHALLENGES_PASSED_COUNT = "challenges_passed_count"
+    ASSESSMENTS_PASSED_COUNT = "assessments_passed_count"
     XP_MILESTONE = "xp_milestone"
 
 
 class QuestCriterion(StrEnum):
     STUDY_SESSIONS_COUNT = "study_sessions_count"
     CHALLENGES_PASSED_COUNT = "challenges_passed_count"
+    ASSESSMENTS_PASSED_COUNT = "assessments_passed_count"
     REVIEWS_COMPLETED_COUNT = "reviews_completed_count"
     XP_EARNED = "xp_earned"
 

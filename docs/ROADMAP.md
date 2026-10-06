@@ -40,6 +40,8 @@ real backend and database.**
 | Spaced-repetition review UI (due list, recall submission) | DONE | `/reviews` page (G1) + dashboard shortcut |
 | Achievements / quests UI | DONE | `/achievements` page (G2) |
 | Learning paths UI | DONE | `/learning-paths` and `/learning-paths/:slug` (G3) |
+| Assessments / question bank (quizzes) | DONE | I2: translatable questions (en/pt-BR), deterministic grading, self-graded short answers, anti-farm XP, Practice mastery signal; `/quizzes` UI; pilot of 12 questions (bulk generation is I6) — docs/DOMAIN.md |
+| User content-language preference + Settings page | DONE | J6: `PATCH /users/me`, `/settings`; UI strings stay English until J7 |
 
 ## Explicitly deferred past v1
 
@@ -49,7 +51,6 @@ because they're blocked.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Assessments / question bank (formal quizzes) | NOT_STARTED | See docs/PENDING.md |
 | Automated challenge grading | NOT_STARTED | Self-assessed for now — docs/DECISIONS.md |
 | AI Mentor / AI abstraction layer | NOT_STARTED | Provider-agnostic interface, not started — docs/PENDING.md |
 | Adaptive "what should I study today" recommendation engine | NOT_STARTED | |

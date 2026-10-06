@@ -1,6 +1,9 @@
 import uuid
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+
+from app.models.user import Language
 
 
 class UserRead(BaseModel):
@@ -9,7 +12,18 @@ class UserRead(BaseModel):
     id: uuid.UUID
     email: EmailStr
     display_name: str
+    preferred_language: Language
     is_active: bool
+
+
+class UserUpdate(BaseModel):
+    """PATCH /users/me: only the fields present are changed."""
+
+    display_name: (
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+        | None
+    ) = None
+    preferred_language: Language | None = None
 
 
 class RegisterRequest(BaseModel):

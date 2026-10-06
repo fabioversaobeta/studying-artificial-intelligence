@@ -67,23 +67,6 @@ def _apply_xp(
     return profile
 
 
-def record_activity(db: Session, user_id: uuid.UUID) -> GamificationProfile:
-    """Count today as an active day for the streak without awarding XP.
-
-    The streak measures consistency ("you showed up"), XP measures effort, and
-    they are decoupled on purpose: a study session too short to earn XP (under
-    10 minutes) must still keep the streak alive (docs/DECISIONS.md). Idempotent
-    within a day. Does not evaluate rewards; call `settle_rewards` afterwards.
-    """
-    profile = gamification_repository.get_profile_for_update(db, user_id)
-    if profile is None:
-        profile = gamification_repository.create_profile(db, user_id)
-    _update_streak(profile, datetime.now(UTC).date())
-    profile.updated_at = datetime.now(UTC)
-    db.flush()
-    return profile
-
-
 def award_xp(
     db: Session,
     *,
@@ -105,6 +88,23 @@ def award_xp(
     )
     settle_rewards(db, user_id)
     return profile
+
+
+def record_activity(db: Session, user_id: uuid.UUID) -> None:
+    """Count today as an active day for the streak WITHOUT awarding XP, then
+    settle rewards (quests/achievements may still advance).
+
+    The streak measures consistency ("you showed up") and XP measures effort, so
+    they are decoupled on purpose: a study session too short to earn XP (under 10
+    minutes), or a quiz attempt whose questions were already paid, still keeps the
+    streak alive (docs/DECISIONS.md). Idempotent within a day."""
+    profile = gamification_repository.get_profile_for_update(db, user_id)
+    if profile is None:
+        profile = gamification_repository.create_profile(db, user_id)
+    _update_streak(profile, datetime.now(UTC).date())
+    profile.updated_at = datetime.now(UTC)
+    db.flush()
+    settle_rewards(db, user_id)
 
 
 def settle_rewards(db: Session, user_id: uuid.UUID) -> list[str]:
@@ -195,6 +195,8 @@ def _achievement_criteria_met(
             return gamification_repository.count_mastered_competencies(db, user_id) >= (value or 0)
         case AchievementCriterion.CHALLENGES_PASSED_COUNT:
             return gamification_repository.count_passed_challenges(db, user_id) >= (value or 0)
+        case AchievementCriterion.ASSESSMENTS_PASSED_COUNT:
+            return gamification_repository.count_passed_assessments(db, user_id) >= (value or 0)
         case AchievementCriterion.XP_MILESTONE:
             profile = gamification_repository.get_profile(db, user_id)
             return profile is not None and profile.total_xp >= (value or 0)

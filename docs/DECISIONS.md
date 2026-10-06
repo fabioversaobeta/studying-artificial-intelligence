@@ -447,3 +447,66 @@ farming with 1-minute sessions.
 **Scope:** only study sessions. Failed challenge attempts and other zero-XP events
 do not count for the streak (they are not "showing up to study"). No XP is ever
 refunded (see the delete decision).
+
+
+## Question translations: one row per language (I2)
+
+**Decision**: question text lives in `question_translations` (one row per
+question and language: prompt, options, explanation, model answer), not in a
+JSONB-by-locale column on `questions`. The language-independent facts
+(competency, type, difficulty, `xp_value`, **`correct_option_ids`**, tags,
+source) stay on `questions`; option ids are shared by all translations.
+**Why**: grading must never depend on the language, so the correct answer is
+not duplicated per locale; a language is added or fixed by inserting/updating
+one row (seeds can ship `pt-BR` later without rewriting English rows); the
+unique `(question_id, language)` constraint and the enum column give the
+database a say; and "which questions lack pt-BR" is a plain query for the
+bulk-generation work (I6). The price is one extra `selectinload` per attempt
+view, negligible here. Fallback is per question: requested language, then
+`en`, then anything. Assessment titles use a small JSONB `translations` map
+instead (a handful of strings, no grading implications).
+
+## Assessment XP rule (I2, D5)
+
+**Decision (owner delegated, see PROPOSAL_TRACK_I.md 3.1)**: XP is paid only by
+finishing an attempt with `score >= pass_threshold`; amount = `xp_value` of the
+questions answered correctly that never paid before for the user (any earlier
+response with `xp_awarded > 0`) + the completion bonus on the first pass of that
+assessment. No XP is refunded, ever. Wrong or repeated work pays nothing but
+still counts for mastery, streak and quests. `xp_value` derives from difficulty
+(10/20/30, a table in `app.domain.assessments`) and is copied onto the question
+at seed time.
+**Nuance**: eligibility follows "already *paid*", not "already answered
+correctly": a question answered right in a *failed* attempt earns nothing then
+but can still pay on a later passing attempt (the owner's wording: no XP for
+questions "already paid"). `QuestionResponse.is_first_correct` still records
+the literal first correct answer (informational). Finishing is idempotent and
+row-locked, so a double click or retry cannot pay twice.
+**Why not pay per attempt**: it would be farmable; this caps total assessment
+XP at the size of the bank.
+**Short answers** are self-graded (honour system, like challenges); an
+ungraded one counts as wrong. The judge hook is
+`assessment_service.short_answer_judge` (I5). The answer endpoint never reveals
+a choice verdict before the attempt is finished.
+
+## Practice mastery signal with quizzes (I2, D4)
+
+**Decision**: Practice (35 pts) = 35 x the 50/50 mean of the challenge pass
+share and the quiz coverage (distinct active questions whose latest answer in
+a finished attempt is correct / active questions); a signal that does not exist
+is ignored. Documented in `docs/DOMAIN.md`, implemented and unit-tested in
+`app.domain.mastery`.
+**Why latest-answer coverage**: it is bounded by the bank size, immune to
+re-answering the same question, and self-correcting (a later miss removes the
+credit). It does not stop someone from retaking until everything is right, but
+that then also reflects that they eventually answered everything; engagement
+(40) and retention (25) still cap what quizzes alone can reach (35).
+**Consequence**: a competency with both challenges and a question bank now
+needs both to reach the full 35; mastery is recomputed lazily, so existing
+scores move on their next event.
+
+## Answers are saved with PATCH (I2)
+
+`PATCH /attempts/{id}/responses/{question_id}` replaces the answer (idempotent).
+`PUT` would be the natural verb, but the frontend `apiClient` (being rewritten
+by another session) only exposes get/post/patch.

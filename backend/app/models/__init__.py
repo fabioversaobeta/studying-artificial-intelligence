@@ -6,6 +6,20 @@ in tests.
 """
 
 from app.models.ai_usage import AIUsage
+from app.models.assessment import (
+    Assessment,
+    AssessmentAttempt,
+    AssessmentKind,
+    AssessmentQuestion,
+    AttemptStatus,
+    GradingStatus,
+    Question,
+    QuestionDifficulty,
+    QuestionResponse,
+    QuestionSource,
+    QuestionTranslation,
+    QuestionType,
+)
 from app.models.base import Base
 from app.models.gamification import (
     Achievement,
@@ -39,11 +53,12 @@ from app.models.learning import (
     Subject,
 )
 from app.models.revoked_token import RevokedToken
-from app.models.user import User
+from app.models.user import Language, User
 
 __all__ = [
     "Base",
     "User",
+    "Language",
     "RevokedToken",
     "AIUsage",
     "LearningGoal",
@@ -73,4 +88,16 @@ __all__ = [
     "QuestCriterion",
     "QuestPeriod",
     "QuestCompletion",
+    "Question",
+    "QuestionTranslation",
+    "QuestionType",
+    "QuestionDifficulty",
+    "QuestionSource",
+    "QuestionResponse",
+    "Assessment",
+    "AssessmentKind",
+    "AssessmentQuestion",
+    "AssessmentAttempt",
+    "AttemptStatus",
+    "GradingStatus",
 ]

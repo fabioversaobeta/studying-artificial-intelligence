@@ -25,6 +25,25 @@ def schedule_initial_review(db: Session, *, user_id: uuid.UUID, competency_id: u
     )
 
 
+def flag_for_review(db: Session, *, user_id: uuid.UUID, competency_id: uuid.UUID) -> Review:
+    """Make a competency due now, e.g. after a wrong quiz answer.
+
+    Creates the review if the competency was never scheduled; otherwise only
+    pulls an already-later due date forward. The SM-2 state (interval, ease,
+    repetitions) is untouched, so the next recall continues from where it was.
+    """
+    now = datetime.now(UTC)
+    review = review_repository.get_review(db, user_id, competency_id)
+    if review is None:
+        return review_repository.ensure_review_scheduled(
+            db, user_id=user_id, competency_id=competency_id, due_at=now
+        )
+    if review.due_at > now:
+        review.due_at = now
+        review_repository.save_review(db, review)
+    return review
+
+
 def list_due_reviews(db: Session, user_id: uuid.UUID) -> list[Review]:
     return review_repository.list_due_reviews(db, user_id, as_of=datetime.now(UTC))
 

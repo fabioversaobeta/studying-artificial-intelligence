@@ -76,7 +76,6 @@ def log_study_session(
         # Too short to earn XP: the session still counts as showing up (streak)
         # and may still advance quests/achievements.
         gamification_service.record_activity(db, user_id)
-        gamification_service.settle_rewards(db, user_id)
 
     db.commit()
     db.refresh(session)

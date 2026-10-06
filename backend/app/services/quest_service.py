@@ -34,6 +34,8 @@ def _current_progress(db: Session, user_id: uuid.UUID, quest: Quest, since: date
             return quest_repository.count_study_sessions_since(db, user_id, since)
         case QuestCriterion.CHALLENGES_PASSED_COUNT:
             return quest_repository.count_challenges_passed_since(db, user_id, since)
+        case QuestCriterion.ASSESSMENTS_PASSED_COUNT:
+            return quest_repository.count_assessments_passed_since(db, user_id, since)
         case QuestCriterion.REVIEWS_COMPLETED_COUNT:
             return quest_repository.count_reviews_completed_since(db, user_id, since)
         case QuestCriterion.XP_EARNED:

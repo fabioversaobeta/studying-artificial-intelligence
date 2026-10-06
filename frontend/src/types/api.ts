@@ -2,10 +2,13 @@
 
 export type Uuid = string
 
+export type Language = 'en' | 'pt-BR'
+
 export interface User {
   id: Uuid
   email: string
   display_name: string
+  preferred_language: Language
   is_active: boolean
 }
 
@@ -215,6 +218,114 @@ export interface Dashboard {
   due_review_count: number
   weakest_competencies: MasteryRecord[]
   recent_study_sessions: StudySession[]
+}
+
+// ---- Assessments (quizzes) -------------------------------------------------
+
+export type QuestionType = 'multiple_choice' | 'multi_select' | 'short_answer' | 'code_reading'
+export type QuestionDifficulty = 'easy' | 'medium' | 'hard'
+export type AttemptStatus = 'in_progress' | 'completed'
+export type GradingStatus = 'graded' | 'pending_review' | 'self_graded'
+
+export interface Assessment {
+  id: Uuid
+  code: string
+  title: string
+  description: string | null
+  kind: 'competency' | 'learning_path' | 'mixed'
+  competency_id: Uuid | null
+  competency_name: string | null
+  pass_threshold: number
+  completion_bonus_xp: number
+  question_count: number
+  attempts_completed: number
+  best_score_percent: number | null
+  passed: boolean
+  open_attempt_id: Uuid | null
+}
+
+export interface QuizOption {
+  id: string
+  text: string
+}
+
+export interface SavedAnswer {
+  option_ids: string[] | null
+  text: string | null
+  grading_status: GradingStatus
+  time_spent_seconds: number | null
+}
+
+/** Present only on finished attempts. */
+export interface QuestionReview {
+  correct_option_ids: string[] | null
+  explanation: string
+  model_answer: string | null
+  is_correct: boolean | null
+  grading_status: GradingStatus
+  xp_awarded: number
+  is_first_correct: boolean
+}
+
+export interface AttemptQuestion {
+  id: Uuid
+  position: number
+  type: QuestionType
+  difficulty: QuestionDifficulty
+  xp_value: number
+  tags: string[]
+  prompt: string
+  options: QuizOption[] | null
+  language: Language
+  answer: SavedAnswer | null
+  review: QuestionReview | null
+}
+
+export interface AttemptSummary {
+  id: Uuid
+  assessment_id: Uuid
+  assessment_title: string
+  status: AttemptStatus
+  started_at: string
+  completed_at: string | null
+  total_questions: number
+  correct_count: number | null
+  score_percent: number | null
+  passed: boolean | null
+  xp_awarded: number
+}
+
+export interface AttemptDetail extends AttemptSummary {
+  pass_threshold: number
+  answered_count: number
+  xp_questions: number
+  xp_bonus: number
+  pending_review_count: number
+  questions: AttemptQuestion[]
+}
+
+export interface AnswerResult {
+  question_id: Uuid
+  saved: boolean
+  grading_status: GradingStatus
+  model_answer: string | null
+  explanation: string | null
+  is_correct: boolean | null
+}
+
+export interface CompetencyAssessmentStats {
+  competency_id: Uuid
+  competency_name: string
+  subject_name: string
+  questions_total: number
+  questions_answered: number
+  questions_correct: number
+  coverage_percent: number
+  attempts_completed: number
+  responses_graded: number
+  responses_correct: number
+  accuracy_percent: number | null
+  xp_earned: number
 }
 
 export interface ApiErrorBody {
