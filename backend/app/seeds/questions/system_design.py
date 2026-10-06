@@ -216,8 +216,7 @@ _API: tuple[QuestionSeed, ...] = (
                 "large offset makes it walk and discard all the skipped rows.",
                 "Browsers cache cursor URLs, so deep pages are rarely requested from the server.",
                 "Offset queries cannot use an index for the sort order, but cursor queries can.",
-                "A cursor lets the client jump directly to page 5000, which offset does not "
-                "allow.",
+                "A cursor lets the client jump directly to page 5000, which offset does not allow.",
             ),
         ),
         _t(
@@ -337,8 +336,7 @@ _API: tuple[QuestionSeed, ...] = (
         ("a", "c", "e"),
         ("error-handling", "contracts"),
         _t(
-            "Which of these are good practices for an API's error contract? Select all that "
-            "apply.",
+            "Which of these are good practices for an API's error contract? Select all that apply.",
             "A stable machine-readable `code` lets clients branch on specific failures, a "
             "`request_id` ties a user's report to a server log line, and one envelope "
             "enforced by a global exception handler (even for unhandled 500s) spares clients "
@@ -369,8 +367,7 @@ _API: tuple[QuestionSeed, ...] = (
                 "`insufficient_funds`).",
                 "Retornar `200 OK` e colocar a descrição do erro no corpo.",
                 "Um `request_id` em todo erro, correlacionado com logs e traces do servidor.",
-                "Incluir o stack trace e o SQL que falhou na resposta para facilitar a "
-                "depuração.",
+                "Incluir o stack trace e o SQL que falhou na resposta para facilitar a depuração.",
                 "O mesmo envelope de erro para todos os endpoints, imposto por um único "
                 "exception handler global.",
             ),
@@ -509,8 +506,442 @@ _API: tuple[QuestionSeed, ...] = (
 )
 
 
-# --- caching-strategies: see below ---
-_CACHE: tuple[QuestionSeed, ...] = ()
+# ----------------------------------------------------------------------
+# caching-strategies
+# ----------------------------------------------------------------------
+_STALE_READ_CODE = """```python
+cache = {}
+db = {"price": 10}
+
+def read_price():
+    if "price" not in cache:
+        cache["price"] = db["price"]
+    return cache["price"]
+
+def write_price(value):
+    db["price"] = value
+
+print(read_price())
+write_price(20)
+print(read_price())
+```"""
+
+_CACHE: tuple[QuestionSeed, ...] = (
+    _q(
+        "caching-strategies-q01",
+        "caching-strategies",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("hit-ratio", "estimation"),
+        _t(
+            "A service handles 10,000 reads per second and its cache hit ratio is 95%, so the "
+            "database sees about 500 reads per second. A deploy flushes part of the cache and "
+            "the hit ratio falls to 90%. What happens to the database's read load?",
+            "The database only sees misses: load = traffic x miss ratio. Going from a 5% to a "
+            "10% miss ratio doubles it, from about 500 to about 1,000 reads per second. That is "
+            "why a hit ratio that looks only slightly worse can overload a database that was "
+            "sized for the old miss rate.",
+            (
+                "It rises by about 5%, to roughly 525 reads per second.",
+                "It rises by 10%, to roughly 550 reads per second.",
+                "It doubles, to roughly 1,000 reads per second.",
+                "It stays about the same, because the cache absorbs the difference.",
+            ),
+        ),
+        _t(
+            "Um serviço recebe 10.000 leituras por segundo e a taxa de acerto (hit ratio) do "
+            "cache é de 95%, então o banco vê cerca de 500 leituras por segundo. Um deploy "
+            "esvazia parte do cache e o hit ratio cai para 90%. O que acontece com a carga de "
+            "leitura do banco?",
+            "O banco só vê os misses: carga = tráfego x taxa de miss. Passar de 5% para 10% de "
+            "miss dobra a carga, de cerca de 500 para cerca de 1.000 leituras por segundo. Por "
+            "isso um hit ratio que parece só um pouco pior pode sobrecarregar um banco "
+            "dimensionado para a taxa de miss anterior.",
+            (
+                "Sobe cerca de 5%, para aproximadamente 525 leituras por segundo.",
+                "Sobe 10%, para aproximadamente 550 leituras por segundo.",
+                "Dobra, para aproximadamente 1.000 leituras por segundo.",
+                "Fica quase igual, porque o cache absorve a diferença.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q02",
+        "caching-strategies",
+        MC,
+        EASY,
+        ("a",),
+        ("fundamentals", "staleness"),
+        _t(
+            "Which of these is the **worst** candidate for caching?",
+            "Caching trades staleness for speed, so it fits data that is read far more often "
+            "than it changes and can be slightly stale. A stock counter decremented on every "
+            "sale and checked at checkout is write-heavy and must be exact; a stale value "
+            "means overselling. Product descriptions, display names and static bundles are "
+            "read-heavy and tolerate staleness.",
+            (
+                "A remaining-stock counter that is decremented on every sale and checked at "
+                "checkout.",
+                "Product descriptions that are edited about once a week.",
+                "Users' display names shown next to comments.",
+                "Static JavaScript and CSS bundles.",
+            ),
+        ),
+        _t(
+            "Qual destes é o **pior** candidato a cache?",
+            "Cache troca atualidade por velocidade, então serve para dados lidos muito mais "
+            "vezes do que alterados e que toleram um pouco de defasagem. Um contador de estoque "
+            "decrementado a cada venda e conferido no checkout tem muita escrita e precisa ser "
+            "exato; um valor defasado significa vender o que não existe. Descrições de produto, "
+            "nomes de exibição e bundles estáticos são de leitura intensa e toleram defasagem.",
+            (
+                "Um contador de estoque restante que é decrementado a cada venda e conferido no "
+                "checkout.",
+                "Descrições de produto editadas cerca de uma vez por semana.",
+                "Nomes de exibição de usuários mostrados ao lado de comentários.",
+                "Bundles estáticos de JavaScript e CSS.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q03",
+        "caching-strategies",
+        MC,
+        EASY,
+        ("b",),
+        ("write-behind", "durability"),
+        _t(
+            "What is the main risk of a write-behind (write-back) cache?",
+            "Write-behind acknowledges the write once it is in the cache and flushes it to the "
+            "database later, in batches. If the cache node dies before a flush, those "
+            "acknowledged writes never reached the source of truth. Writes are in fact faster "
+            "than with write-through (A is backwards), and a cold cache and TTL-bounded "
+            "staleness are concerns of other patterns.",
+            (
+                "Writes become slower than writing to the database directly.",
+                "If the cache node fails before flushing, acknowledged writes are lost.",
+                "Every read is a miss until the cache has been warmed up.",
+                "Reads can return data older than any configured TTL.",
+            ),
+        ),
+        _t(
+            "Qual é o principal risco de um cache write-behind (write-back)?",
+            "O write-behind confirma a escrita assim que ela está no cache e a grava no banco "
+            "depois, em lotes. Se o nó do cache cair antes de um flush, essas escritas já "
+            "confirmadas nunca chegaram à fonte da verdade. As escritas são, na verdade, mais "
+            "rápidas que no write-through (A está invertida), e cache frio e defasagem limitada "
+            "por TTL são preocupações de outros padrões.",
+            (
+                "As escritas ficam mais lentas do que gravar direto no banco.",
+                "Se o nó do cache falhar antes do flush, escritas já confirmadas são perdidas.",
+                "Toda leitura é um miss até o cache ser aquecido.",
+                "As leituras podem devolver dados mais antigos do que qualquer TTL configurado.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q04",
+        "caching-strategies",
+        MC,
+        MEDIUM,
+        ("d",),
+        ("invalidation", "ttl"),
+        _t(
+            "Product prices are cached with explicit invalidation: the application deletes "
+            "`product:{id}` whenever it changes a price. A nightly admin script then updates "
+            "prices directly in SQL. What is the consequence, and what is the standard "
+            "safeguard?",
+            "The script bypasses the application code that invalidates the cache, and the "
+            "database does not notify the cache on its own, so old prices keep being served "
+            "until each entry expires or is evicted. That is why explicit invalidation should "
+            "never stand alone: keep a TTL on every entry as a backstop that bounds the worst "
+            "case, and make bulk jobs invalidate keys or bump a version key.",
+            (
+                "Nothing: the database notifies the cache automatically when a row changes.",
+                "Only the first read after the script is stale; later reads refresh the entry "
+                "automatically.",
+                "The next read raises an error because the cached value no longer matches the row.",
+                "The old prices keep being served until each entry expires or is evicted; "
+                "always keep a TTL as a backstop, and make bulk jobs invalidate too.",
+            ),
+        ),
+        _t(
+            "Os preços de produtos são mantidos em cache com invalidação explícita: a aplicação "
+            "apaga `product:{id}` sempre que altera um preço. Um script administrativo noturno "
+            "atualiza preços direto em SQL. Qual é a consequência e qual é a salvaguarda padrão?",
+            "O script contorna o código da aplicação que invalida o cache, e o banco não avisa "
+            "o cache por conta própria, então os preços antigos continuam sendo servidos até "
+            "cada entrada expirar ou ser removida. Por isso a invalidação explícita nunca deve "
+            "ficar sozinha: mantenha um TTL em toda entrada como rede de segurança que limita "
+            "o pior caso, e faça os jobs em lote invalidarem as chaves ou incrementarem uma "
+            "chave de versão.",
+            (
+                "Nada: o banco avisa o cache automaticamente quando uma linha muda.",
+                "Só a primeira leitura após o script fica defasada; as seguintes atualizam a "
+                "entrada automaticamente.",
+                "A próxima leitura gera um erro, porque o valor em cache não bate mais com a "
+                "linha.",
+                "Os preços antigos continuam sendo servidos até cada entrada expirar ou ser "
+                "removida; mantenha sempre um TTL como rede de segurança e faça os jobs em lote "
+                "também invalidarem.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q05",
+        "caching-strategies",
+        CODE,
+        EASY,
+        ("b",),
+        ("cache-aside", "invalidation"),
+        _t(
+            "What does this program print, and why?\n\n" + _STALE_READ_CODE,
+            "The first read misses, loads 10 from the database and stores it in the cache. "
+            "`write_price(20)` updates only the database; nothing removes or refreshes the "
+            "cached entry, so the second read is a cache hit that returns the stale 10. "
+            "A cache-aside write path must also invalidate the key (and a TTL would bound the "
+            "staleness).",
+            (
+                "`10` then `20`: the second read goes to the database.",
+                "`10` then `10`: the write never invalidated the cached entry.",
+                "`10` then a `KeyError`, because the write removed the key.",
+                "`20` then `20`: the write updates the cache as well.",
+            ),
+        ),
+        _t(
+            "O que este programa imprime, e por quê?\n\n" + _STALE_READ_CODE,
+            "A primeira leitura dá miss, carrega 10 do banco e guarda no cache. "
+            "`write_price(20)` atualiza apenas o banco; nada remove nem atualiza a entrada em "
+            "cache, então a segunda leitura é um hit e devolve o 10 defasado. O caminho de "
+            "escrita de um cache-aside também precisa invalidar a chave (e um TTL limitaria a "
+            "defasagem).",
+            (
+                "`10` e depois `20`: a segunda leitura vai ao banco.",
+                "`10` e depois `10`: a escrita nunca invalidou a entrada em cache.",
+                "`10` e depois um `KeyError`, porque a escrita removeu a chave.",
+                "`20` e depois `20`: a escrita atualiza o cache também.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q06",
+        "caching-strategies",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("stampede", "locking"),
+        _t(
+            "A hot key serving 1,200 requests per second expires. For a moment every request "
+            "misses and runs the same expensive query, overloading the database. Which "
+            "technique collapses these concurrent misses into a single recomputation?",
+            "A short-lived lock taken with SET-if-not-exists lets exactly one request "
+            "recompute while the others wait briefly or serve a stale copy. Jitter (A) "
+            "desynchronizes the expiry of *many* keys but does nothing for one hot key. A "
+            "bigger pool (B) just lets more identical queries hit the database, and a shorter "
+            "TTL (D) makes the expiry events more frequent.",
+            (
+                "Add random jitter to the TTL of every key.",
+                "Increase the database connection pool so it can run all 1,200 queries.",
+                "Take a short-lived SET-if-not-exists lock so one request recomputes while the "
+                "others wait or serve stale data.",
+                "Lower the TTL so the key is refreshed more often.",
+            ),
+        ),
+        _t(
+            "Uma chave quente que recebe 1.200 requisições por segundo expira. Por um instante "
+            "todas as requisições dão miss e executam a mesma consulta cara, sobrecarregando o "
+            "banco. Qual técnica reduz esses misses concorrentes a uma única recomputação?",
+            "Um lock de curta duração obtido com SET-if-not-exists deixa exatamente uma "
+            "requisição recomputar enquanto as outras esperam um pouco ou servem uma cópia "
+            "defasada. O jitter (A) dessincroniza a expiração de *muitas* chaves, mas não ajuda "
+            "com uma única chave quente. Um pool maior (B) só deixa mais consultas idênticas "
+            "chegarem ao banco, e um TTL menor (D) torna as expirações mais frequentes.",
+            (
+                "Adicionar jitter aleatório ao TTL de todas as chaves.",
+                "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas.",
+                "Obter um lock de curta duração com SET-if-not-exists para que uma requisição "
+                "recompute enquanto as outras esperam ou servem dados defasados.",
+                "Reduzir o TTL para que a chave seja atualizada com mais frequência.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q07",
+        "caching-strategies",
+        MS,
+        MEDIUM,
+        ("b", "c", "e"),
+        ("stampede", "ttl", "mitigations"),
+        _t(
+            "Which techniques reduce the risk of a cache stampede? Select all that apply.",
+            "Locking or single-flight recomputation collapses concurrent misses, probabilistic "
+            "early recomputation refreshes hot keys before they expire, and jittered TTLs stop "
+            "bulk-loaded keys from expiring together. Giving a warm-up job's keys exactly the "
+            "same TTL creates a synchronized expiry, and a 1-second TTL for everything makes "
+            "misses constant and defeats the cache.",
+            (
+                "Give all keys filled by a warm-up job exactly the same TTL so they stay in sync.",
+                "Let only one request recompute a missing hot key (SET-if-not-exists lock or "
+                "request coalescing).",
+                "Probabilistically recompute a hot key shortly before it expires.",
+                "Set a 1-second TTL on every key so entries are always fresh.",
+                "Add random jitter to the TTLs of keys that are loaded in bulk.",
+            ),
+        ),
+        _t(
+            "Quais técnicas reduzem o risco de um cache stampede? Selecione todas que se aplicam.",
+            "Lock ou recomputação single-flight reduz os misses concorrentes, a recomputação "
+            "antecipada probabilística atualiza chaves quentes antes de expirarem, e TTLs com "
+            "jitter impedem que chaves carregadas em lote expirem juntas. Dar às chaves de um "
+            "job de aquecimento exatamente o mesmo TTL cria uma expiração sincronizada, e um "
+            "TTL de 1 segundo para tudo torna os misses constantes e anula o cache.",
+            (
+                "Dar a todas as chaves preenchidas por um job de aquecimento exatamente o mesmo "
+                "TTL, para que fiquem sincronizadas.",
+                "Deixar apenas uma requisição recomputar uma chave quente ausente (lock com "
+                "SET-if-not-exists ou coalescência de requisições).",
+                "Recomputar probabilisticamente uma chave quente pouco antes de ela expirar.",
+                "Definir TTL de 1 segundo em toda chave para que as entradas estejam sempre "
+                "frescas.",
+                "Adicionar jitter aleatório aos TTLs de chaves carregadas em lote.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q08",
+        "caching-strategies",
+        MC,
+        MEDIUM,
+        ("a",),
+        ("versioned-keys", "invalidation"),
+        _t(
+            "When are versioned cache keys (for example `config:v7:...`, moving to `v8` when "
+            "something changes) most useful?",
+            "Bumping one version value makes every entry of the old version unreachable at once, "
+            "so you invalidate a whole family of related keys without enumerating them. The old "
+            "entries are not deleted; they age out through TTL or eviction, so a TTL is still "
+            "needed (B). Each access also pays one extra read to resolve the current version "
+            "(C), and the approach replaces values rather than updating them in place (D).",
+            (
+                "When many related entries must be invalidated at once and enumerating every "
+                "key would be error-prone.",
+                "When you want to drop TTLs entirely, since old versions disappear on their own.",
+                "When you need the cheapest possible read path, with no extra cache lookups.",
+                "When cached values must be modified in place instead of being replaced.",
+            ),
+        ),
+        _t(
+            "Quando chaves de cache versionadas (por exemplo `config:v7:...`, passando para "
+            "`v8` quando algo muda) são mais úteis?",
+            "Incrementar um único valor de versão torna inalcançáveis, de uma só vez, todas as "
+            "entradas da versão antiga, então você invalida uma família inteira de chaves "
+            "relacionadas sem enumerá-las. As entradas antigas não são apagadas; elas saem por "
+            "TTL ou por eviction, então o TTL continua necessário (B). Cada acesso também paga "
+            "uma leitura extra para resolver a versão atual (C), e a abordagem substitui valores "
+            "em vez de atualizá-los no lugar (D).",
+            (
+                "Quando muitas entradas relacionadas precisam ser invalidadas de uma vez e "
+                "enumerar cada chave seria propenso a erros.",
+                "Quando se quer abandonar os TTLs, já que as versões antigas somem sozinhas.",
+                "Quando se precisa do caminho de leitura mais barato possível, sem consultas "
+                "extras ao cache.",
+                "Quando os valores em cache precisam ser modificados no lugar em vez de "
+                "substituídos.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q09",
+        "caching-strategies",
+        MC,
+        HARD,
+        ("d",),
+        ("cache-aside", "race-conditions"),
+        _t(
+            "In cache-aside, most implementations update the database first and then delete the "
+            "cache key, instead of deleting the key first. Why?",
+            "If the delete comes first, a concurrent reader can miss, read the old row and "
+            "repopulate the cache with the old value just before the write commits, leaving "
+            "stale data until the TTL. Deleting after the commit shrinks that window (a small "
+            "race still exists, which is why a TTL stays as a backstop). Delete speed (A) and "
+            "blocking (B) are not the issue, and an empty cache after a rolled-back write (C) "
+            "is harmless: the next read simply reloads it.",
+            (
+                "Deleting from the cache is slower than writing to the database, so it "
+                "belongs last.",
+                "A delete issued before the commit blocks all readers until the commit finishes.",
+                "If the write is rolled back after the delete, the cache stays permanently empty.",
+                "A concurrent reader could repopulate the cache with the old value between the "
+                "delete and the commit, leaving stale data until the TTL.",
+            ),
+        ),
+        _t(
+            "No cache-aside, a maioria das implementações atualiza primeiro o banco e depois "
+            "apaga a chave do cache, em vez de apagar a chave primeiro. Por quê?",
+            "Se o delete vier primeiro, um leitor concorrente pode dar miss, ler a linha antiga "
+            "e repopular o cache com o valor antigo pouco antes de a escrita ser confirmada "
+            "(commit), deixando dados defasados até o TTL. Apagar depois do commit reduz essa "
+            "janela (ainda resta uma pequena race, por isso o TTL continua como rede de "
+            "segurança). A velocidade do delete (A) e o bloqueio (B) não são o problema, e um "
+            "cache vazio após uma escrita revertida (C) é inofensivo: a próxima leitura o "
+            "recarrega.",
+            (
+                "Apagar do cache é mais lento do que gravar no banco, então deve vir por último.",
+                "Um delete emitido antes do commit bloqueia todos os leitores até o commit "
+                "terminar.",
+                "Se a escrita for revertida depois do delete, o cache fica vazio para sempre.",
+                "Um leitor concorrente poderia repopular o cache com o valor antigo entre o "
+                "delete e o commit, deixando dados defasados até o TTL.",
+            ),
+        ),
+    ),
+    _q(
+        "caching-strategies-q10",
+        "caching-strategies",
+        SHORT,
+        HARD,
+        None,
+        ("design", "invalidation", "stampede"),
+        _t(
+            "Design the caching layer for a product-catalog service that is read-heavy and "
+            "edited by an admin back office. What do you cache, which TTL and invalidation do "
+            "you use, and how do you protect against a stampede on a hot product?",
+            "Self-check: did you mention (1) cache-aside for product reads, (2) a TTL sized to "
+            "how bad stale data is, (3) invalidation on the write path as well as the TTL, and "
+            "(4) a stampede defense such as a lock, jitter or early recomputation?",
+            model_answer="Use cache-aside for product reads: check the cache, on a miss load "
+            "from the database, populate with a TTL and return. Pick the TTL from how costly "
+            "staleness is; for descriptions a few minutes is fine, for prices a short TTL (tens "
+            "of seconds). Invalidate on the write path by deleting the key after the database "
+            "commit, and keep the TTL as a backstop for writes that bypass the application. Use "
+            "versioned keys for bulk changes such as a price-list update. Against a stampede on "
+            "a hot product, let only one request recompute a missing key (SET-if-not-exists "
+            "lock) while others wait or serve stale data, add jitter to TTLs of bulk-loaded "
+            "keys, and optionally refresh the hottest keys early.",
+        ),
+        _t(
+            "Projete a camada de cache de um serviço de catálogo de produtos, com muita leitura "
+            "e editado por um back office administrativo. O que você coloca em cache, qual TTL "
+            "e qual invalidação usa, e como protege contra um stampede em um produto quente?",
+            "Autoavaliação: você mencionou (1) cache-aside para as leituras de produto, (2) um "
+            "TTL dimensionado conforme o custo de dados defasados, (3) invalidação no caminho de "
+            "escrita além do TTL e (4) uma defesa contra stampede, como lock, jitter ou "
+            "recomputação antecipada?",
+            model_answer="Usar cache-aside nas leituras de produto: consultar o cache, em caso "
+            "de miss carregar do banco, popular com um TTL e retornar. Escolher o TTL pelo custo "
+            "da defasagem; para descrições alguns minutos bastam, para preços um TTL curto "
+            "(dezenas de segundos). Invalidar no caminho de escrita apagando a chave após o "
+            "commit no banco, e manter o TTL como rede de segurança para escritas que "
+            "contornam a aplicação. Usar chaves versionadas para mudanças em lote, como uma "
+            "atualização de tabela de preços. Contra o stampede em um produto quente, deixar "
+            "apenas uma requisição recomputar a chave ausente (lock com SET-if-not-exists) "
+            "enquanto as outras esperam ou servem dados defasados, adicionar jitter aos TTLs de "
+            "chaves carregadas em lote e, opcionalmente, atualizar antecipadamente as chaves "
+            "mais quentes.",
+        ),
+    ),
+)
 _LB: tuple[QuestionSeed, ...] = ()
 _DB: tuple[QuestionSeed, ...] = ()
 
@@ -530,6 +961,21 @@ ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "title": "Quiz de Design de APIs",
                 "description": "Modelagem REST, status codes, paginação, versionamento e "
                 "reenvios idempotentes.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="system-design-caching-strategies-quiz",
+        title="Caching Strategies Quiz",
+        description="Cache-aside, write-through and write-behind, invalidation, TTLs and "
+        "stampedes.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="caching-strategies",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Estratégias de Cache",
+                "description": "Cache-aside, write-through e write-behind, invalidação, TTLs e "
+                "stampedes.",
             }
         },
     ),
