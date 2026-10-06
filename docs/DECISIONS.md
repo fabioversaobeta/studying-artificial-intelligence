@@ -246,3 +246,41 @@ exists (see `docs/PENDING.md`).
   in again once).
 **Why**: closes the "stolen token is valid for 24h" gap documented in
 `docs/PENDING.md` using only the existing database.
+
+## Composite per-user indexes (E2), added only with EXPLAIN evidence
+
+**Decision**: one migration (`b7e1c4a9d3f5`) adds composite indexes and
+drops the single-column `user_id` indexes they extend:
+
+- `study_sessions (user_id, occurred_at DESC)` and `(user_id, competency_id)`
+- `xp_awards (user_id, created_at)`
+- `challenge_submissions (user_id, challenge_id)` and `(user_id, submitted_at)`
+
+Not added (no evidence of benefit): `reviews`, `learning_goals`,
+`mastery_records`, `quest_completions` -- their per-user row counts are
+bounded by the catalog size or tiny, the existing `user_id` / unique
+indexes already give sub-millisecond plans, and `quest_completions` /
+`reviews` / `mastery_records` already have `(user_id, ...)` unique indexes.
+
+**Evidence** (local Postgres container, `EXPLAIN (ANALYZE)`, synthetic data: 2000
+users, ~300k study sessions, 300k+30k xp awards, 66k submissions, 80k
+reviews/mastery rows; one "heavy" user with ~30k sessions, ~30k xp awards,
+~6k submissions; both runs after `VACUUM ANALYZE`, best of 2 runs):
+
+| Query (repository) | Before (`ix_*_user_id` only) | After |
+|---|---|---|
+| list sessions newest-first, LIMIT 50 | Bitmap scan 30k rows + top-N sort, ~7 ms | Index scan in index order, ~0.45 ms |
+| count sessions since (quests/achievements) | scan 30k rows, filter, ~11 ms | index-only scan, ~0.2 ms |
+| minutes for (user, competency) (mastery) | 30k rows, filter, ~4 ms | `(user_id, competency_id)` bitmap, ~1 ms |
+| sum XP since | 30k rows, filter, ~10 ms | range on `(user_id, created_at)`, ~1.1 ms |
+| newest XP awards, LIMIT 20 | bitmap + sort, ~10-15 ms | backward index scan, ~0.1 ms |
+| passed challenges for competency | user_id + challenge_id BitmapAnd, ~1-6 ms | `(user_id, challenge_id)`, ~0.4 ms |
+| passed challenges since | 6k rows filtered, ~1.8 ms | `(user_id, submitted_at)`, ~0.28 ms |
+
+For a typical user (~150 rows) every query was already <2 ms before the
+change, so the benefit is for heavy/long-lived users and keeps write cost in
+check (three single-column indexes were replaced, not stacked). The count of
+all sessions (`COUNT(*)` per user, pagination total) stays ~2 ms either way.
+**Why**: per-user activity tables grow without bound while the old
+`user_id`-only index forced reading every row of the user and sorting or
+filtering in memory.
