@@ -9,6 +9,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/subjects', label: 'Subjects' },
   { to: '/goals', label: 'Goals' },
+  { to: '/reviews', label: 'Reviews' },
 ]
 
 export function AppLayout() {

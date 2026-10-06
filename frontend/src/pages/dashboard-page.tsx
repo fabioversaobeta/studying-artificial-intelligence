@@ -35,7 +35,13 @@ export function DashboardPage() {
         <StatCard label="Level" value={data.level} hint={`${data.xp_to_next_level} XP to next`} />
         <StatCard label="Total XP" value={data.total_xp} />
         <StatCard label="Streak" value={`${data.current_streak_days}d`} hint={`Best: ${data.longest_streak_days}d`} />
-        <StatCard label="Due Reviews" value={data.due_review_count} />
+        <Link to="/reviews" aria-label={`Due reviews: ${data.due_review_count}. Open reviews`}>
+          <StatCard
+            label="Due Reviews"
+            value={data.due_review_count}
+            hint={data.due_review_count > 0 ? 'Review now →' : undefined}
+          />
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

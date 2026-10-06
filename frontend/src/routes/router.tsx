@@ -8,6 +8,7 @@ import { DashboardPage } from '@/pages/dashboard-page'
 import { SubjectsPage } from '@/pages/subjects-page'
 import { SubjectDetailPage } from '@/pages/subject-detail-page'
 import { GoalsPage } from '@/pages/goals-page'
+import { ReviewsPage } from '@/pages/reviews-page'
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
           { path: '/subjects', element: <SubjectsPage /> },
           { path: '/subjects/:id', element: <SubjectDetailPage /> },
           { path: '/goals', element: <GoalsPage /> },
+          { path: '/reviews', element: <ReviewsPage /> },
         ],
       },
     ],
