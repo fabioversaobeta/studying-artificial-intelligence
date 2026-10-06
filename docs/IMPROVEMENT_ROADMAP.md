@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 13 |
-| P2 — Médio prazo | 21 | 0 |
+| P2 — Médio prazo | 21 | 2 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -81,7 +81,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 |---|---|---|---|---|---|---|---|---|---|
 | B1 | Criar GitHub Actions (`.github/workflows/ci.yml`) com dois jobs. **Backend:** serviço Postgres, `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` em banco limpo, `pytest`. **Frontend:** `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`. Rodar em PR e push na `master`. | P0 | M | DONE | S2 (`fix/s2-secret-guard-and-ci`) | A3 (para o CI já nascer verde) | `.github/workflows/ci.yml` | | Os testes usam `TEST_DATABASE_URL` (ver `tests/conftest.py`). Cachear pip/npm. |
 | B2 | Ativar proteção de branch na `master` exigindo CI verde. | P1 | S | TODO | | B1 | (config do GitHub) | | Ação manual do dono no GitHub; a sessão apenas documenta o passo. |
-| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | IN_PROGRESS | S13b (`fix/s13b-ci-migrations-coverage`) | B1 | `.github/workflows/ci.yml` | | |
+| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | DONE | S13b (`fix/s13b-ci-migrations-coverage`) | B1 | `.github/workflows/ci.yml` | 7b9cd8b | |
 
 ## Trilha C — Segurança e autenticação
 
@@ -124,7 +124,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | DONE | S10 (`fix/s10-frontend-page-tests`) | F1 | `frontend/src/pages/*.test.tsx` | | 12984e4 |
 | F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | `444d509`..`b0d5919` | Só adiciona arquivos novos → baixo risco de conflito. Achado: bug de conquistas duplicadas (ver xfail em `test_gamification_service.py`); novo helper `tests/factories.py`. |
 | F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | `88f54a8` | |
-| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | IN_PROGRESS | S13b (`fix/s13b-ci-migrations-coverage`) | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
+| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | DONE | S13b (`fix/s13b-ci-migrations-coverage`) | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | 93d47bb | Piso 80% (medido 85,07%). |
 
 ## Trilha G — Funcionalidades de frontend (backend já pronto)
 
@@ -206,6 +206,8 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — F5 — cobertura de `app/` medida em 85,07% (253 testes); piso `fail_under = 80` + `--cov=app` no pytest do CI; documentado em DEVELOPMENT.md — `93d47bb`
+- 2026-10-06 — B3 — CI: `alembic downgrade base` + `upgrade head` após o upgrade em banco limpo (round-trip validado localmente, sem downgrade quebrado) — `7b9cd8b`
 - 2026-10-06 — C2 — rate limiting em memória (por IP; login também por e-mail) em login/register/refresh, 429 padronizado + Retry-After; X-Forwarded-For só com TRUST_PROXY_HEADERS — `60f5eb7`
 - 2026-10-06 — C4 — `REGISTRATION_ENABLED` e `REGISTRATION_INVITE_CODE`; `GET /auth/registration-info`; campo de convite na register-page — `60f5eb7`, `77feace`
 - 2026-10-06 — C6 — CORS com métodos/headers restritos, origens via JSON ou CSV, `*` rejeitado em produção — `0d81d42`
