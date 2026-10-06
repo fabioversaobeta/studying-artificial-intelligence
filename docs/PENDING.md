@@ -26,6 +26,33 @@ now live 60 minutes instead of 24h.
 
 ---
 
+## Token storage: residual risks (C5)
+
+**Status**: RESOLVED in design; residual risks accepted. See "Tokens: in-memory
+access token plus HttpOnly refresh cookie" in `docs/DECISIONS.md`.
+- An XSS can still act as the user while the page is open (it can call the API
+  with the in-memory access token or call `/auth/refresh`); it can no longer
+  steal a token for later use. The CSP in `frontend/vercel.json` is the
+  mitigation; Google Fonts (`fonts.googleapis.com`/`fonts.gstatic.com`) are the
+  only third-party origins allowed. Self-hosting the font would let the CSP drop
+  them (needs an npm font package; not done).
+- Logging out in one tab does not sign out other open tabs immediately (no
+  `BroadcastChannel` sync); their access token expires within 60 minutes and
+  they cannot refresh.
+- Browsers without the Web Locks API fall back to in-tab deduplication only, so
+  two tabs reloading at the same instant could trigger reuse detection (all
+  sessions revoked, log in again). All current browsers support Web Locks.
+- Every load by a signed-out visitor makes one failing `/auth/refresh` call that
+  counts against the per-IP refresh rate limit (10/min by default).
+- A request carrying the CSRF header but neither `Origin` nor `Referer` is
+  accepted (non-browser clients); a browser cannot send that cross-site.
+- The Vercel rewrite has a placeholder Railway host in `frontend/vercel.json`
+  that must be replaced at deploy time (deploy is deferred), and
+  `CORS_ALLOW_ORIGINS` must contain the real frontend origin or `/auth/refresh`
+  returns 403.
+
+---
+
 ## Automated challenge grading
 
 **Question**: should challenge submissions eventually be graded

@@ -235,9 +235,9 @@ exists (see `docs/PENDING.md`).
   several devices is logged out everywhere on a suspected theft. Because JWT
   `iat` has one-second resolution, a login within the same second as the
   detection also gets rejected -- harmless, retry.
-- `POST /auth/logout` (authenticated) denylists the access token's `jti` and
-  the refresh token from the body (optional; ignored if invalid or owned by
-  another user). `get_current_user` rejects denylisted access tokens and
+- `POST /auth/logout` denylists the access token's `jti` and the refresh token
+  (since C5 the latter comes from the HttpOnly cookie, not the body; both are
+  optional; ignored if invalid or owned by another user). `get_current_user` rejects denylisted access tokens and
   tokens issued before `tokens_valid_after`.
 - Access-token lifetime reduced from 24h to 60 minutes
   (`ACCESS_TOKEN_EXPIRE_MINUTES`); the frontend already refreshes on 401, so
@@ -309,3 +309,90 @@ may decrease after a delete, but anything already earned stays earned. The
 spaced-repetition `reviews` row is not touched (it is review state, not
 session history).
 
+## Tokens: in-memory access token plus HttpOnly refresh cookie (same-origin API)
+
+**Decision** (roadmap item C5; owner directive: pick the best security
+solution, not the easy or merely popular one):
+
+- **Refresh token** (30 days) lives only in a cookie: `HttpOnly`, `Secure`
+  (forced when `ENVIRONMENT=production`), `SameSite=Strict` by default
+  (`COOKIE_SAMESITE`), `Path=/api/v1/auth`, host-only (no `Domain`). JavaScript
+  can never read it, so XSS cannot exfiltrate the long-lived credential, and
+  the browser sends it only to the four auth routes. Name: `__Secure-refresh_token`
+  when Secure, `refresh_token` on plain-http dev. The `__Host-` prefix would
+  be stricter but requires `Path=/`, which would send the cookie to every
+  API route; the narrow path matters more, so `__Secure-` it is.
+- `/auth/login`, `/register` and `/refresh` return only `{access_token,
+  token_type}`; the refresh token is no longer in any JSON body. `/refresh`
+  takes no body and reads the cookie; it rotates it (C3 rotation, reuse
+  detection, `revoked_tokens`, `tokens_valid_after` and the rate limit are
+  unchanged). A failed refresh also expires the dead cookie.
+- **Access token** (60 min) lives only in a JS module variable
+  (`frontend/src/lib/session.ts`): never `localStorage`/`sessionStorage`/
+  IndexedDB. A page load restores the session with `POST /auth/refresh`;
+  the 401 -> refresh -> retry flow and in-tab deduplication stay. `token-storage.ts`
+  (localStorage) was removed; its tests became `session.test.ts`.
+- `POST /auth/logout` no longer requires a Bearer token: it is cookie-driven
+  (CSRF-protected), revokes the cookie's refresh token and, if a valid Bearer
+  token is also sent, its access token, and always answers 204 + expires the
+  cookie. This way logout works after the access token expired or on a fresh
+  tab, which a Bearer-only logout could not do.
+- **CSRF** (only `/auth/refresh` and `/auth/logout` use the ambient cookie;
+  all other endpoints need `Authorization: Bearer`, which cross-site requests
+  cannot attach): (1) `SameSite=Strict`; (2) required custom header
+  `X-CSRF-Protection: 1` (cannot be sent cross-origin without a CORS
+  preflight, which only `CORS_ALLOW_ORIGINS` pass); (3) if the browser sent
+  `Origin` (or else `Referer`) it must be in `CORS_ALLOW_ORIGINS`, `null` is
+  rejected. Chosen over double-submit-cookie / synchronizer tokens: those
+  need a second, JS-readable secret (a cookie readable by JS, or a
+  token endpoint plus state) and work correctly only if subdomains are
+  trusted; the header + Origin + SameSite combination is stateless, has no
+  secret to leak, and is what OWASP lists for JSON APIs called by script. A
+  request with neither Origin nor Referer but with the header is allowed
+  (non-browser client; a browser cannot produce it cross-site).
+- **First-party cookies via same origin**: Vercel and Railway are different
+  sites; cross-site cookies need `SameSite=None`, which Safari ITP and
+  Chrome's third-party-cookie phase-out block. The browser therefore talks only
+  to the frontend origin: Vercel rewrite `/api/:path*` -> Railway in
+  `frontend/vercel.json` in production, Vite `server.proxy` (and `preview.proxy`)
+  to `http://127.0.0.1:8000` in dev, `VITE_API_URL` empty (relative URLs).
+  `SameSite=None` stays configurable but is not the supported path.
+  Rate limiting needs `TRUSTED_PROXY_HOPS=2` behind Vercel + Railway, otherwise
+  every user would share the Vercel egress IP.
+- **Cross-tab refresh race**: tabs share one cookie jar, and rotation burns
+  the token on use; two tabs refreshing in the same instant would look like
+  token theft and revoke every session. Refreshes are serialised across tabs
+  with the Web Locks API (`navigator.locks`), plus in-tab deduplication.
+- **Security headers**: frontend (`vercel.json`): CSP with `script-src 'self'`
+  (no inline script; the Vite build emits none), `style-src 'self'` +
+  Google Fonts (what `index.css` imports), `connect-src 'self'`,
+  `object-src 'none'`, `base-uri`/`form-action 'self'`, `frame-ancestors 'none'`,
+  `upgrade-insecure-requests`; plus nosniff, X-Frame-Options, Referrer-Policy,
+  Permissions-Policy, COOP, HSTS. Backend (`SecurityHeadersMiddleware`, pure
+  ASGI): nosniff, X-Frame-Options, `Referrer-Policy: no-referrer`, CORP,
+  API CSP `default-src 'none'` (not on `/docs`/`/redoc`), `Cache-Control:
+  no-store` on `/auth/*`, HSTS in production.
+
+**Alternatives rejected**:
+- *Keep localStorage + CSP only*: one XSS (or a compromised dependency) steals
+  a 30-day refresh token; CSP reduces but does not remove the risk.
+- *Both tokens in HttpOnly cookies*: then every API call is cookie-authenticated
+  and needs CSRF protection everywhere; keeping Bearer for the API shrinks the
+  CSRF surface to two endpoints.
+- *Cross-site cookies with `SameSite=None`*: blocked or unreliable in Safari/Chrome.
+- *Custom domain with a shared parent (`app.x.com` / `api.x.com`)*: also
+  first-party, but needs a domain the owner does not have and `COOKIE_DOMAIN`
+  widens the cookie to all subdomains.
+- *Double-submit CSRF token*: see above.
+- *In-memory refresh token / service-worker or BFF token handling*: loses the
+  session on reload or adds a whole proxy tier; the cookie is simpler and safer.
+- *Server-side grace window for rotated tokens* (to tolerate multi-tab races):
+  weakens reuse detection; Web Locks solve it client-side.
+
+**Consequences / trade-offs**: an XSS can still *use* the session while the
+page is open (call the API with the in-memory access token or hit
+`/auth/refresh`), it just cannot steal it for later; CSP is the line of defence
+against that. Every page load for a signed-out visitor costs one 401 on
+`/auth/refresh` (counted by the refresh rate limit). The Vercel rewrite adds a
+proxy hop to every API call. Logout in one tab does not instantly sign out other
+open tabs (their access token lives up to 60 min; they cannot refresh).

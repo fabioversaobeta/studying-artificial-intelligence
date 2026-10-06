@@ -95,13 +95,17 @@ frontend/src/
 
 ## Authentication
 
-JWT-based: a short-lived access token (24h) and a longer-lived refresh
+JWT-based: a short-lived access token (60 min) and a longer-lived refresh
 token (30 days), issued on register/login. Passwords are hashed with
 Argon2 (via `argon2-cffi`), OWASP's current recommendation over bcrypt/PBKDF2
-for new applications. The frontend stores tokens and attaches
-`Authorization: Bearer <token>` to API requests; there is no server-side
-session store — logout is client-side token discardal (see
-`docs/PENDING.md` for token revocation, which is intentionally deferred).
+for new applications. The refresh token lives only in an `HttpOnly`
+cookie scoped to `/api/v1/auth`; the access token lives only in frontend
+memory and is sent as `Authorization: Bearer <token>`. A page load restores
+the session through `/auth/refresh`. The API is served same-origin with the
+frontend (Vite proxy / Vercel rewrite) so the cookie is first-party.
+Refresh tokens rotate with reuse detection and a Postgres denylist; logout
+revokes server-side. Rationale, CSRF design and trade-offs: `docs/DECISIONS.md`
+("Tokens: in-memory access token plus HttpOnly refresh cookie").
 
 ## Cross-cutting concerns
 

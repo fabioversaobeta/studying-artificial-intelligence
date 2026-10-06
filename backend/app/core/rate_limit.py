@@ -54,15 +54,18 @@ def client_ip(request: Request, settings: Settings) -> str:
     """Best-effort client IP.
 
     X-Forwarded-For is only honoured when TRUST_PROXY_HEADERS is set, since
-    otherwise any client could spoof it. We take the *last* entry: that is the
-    one appended by our own proxy (Railway); earlier entries are client-supplied.
+    otherwise any client could spoof it. We count from the *end*: the last
+    TRUSTED_PROXY_HOPS entries were appended by our own proxies (Railway, and
+    the Vercel rewrite in front of it); entries before them are client-supplied.
+    With 1 hop that is the last entry; with 2 it is the second to last.
     """
     if settings.trust_proxy_headers:
         forwarded = request.headers.get("x-forwarded-for")
         if forwarded:
-            last = forwarded.split(",")[-1].strip()
-            if last:
-                return last
+            parts = [part.strip() for part in forwarded.split(",")]
+            index = -settings.trusted_proxy_hops
+            if len(parts) >= settings.trusted_proxy_hops and parts[index]:
+                return parts[index]
     return request.client.host if request.client else "unknown"
 
 

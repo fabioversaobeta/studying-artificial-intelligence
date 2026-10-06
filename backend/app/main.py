@@ -12,6 +12,7 @@ from app.core.config import get_settings
 from app.core.exceptions import AppError, RateLimitError
 from app.core.logging import configure_logging, init_sentry
 from app.core.middleware import REQUEST_ID_HEADER, RequestIdMiddleware
+from app.core.security_headers import SecurityHeadersMiddleware
 
 settings = get_settings()
 configure_logging(settings.log_level, settings.log_format)
@@ -31,6 +32,7 @@ app.add_middleware(
     allow_headers=settings.cors_allow_headers,
     expose_headers=["X-Total-Count", REQUEST_ID_HEADER],
 )
+app.add_middleware(SecurityHeadersMiddleware, hsts=settings.is_production)
 # Added last so it is the outermost user middleware (wraps CORS too).
 app.add_middleware(RequestIdMiddleware)
 

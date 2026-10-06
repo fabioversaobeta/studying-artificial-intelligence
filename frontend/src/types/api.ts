@@ -14,9 +14,9 @@ export interface RegistrationInfo {
   invite_required: boolean
 }
 
+// The refresh token is never in the body: it is an HttpOnly cookie.
 export interface TokenResponse {
   access_token: string
-  refresh_token: string
   token_type: string
 }
 

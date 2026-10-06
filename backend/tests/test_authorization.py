@@ -17,6 +17,7 @@ from app.core.config import get_settings
 from app.core.security import create_access_token, create_refresh_token
 from app.models.learning import Review
 from app.models.user import User
+from tests.auth_cookies import refresh
 from tests.factories import API, make_competency, register
 
 _ID = uuid.uuid4()
@@ -135,10 +136,7 @@ class TestTokenValidation:
 
     def test_access_token_cannot_be_used_to_refresh(self, client: TestClient):
         _, user_id = register(client, "victim@example.com")
-        response = client.post(
-            f"{API}/auth/refresh", json={"refresh_token": create_access_token(user_id)}
-        )
-        assert response.status_code == 401
+        assert refresh(client, create_access_token(user_id)).status_code == 401
 
     def test_valid_token_is_accepted(self, client: TestClient, auth_headers: dict[str, str]):
         assert client.get(f"{API}/auth/me", headers=auth_headers).status_code == 200

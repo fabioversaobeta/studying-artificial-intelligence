@@ -25,21 +25,14 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class RefreshRequest(BaseModel):
-    refresh_token: str
-
-
-class LogoutRequest(BaseModel):
-    # Optional so a client that lost its refresh token can still revoke the access token.
-    refresh_token: str | None = None
-
-
 class RegistrationInfo(BaseModel):
     enabled: bool
     invite_required: bool
 
 
 class TokenResponse(BaseModel):
+    """Body of login/register/refresh. The refresh token travels only in an
+    HttpOnly cookie and is never part of the JSON body."""
+
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
