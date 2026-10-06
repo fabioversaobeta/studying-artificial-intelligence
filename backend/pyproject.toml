@@ -17,6 +17,10 @@ dependencies = [
     "argon2-cffi>=23.1",
     "python-multipart>=0.0.12",
     "email-validator>=2.2",
+    # AI layer (roadmap I1). Runtime, not an extra: flipping AI_PROVIDER=claude on
+    # Railway must not require a build-command change. Imported lazily, only by
+    # app.services.ai.claude_provider.
+    "anthropic>=1.0",
 ]
 
 [project.optional-dependencies]

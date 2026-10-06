@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 14 |
-| P2 — Médio prazo | 23 | 12 |
+| P2 — Médio prazo | 23 | 13 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -152,7 +152,7 @@ estáveis.
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | IN_PROGRESS | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai_service.py` (novo), `backend/app/core/config.py` | | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
+| I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | DONE | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai/` (pacote), `backend/app/core/config.py`, `ai_usage` + migration | a88f76e..d94c5f5 | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
 | I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | | Aditivo; nada do schema atual muda. |
 | I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | TODO | | G1, G3 | novo service/endpoint/UI | | |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
@@ -209,6 +209,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — I1 — pacote `app/services/ai` (interface, provider Claude + fake, guardrails, ai_usage + migration dce0bce246d6, GET /ai/status); sem feature de produto — d94c5f5
 - 2026-10-06 — C5 — refresh token em cookie HttpOnly (Path=/api/v1/auth, Secure forçado em prod, SameSite=Strict), access token só em memória com restauração via /auth/refresh, CSRF (header + Origin/Referer + SameSite), API same-origin (proxy Vite / rewrite Vercel), CSP e headers de segurança no frontend e na API — 7df63a6, 4110231, 8f5f8e7
 - 2026-10-06 — J2 — `GET /learning-paths[/{slug}]` com `mastery_score`/`state` por etapa e `progress` agregado (auth opcional, constante em queries); UI mostra barras, estado e resumo — `3f30c13`, `36d6921`
 - 2026-10-06 — J1 — `GET /reviews/due` devolve `competency_name`, `subject_id`, `subject_name` (um join); `competency-index.ts` removido — `368440a`, `d24a045`

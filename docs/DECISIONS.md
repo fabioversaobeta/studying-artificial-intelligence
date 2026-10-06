@@ -396,3 +396,35 @@ against that. Every page load for a signed-out visitor costs one 401 on
 `/auth/refresh` (counted by the refresh rate limit). The Vercel rewrite adds a
 proxy hop to every API call. Logout in one tab does not instantly sign out other
 open tabs (their access token lives up to 60 min; they cannot refresh).
+
+
+## AI layer: provider-agnostic `app/services/ai`, Claude first (I1)
+
+**Decision**: one package owns every LLM interaction. Provider chosen by
+`AI_PROVIDER=fake|claude` (default `fake`, so tests/dev/CI never need a key or
+network). Claude (Anthropic API) is the first real provider, per the owner's
+Track I decision D1; the key lives only in Railway variables.
+- **Default model `claude-sonnet-5-5`**, overridable with `AI_MODEL`: current
+  Sonnet, $2/$10 per MTok -- fits tutoring/grading volume. Sampling parameters
+  (`temperature`) are only sent when a caller sets them because the newest
+  models reject non-default values; thinking is left at the model default, so
+  callers budget `max_tokens` accordingly.
+- **Structured output** via `output_config.format` (JSON schema, adapted by
+  `anthropic.transform_schema`) validated again with Pydantic, plus one repair
+  retry (the repair prompt names failing fields, never echoes values).
+- **`anthropic` is a runtime dependency, not an extra**: enabling Claude on
+  Railway is then only an env-var change (no build-command edit). The import is
+  still lazy and confined to `claude_provider.py`, so the app boots without it.
+- **Measurement, not budget (owner D2)**: every provider call (also failures)
+  writes `ai_usage` (no content). Cost is an *estimate* from a price table in
+  code (`pricing.py`); billing console is authoritative. A per-user daily token
+  ceiling exists but is **off by default** (`AI_DAILY_TOKEN_LIMIT=0`); when on,
+  it raises `AIUsageLimitExceeded` so features degrade instead of breaking.
+- **Language (owner D3)** is a parameter of every call (`en` default, `pt-BR`);
+  the layer instructs the model to answer in it. It does not read the user's
+  profile; features pass the user's preference in.
+- **Production boot guard**: `ENVIRONMENT=production` + `AI_PROVIDER=claude`
+  without `ANTHROPIC_API_KEY` fails at startup, like the other insecure-config
+  checks.
+- Usage rows are committed immediately by the layer so a later failure in the
+  caller does not erase the record of a billed call.

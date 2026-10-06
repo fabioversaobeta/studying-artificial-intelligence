@@ -69,13 +69,19 @@ automatically.
 
 ## AI Mentor / AI abstraction layer
 
-**Question**: which LLM provider(s) should the planned AI Mentor use, and
-what should the provider-agnostic interface look like?
-**Current assumption**: not started. When built, it must sit behind an
-abstraction (`app.services.ai_service` or similar) so the rest of the
-application never imports a provider SDK directly — see the original
-brief's "AI Architecture" section.
-**Impact**: none yet; no code depends on this.
+**Status (I1 done, 2026-10-06)**: the foundation exists in
+`backend/app/services/ai/` (provider `claude` or `fake`, guardrails, usage
+measurement, `GET /ai/status`); see `docs/ARCHITECTURE.md` and the decision in
+`docs/DECISIONS.md`. Owner decisions: Claude/Anthropic, no budget cap for now.
+**Still open**:
+- The owner must set `AI_PROVIDER=claude` and `ANTHROPIC_API_KEY` in Railway
+  to enable the real provider; until then everything runs on the fake one.
+  Not yet exercised against the real API (the suite is 100% mocked) -- do a
+  smoke call via the first feature, then check `GET /ai/status` and `ai_usage`.
+- Pick a real `AI_DAILY_TOKEN_LIMIT` once production usage is measured.
+- Price table (`services/ai/pricing.py`) must be updated when models/prices change.
+- No product feature uses the layer yet (mentor, grader I5, interview I4).
+**Impact**: none on existing flows.
 
 ---
 
