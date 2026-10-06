@@ -67,6 +67,23 @@ def _apply_xp(
     return profile
 
 
+def record_activity(db: Session, user_id: uuid.UUID) -> GamificationProfile:
+    """Count today as an active day for the streak without awarding XP.
+
+    The streak measures consistency ("you showed up"), XP measures effort, and
+    they are decoupled on purpose: a study session too short to earn XP (under
+    10 minutes) must still keep the streak alive (docs/DECISIONS.md). Idempotent
+    within a day. Does not evaluate rewards; call `settle_rewards` afterwards.
+    """
+    profile = gamification_repository.get_profile_for_update(db, user_id)
+    if profile is None:
+        profile = gamification_repository.create_profile(db, user_id)
+    _update_streak(profile, datetime.now(UTC).date())
+    profile.updated_at = datetime.now(UTC)
+    db.flush()
+    return profile
+
+
 def award_xp(
     db: Session,
     *,

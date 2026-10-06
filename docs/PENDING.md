@@ -129,31 +129,12 @@ built yet.
 
 ---
 
-## Study sessions under 10 minutes earn no XP (and no streak)
-
-**Question**: a study session shorter than 10 minutes earns 0 XP, so it never
-calls `award_xp`; as a side effect it doesn't count for the streak and can't
-trigger achievements. Is that intended?
-**Current assumption**: unintended side effect, not a decision. Found by the
-backend test pass (roadmap F3, 2026-10-06).
-**Options**: (a) count any session for the streak even with 0 XP;
-(b) keep as is and document it; (c) award a minimum of 1 XP.
-
 ---
 
-## Accessibility follow-ups (roadmap G5, 2026-10-06)
+## Study sessions under 10 minutes earn no XP — RESOLVED (2026-10-06)
 
-Fixed in G5: skip link, labelled `nav`, `main` landmark, `role="alert"` on
-`ErrorAlert`, visible `:focus-visible` outline, 3:1 form-control borders,
-primary-button contrast (dark text on accent), `aria-expanded` on toggles,
-progress-bar roles. Left open because they are design decisions:
-
-- **Light theme / `prefers-color-scheme`**: only a dark theme exists. Offering
-  a light one needs a second token set; not done.
-- **Per-route document titles and focus move on navigation**: the SPA keeps a
-  single `<title>` and does not move focus to the new page heading after a
-  route change (WCAG 2.4.2 / best practice for SPAs). Needs a small
-  route-announcer component; deferred.
-- **Muted badge/text tones**: `fg-muted` on `surface-raised` is ~6:1 and passes,
-  but the 15%-tint badge tones were checked only by estimate, not with a tool.
-- **Automated a11y checks** (axe in Vitest/Playwright) are not wired up.
+**Decision (owner): option (a).** A session too short to earn XP still counts as
+an active day for the **streak** (and still advances quests/achievements and
+mastery). XP keeps its rule (5 XP per full 10 minutes, capped), so effort is
+still what earns XP, while the streak now measures consistency. Implemented via
+`gamification_service.record_activity`; see `docs/DECISIONS.md`.

@@ -113,6 +113,10 @@ and is untouched if activity was already logged today. XP-awarding events
 that shouldn't count as "showing up" for streak purposes (e.g. quest/
 achievement bonus XP) pass `counts_for_streak=False`.
 
+A study session too short to earn XP (under 10 minutes) still counts for the
+streak: `gamification_service.record_activity` updates the streak without
+awarding XP, so the streak measures consistency while XP measures effort.
+
 ### Spaced repetition (`app.domain.spaced_repetition`)
 
 A simplified SM-2 (the algorithm behind Anki/SuperMemo): a competency

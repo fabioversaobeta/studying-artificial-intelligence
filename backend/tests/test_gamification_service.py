@@ -115,6 +115,43 @@ class TestStreak:
         assert profile.total_xp == 20
 
 
+class TestRecordActivity:
+    def test_record_activity_starts_streak_without_awarding_xp(
+        self, db: Session, user_id: uuid.UUID, monkeypatch
+    ):
+        freeze_time(monkeypatch, gamification_service, utc(2026, 3, 1))
+        gamification_service.record_activity(db, user_id)
+        db.commit()
+        profile = gamification_repository.get_profile(db, user_id)
+        assert profile.current_streak_days == 1
+        assert profile.total_xp == 0
+        assert db.execute(select(XPAward).where(XPAward.user_id == user_id)).first() is None
+
+    def test_record_activity_is_idempotent_within_a_day(
+        self, db: Session, user_id: uuid.UUID, monkeypatch
+    ):
+        freeze_time(monkeypatch, gamification_service, utc(2026, 3, 1, 8))
+        gamification_service.record_activity(db, user_id)
+        gamification_service.record_activity(db, user_id)
+        db.commit()
+        assert gamification_repository.get_profile(db, user_id).current_streak_days == 1
+
+    def test_short_sessions_on_consecutive_days_build_a_streak(
+        self, client: TestClient, auth_headers: dict[str, str], db: Session, monkeypatch
+    ):
+        """J4 (a): a session under 10 minutes earns 0 XP but keeps the streak."""
+        clock = freeze_time(monkeypatch, gamification_service, utc(2026, 3, 1))
+        for day in range(3):
+            clock.current = utc(2026, 3, 1 + day)
+            r = client.post(
+                f"{API}/study-sessions", json={"duration_minutes": 5}, headers=auth_headers
+            )
+            assert r.status_code == 201, r.text
+        profile = client.get(f"{API}/gamification/profile", headers=auth_headers).json()
+        assert profile["current_streak_days"] == 3
+        assert profile["total_xp"] == 0
+
+
 class TestAchievements:
     def test_xp_milestone_unlocks_once(self, db: Session, user_id: uuid.UUID):
         make_achievement(db, "xp_50", AchievementCriterion.XP_MILESTONE, 50)

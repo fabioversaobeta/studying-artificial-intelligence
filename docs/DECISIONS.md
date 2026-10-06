@@ -428,3 +428,22 @@ Track I decision D1; the key lives only in Railway variables.
   checks.
 - Usage rows are committed immediately by the layer so a later failure in the
   caller does not erase the record of a billed call.
+
+## Streak measures consistency, XP measures effort (short sessions keep the streak)
+
+**Context:** the streak was updated inside `award_xp`, which only runs when a
+study session earns XP (>= 10 minutes). A 5-minute session, every day, never
+built a streak even though the learner showed up daily.
+
+**Decision (owner, option a):** decouple them. `gamification_service.record_activity`
+updates the streak without awarding XP; `log_study_session` calls it when the
+session earns 0 XP, then runs `settle_rewards` so quests/achievements still
+advance. XP rules are unchanged.
+
+**Rejected:** (b) keep as is -- the streak would silently require >= 10 minutes;
+(c) minimum 1 XP per session -- pays for logging rather than effort and invites
+farming with 1-minute sessions.
+
+**Scope:** only study sessions. Failed challenge attempts and other zero-XP events
+do not count for the streak (they are not "showing up to study"). No XP is ever
+refunded (see the delete decision).

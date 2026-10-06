@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 14 |
-| P2 — Médio prazo | 23 | 13 |
+| P2 — Médio prazo | 23 | 14 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -170,7 +170,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J1 | Incluir nome da competência e da matéria no payload de `GET /reviews/due` e remover o `competency-index.ts` do frontend (hoje faz N+1 chamadas a `/subjects` e `/subjects/{id}`). | P2 | S | DONE | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/schemas/learning.py`, `backend/app/services/review_service.py`, `backend/app/repositories/review_repository.py`, `frontend/src/features/learning/competency-index.ts`, `frontend/src/pages/reviews-page.tsx` | 368440a, d24a045 | Achado da S11. Mudança aditiva no contrato. |
 | J2 | Progresso por etapa nas learning paths: expor a maestria do usuário por etapa em `GET /learning-paths/{slug}` e mostrar na UI (o G3 entregou sem progresso). | P2 | M | DONE | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/api/v1/learning_paths.py`, `backend/app/schemas/learning.py`, `backend/app/services/learning_service.py`, `frontend/src/pages/learning-path-detail-page.tsx` | 3f30c13, 36d6921 | Achado da S11. Reaproveitar o carregamento em lote do E1. |
 | J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | 0714c3f | O D5 manteve o corpo como array; falta consumir o header. |
-| J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
+| J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | DONE | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | **Decisão do dono: opção (a)** — sessão curta mantém o streak (`record_activity`); XP inalterado. Implementado pelo coordenador. |
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
 | J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | | Entregue junto com o I2 (mesma sessão/migration). |
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | TODO | | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
@@ -246,6 +246,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
 - 2026-10-06 — D6 (frontend) — `apiClient.delete` adicionado pelo coordenador após o merge do C5 (api-client.ts era da S17)
+- 2026-10-06 — J4 — sessões < 10 min mantêm o streak sem XP (`gamification_service.record_activity`); decisão do dono (opção a)
 - 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
 - 2026-10-06 — wave 4 iniciada: S16 (E2,D6), S17 (C5), S18 (J1,J2) reivindicadas; decisões do dono: sem estorno de XP no D6; C5 deve usar a melhor solução (cookie httpOnly + proxy same-origin)
 - 2026-10-06 — wave 3 iniciada: S12 (C3), S13 (A4,B3,F5), S14 (G4,G5,J3), S15 (H2) reivindicadas; Trilha J criada com itens descobertos (J1–J5)
