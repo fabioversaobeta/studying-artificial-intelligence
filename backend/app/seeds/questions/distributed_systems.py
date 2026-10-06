@@ -920,7 +920,395 @@ _REPL: tuple[QuestionSeed, ...] = (
 )
 
 
-_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP, *_REPL)
+_RESHARD_CODE = """```python
+OLD_SHARDS, NEW_SHARDS = 4, 5
+
+moved = sum(1 for key in range(1000) if key % OLD_SHARDS != key % NEW_SHARDS)
+print(moved)
+```"""
+
+
+_SHARD: tuple[QuestionSeed, ...] = (
+    _q(
+        "partitioning-sharding-q01",
+        "partitioning-sharding",
+        MC,
+        EASY,
+        ("d",),
+        ("sharding", "hash", "range-scans"),
+        _text(
+            "A table is sharded by `hash(order_id)`. What is the main drawback of this strategy?",
+            "A good hash spreads keys almost uniformly, which is its strength, but it also "
+            "destroys ordering: adjacent keys land on unrelated shards, so a range query such "
+            'as "orders from March 1 to 15" must be sent to every shard. Hash sharding does '
+            "not create hot ranges (A), does not need a lookup service (B) and does not prevent "
+            "lookups by key (C).",
+            "It concentrates recent writes on a single shard.",
+            "It requires a separate lookup service to find the shard of each key.",
+            "It makes lookups by `order_id` impossible.",
+            "Range scans must be sent to every shard, because hashing destroys key ordering.",
+        ),
+        _text(
+            "Uma tabela é particionada (sharded) por `hash(order_id)`. Qual é a principal "
+            "desvantagem dessa estratégia?",
+            "Um bom hash espalha as chaves de forma quase uniforme, o que é sua força, mas também "
+            "destrói a ordenação: chaves adjacentes caem em shards sem relação, então uma "
+            'consulta por faixa como "pedidos de 1 a 15 de março" precisa ser enviada a todos '
+            "os shards. O sharding por hash não cria faixas quentes (A), não precisa de um "
+            "serviço de lookup (B) e não impede buscas por chave (C).",
+            "Concentra as escritas recentes em um único shard.",
+            "Exige um serviço de lookup separado para achar o shard de cada chave.",
+            "Torna impossíveis as buscas por `order_id`.",
+            "Consultas por faixa precisam ser enviadas a todos os shards, pois o hash destrói "
+            "a ordenação das chaves.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q02",
+        "partitioning-sharding",
+        MC,
+        EASY,
+        ("b",),
+        ("sharding", "replication"),
+        _text(
+            "What problem does sharding solve that replication alone does not?",
+            "Every replica holds the full dataset, so replication adds durability and read "
+            "capacity but does not help when the data or the write throughput no longer fits "
+            "on one machine. Sharding splits the data so each node holds only a slice, letting "
+            "total storage and write capacity grow with the number of shards.",
+            "It protects the data against the loss of a machine.",
+            "It lets the dataset and the write load exceed what a single machine can hold or "
+            "handle.",
+            "It makes every read return the latest write.",
+            "It removes the need for backups.",
+        ),
+        _text(
+            "Que problema o sharding resolve e a replicação sozinha não resolve?",
+            "Toda réplica guarda o conjunto de dados completo, então a replicação agrega "
+            "durabilidade e capacidade de leitura, mas não ajuda quando os dados ou a vazão de "
+            "escrita não cabem mais em uma máquina. O sharding divide os dados para que cada nó "
+            "guarde só uma fatia, permitindo que o armazenamento e a capacidade de escrita "
+            "totais cresçam com o número de shards.",
+            "Protege os dados contra a perda de uma máquina.",
+            "Permite que o conjunto de dados e a carga de escrita excedam o que uma única "
+            "máquina comporta ou suporta.",
+            "Faz toda leitura retornar a última escrita.",
+            "Elimina a necessidade de backups.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q03",
+        "partitioning-sharding",
+        MC,
+        EASY,
+        ("c",),
+        ("sharding", "range", "hot-shards"),
+        _text(
+            "A time-series table is range-sharded by timestamp, with one shard per month. What "
+            "problem will show up first?",
+            "Almost all current writes carry the current timestamp, so they hit the one shard "
+            'that owns "now" while the shards with historical data stay mostly idle: a hot '
+            "shard. Option A describes hash sharding (range scans over time stay efficient "
+            "here), and neither re-sharding (B) nor cross-shard joins (D) is the first thing "
+            "to bite.",
+            "Time-range queries must be sent to every shard.",
+            "Adding a shard forces nearly all data to move.",
+            "All new writes land on the shard that owns the current month, creating a hot shard.",
+            "Joins between months become impossible.",
+        ),
+        _text(
+            "Uma tabela de séries temporais é particionada por faixa de timestamp, com um shard "
+            "por mês. Que problema aparece primeiro?",
+            "Quase todas as escritas atuais carregam o timestamp atual, então atingem o único "
+            'shard que detém o "agora" enquanto os shards com dados históricos ficam quase '
+            "ociosos: um hot shard. A opção A descreve o sharding por hash (aqui as consultas "
+            "por faixa de tempo continuam eficientes), e nem o re-sharding (B) nem os joins "
+            "entre shards (D) são o primeiro problema.",
+            "Consultas por faixa de tempo precisam ser enviadas a todos os shards.",
+            "Adicionar um shard força a movimentação de quase todos os dados.",
+            "Todas as novas escritas caem no shard do mês atual, criando um hot shard.",
+            "Joins entre meses se tornam impossíveis.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q04",
+        "partitioning-sharding",
+        MC,
+        MEDIUM,
+        ("a",),
+        ("sharding", "directory"),
+        _text(
+            "Directory-based sharding lets you move any key (or tenant) to any shard by "
+            "updating a lookup table. What is its main cost?",
+            "The directory is consulted to route requests, so it adds a lookup to the request "
+            "path and becomes a critical dependency that must itself be highly available and "
+            "usually cached. It does not prevent range scans (B), it makes moving data easier, "
+            "not harder (C), and it does not require uniformly distributed keys (D); that "
+            "flexibility is its selling point.",
+            "The directory is an extra dependency on the request path and must itself be "
+            "highly available.",
+            "Range scans become impossible.",
+            "Data can only be rebalanced by taking the whole system offline.",
+            "Keys must be uniformly distributed for the directory to work.",
+        ),
+        _text(
+            "O sharding baseado em diretório permite mover qualquer chave (ou tenant) para "
+            "qualquer shard atualizando uma tabela de lookup. Qual é o seu principal custo?",
+            "O diretório é consultado para rotear requisições, então adiciona um lookup ao "
+            "caminho da requisição e vira uma dependência crítica que precisa ser altamente "
+            "disponível e, em geral, cacheada. Ele não impede consultas por faixa (B), torna "
+            "mover dados mais fácil, não mais difícil (C), e não exige chaves uniformemente "
+            "distribuídas (D); essa flexibilidade é seu ponto forte.",
+            "O diretório é uma dependência extra no caminho da requisição e precisa ser "
+            "altamente disponível.",
+            "Consultas por faixa se tornam impossíveis.",
+            "Os dados só podem ser rebalanceados desligando o sistema inteiro.",
+            "As chaves precisam ser distribuídas uniformemente para o diretório funcionar.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q05",
+        "partitioning-sharding",
+        CODE,
+        MEDIUM,
+        ("d",),
+        ("sharding", "modulo", "resharding"),
+        _text(
+            "A system routes each key to shard `key % N`. Assuming uniformly distributed "
+            "integer keys, what does this print, and what does it tell you about growing the "
+            "cluster from 4 to 5 shards?\n\n" + _RESHARD_CODE,
+            "It prints `800`: only keys whose remainders modulo 4 and modulo 5 happen to match "
+            "(20% of them) stay put, so about 80% of the data moves. A consistent-hashing "
+            "scheme would move only about one fifth of the keys (the share the new shard must "
+            "own), which is what option B describes. Options A and C do not match the "
+            "computation, since the remainders differ for most keys.",
+            "`0`: modulo sharding never moves keys when shards are added.",
+            "`200`: about 1/N of the keys move, the ideal minimum.",
+            "`500`: about half of the keys move.",
+            "`800`: about 80% of the keys move, which is why naive modulo resharding is costly.",
+        ),
+        _text(
+            "Um sistema roteia cada chave para o shard `key % N`. Supondo chaves inteiras "
+            "uniformemente distribuídas, o que isto imprime e o que revela sobre crescer o "
+            "cluster de 4 para 5 shards?\n\n" + _RESHARD_CODE,
+            "Imprime `800`: só as chaves cujos restos módulo 4 e módulo 5 coincidem (20% delas) "
+            "ficam onde estão, então cerca de 80% dos dados se movem. Um esquema de consistent "
+            "hashing moveria apenas cerca de um quinto das chaves (a parte que o novo shard "
+            "deve assumir), que é o que a opção B descreve. As opções A e C não batem com o "
+            "cálculo, pois os restos diferem para a maioria das chaves.",
+            "`0`: o sharding por módulo nunca move chaves quando shards são adicionados.",
+            "`200`: cerca de 1/N das chaves se movem, o mínimo ideal.",
+            "`500`: cerca de metade das chaves se movem.",
+            "`800`: cerca de 80% das chaves se movem, por isso o re-sharding ingênuo por módulo "
+            "é caro.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q06",
+        "partitioning-sharding",
+        MC,
+        MEDIUM,
+        ("b",),
+        ("sharding", "shard-key", "multi-tenant"),
+        _text(
+            "For a multi-tenant SaaS database, why is `tenant_id` often a good default shard key?",
+            "Nearly every query and transaction in such an app is already scoped to one "
+            "tenant, so with `tenant_id` as the shard key each of them is served entirely by a "
+            "single shard, avoiding cross-shard joins and distributed transactions. Tenants "
+            "are usually very uneven in size (A is false and skew is the main risk), secondary "
+            "indexes are still needed (C), and cross-tenant analytics become fan-out queries "
+            "(D).",
+            "Tenants are normally similar in size, so the load is perfectly even.",
+            "Most queries and transactions touch a single tenant, so they stay within one shard.",
+            "It removes the need for secondary indexes.",
+            "It makes queries across all tenants cheap.",
+        ),
+        _text(
+            "Em um banco de SaaS multi-tenant, por que `tenant_id` costuma ser uma boa "
+            "shard key padrão?",
+            "Quase toda consulta e transação nesse tipo de aplicação já é restrita a um tenant, "
+            "então com `tenant_id` como shard key cada uma é atendida inteiramente por um único "
+            "shard, evitando joins entre shards e transações distribuídas. Os tenants costumam "
+            "ter tamanhos muito desiguais (A é falsa e o desvio é o principal risco), índices "
+            "secundários continuam necessários (C) e análises entre tenants viram consultas "
+            "em todos os shards (D).",
+            "Os tenants normalmente têm tamanho parecido, então a carga fica perfeitamente "
+            "uniforme.",
+            "A maioria das consultas e transações toca um único tenant, então ficam dentro "
+            "de um shard.",
+            "Elimina a necessidade de índices secundários.",
+            "Torna baratas as consultas que cruzam todos os tenants.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q07",
+        "partitioning-sharding",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("sharding", "secondary-indexes"),
+        _text(
+            "A table is sharded by `tenant_id` and has a **local** secondary index on "
+            "`external_ticket_id` in each shard. A query looks up one ticket by "
+            "`external_ticket_id` without knowing its tenant. What happens?",
+            "Each local index covers only the rows of its own shard, and the ticket could be on "
+            "any of them, so the query has to be sent to every shard and the results gathered. "
+            "A global secondary index, partitioned by the indexed column, would allow a "
+            "targeted lookup but must be kept in sync with the base data and may lag "
+            "behind it. A is wrong because no single shard can be chosen, B because the lookup "
+            "is possible, and D because a read needs no distributed transaction.",
+            "The query goes to one shard, picked by hashing `external_ticket_id`.",
+            "The query cannot be answered without changing the shard key.",
+            "The query is sent to every shard (scatter-gather) and the results are combined.",
+            "The query needs a distributed transaction across all shards.",
+        ),
+        _text(
+            "Uma tabela é particionada por `tenant_id` e tem um índice secundário **local** em "
+            "`external_ticket_id` em cada shard. Uma consulta busca um ticket por "
+            "`external_ticket_id` sem saber o tenant. O que acontece?",
+            "Cada índice local cobre apenas as linhas do seu próprio shard, e o ticket pode "
+            "estar em qualquer um, então a consulta precisa ser enviada a todos os shards e os "
+            "resultados reunidos. Um índice secundário global, particionado pela coluna "
+            "indexada, permitiria uma busca direcionada, mas precisa ser mantido em sincronia "
+            "com os dados-base e pode ficar atrasado em relação a eles. A erra porque nenhum "
+            "shard único pode ser escolhido, B porque a busca é possível, e D porque uma "
+            "leitura não precisa de transação distribuída.",
+            "A consulta vai a um shard, escolhido pelo hash de `external_ticket_id`.",
+            "A consulta não pode ser respondida sem mudar a shard key.",
+            "A consulta é enviada a todos os shards (scatter-gather) e os resultados são "
+            "combinados.",
+            "A consulta exige uma transação distribuída entre todos os shards.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q08",
+        "partitioning-sharding",
+        MS,
+        MEDIUM,
+        ("a", "c", "e"),
+        ("sharding", "joins", "transactions", "secondary-indexes"),
+        _text(
+            "A database was sharded by `tenant_id`. Which of these operations become harder "
+            "or more expensive because of the sharding? Select all that apply.",
+            "Joins across shards, atomic updates spanning shards (which need two-phase commit "
+            "or a redesign), and lookups by a non-shard-key column (fan-out or a global index) "
+            "all get harder. Fetching one row by its shard key (B) and writing a row whose "
+            "shard key is known (D) are routed to a single shard and stay as simple as "
+            "before.",
+            "A join between tables whose matching rows live on different shards.",
+            "Fetching one row when its `tenant_id` is known.",
+            "An atomic transaction that updates rows belonging to two different shards.",
+            "Inserting a new row whose `tenant_id` is known.",
+            "Finding rows by a column other than the shard key.",
+        ),
+        _text(
+            "Um banco foi particionado por `tenant_id`. Quais destas operações ficam mais "
+            "difíceis ou mais caras por causa do sharding? Selecione todas que se aplicam.",
+            "Joins entre shards, atualizações atômicas que abrangem shards (que exigem "
+            "two-phase commit ou redesenho) e buscas por uma coluna que não é a shard key "
+            "(fan-out ou índice global) ficam mais difíceis. Buscar uma linha pela shard key "
+            "(B) e gravar uma linha cuja shard key é conhecida (D) são roteadas a um único "
+            "shard e continuam tão simples quanto antes.",
+            "Um join entre tabelas cujas linhas correspondentes estão em shards diferentes.",
+            "Buscar uma linha quando seu `tenant_id` é conhecido.",
+            "Uma transação atômica que atualiza linhas de dois shards diferentes.",
+            "Inserir uma nova linha cujo `tenant_id` é conhecido.",
+            "Encontrar linhas por uma coluna diferente da shard key.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q09",
+        "partitioning-sharding",
+        MC,
+        HARD,
+        ("c",),
+        ("sharding", "hot-shards", "multi-tenant", "directory"),
+        _text(
+            "A multi-tenant database is sharded by `hash(tenant_id)`. One enterprise tenant "
+            "now generates about 40% of all traffic and overloads its shard. Which change best "
+            "fixes this while keeping most queries and transactions single-shard for everyone "
+            "else?",
+            "A directory (lookup table) lets you override the hash for the large tenant and "
+            "give it a dedicated shard while every other tenant keeps hash placement and "
+            "tenant locality. A would spread each tenant's rows over all shards, turning "
+            "most queries into fan-outs and most transactions into cross-shard ones. B changes "
+            "nothing for this tenant, since all of its rows still hash to one shard. D "
+            "reintroduces the hot-shard problem on the newest range.",
+            "Re-shard by `hash(row_id)` so every tenant's rows spread over all shards.",
+            "Add more shards but keep `hash(tenant_id)` as the key.",
+            "Add a directory that places the large tenant on a dedicated shard and leaves "
+            "other tenants where hashing put them.",
+            "Switch to range sharding by creation timestamp.",
+        ),
+        _text(
+            "Um banco multi-tenant é particionado por `hash(tenant_id)`. Um tenant corporativo "
+            "passa a gerar cerca de 40% de todo o tráfego e sobrecarrega o seu shard. Qual "
+            "mudança resolve isso melhor, mantendo a maioria das consultas e transações dos "
+            "demais em um único shard?",
+            "Um diretório (tabela de lookup) permite sobrescrever o hash para o tenant grande "
+            "e dar a ele um shard dedicado, enquanto os demais tenants mantêm a colocação por "
+            "hash e a localidade por tenant. A espalharia as linhas de cada tenant por todos os "
+            "shards, transformando a maioria das consultas em fan-outs e a maioria das "
+            "transações em transações entre shards. B não muda nada para esse tenant, já que "
+            "todas as suas linhas continuam no mesmo shard. D reintroduz o problema de hot "
+            "shard na faixa mais recente.",
+            "Re-particionar por `hash(row_id)` para que as linhas de cada tenant se espalhem "
+            "por todos os shards.",
+            "Adicionar mais shards mantendo `hash(tenant_id)` como chave.",
+            "Adicionar um diretório que coloque o tenant grande em um shard dedicado e deixe "
+            "os demais onde o hash os colocou.",
+            "Trocar para sharding por faixa de data de criação.",
+        ),
+    ),
+    _q(
+        "partitioning-sharding-q10",
+        "partitioning-sharding",
+        SHORT,
+        HARD,
+        None,
+        ("sharding", "consistent-hashing", "virtual-nodes", "interview"),
+        _text(
+            "Explain how consistent hashing works, why it reshards better than `hash(key) % N`, "
+            "and what virtual nodes add.",
+            "Self-check: did you mention (1) keys and nodes placed on the same hash ring with "
+            "clockwise ownership, (2) that adding or removing a node moves only about 1/N of "
+            "the keys, and (3) virtual nodes smoothing load and spreading rebalancing?",
+            model_answer="Both nodes and keys are hashed onto a fixed ring (for example "
+            "0 to 2^32-1). A key belongs to the first node found clockwise from its position. "
+            "When a node is added, it takes over only the keys between its predecessor and "
+            "itself, so about 1/N of the keys move; when one leaves, only its keys go to its "
+            "successor. With hash(key) % N, changing N changes the shard of most keys, forcing "
+            "a near-total reshuffle. With a single position per node, load can be uneven and "
+            "a departing node dumps everything on one neighbor. Virtual nodes give each "
+            "physical node many positions on the ring, which evens out the load, spreads the "
+            "keys moved by an addition or removal across many nodes, and allows weighting "
+            "bigger machines with more positions. Like plain hash sharding, it gives up "
+            "efficient range scans.",
+        ),
+        _text(
+            "Explique como funciona o consistent hashing, por que ele faz re-sharding melhor "
+            "que `hash(key) % N` e o que os virtual nodes acrescentam.",
+            "Autoavaliação: você mencionou (1) chaves e nós no mesmo anel de hash com "
+            "propriedade no sentido horário, (2) que adicionar ou remover um nó move apenas "
+            "cerca de 1/N das chaves e (3) virtual nodes suavizando a carga e distribuindo o "
+            "rebalanceamento?",
+            model_answer="Tanto os nós quanto as chaves recebem hash em um anel fixo (por "
+            "exemplo, de 0 a 2^32-1). Uma chave pertence ao primeiro nó encontrado no sentido "
+            "horário a partir da sua posição. Quando um nó é adicionado, ele assume apenas as "
+            "chaves entre seu antecessor e ele mesmo, então cerca de 1/N das chaves se movem; "
+            "quando um nó sai, só as chaves dele vão para o sucessor. Com hash(key) % N, mudar "
+            "N muda o shard da maioria das chaves, forçando uma redistribuição quase total. "
+            "Com uma única posição por nó, a carga pode ficar desigual e um nó que sai despeja "
+            "tudo em um vizinho. Os virtual nodes dão a cada nó físico muitas posições no "
+            "anel, o que equilibra a carga, distribui as chaves movidas por uma adição ou "
+            "remoção entre muitos nós e permite dar peso maior a máquinas maiores. Como o "
+            "sharding por hash simples, abre mão de consultas por faixa eficientes.",
+        ),
+    ),
+)
+
+
+_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP, *_REPL, *_SHARD)
 
 _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
@@ -949,6 +1337,21 @@ _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "title": "Quiz de Replicação",
                 "description": "Síncrona vs assíncrona, replication lag, failover, split-brain "
                 "e quóruns.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="distributed-systems-partitioning-sharding-quiz",
+        title="Partitioning & Sharding Quiz",
+        description="Hash, range and directory sharding, shard keys, secondary indexes and "
+        "consistent hashing.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="partitioning-sharding",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Particionamento e Sharding",
+                "description": "Sharding por hash, faixa e diretório, shard keys, índices "
+                "secundários e consistent hashing.",
             }
         },
     ),
