@@ -75,6 +75,15 @@ class LearningPathItemRead(BaseModel):
 
     competency: CompetencyRead
     sort_order: int
+    # Per-user progress; null when the request is anonymous.
+    mastery_score: float | None = None
+    state: CompetencyState | None = None
+
+
+class LearningPathProgress(BaseModel):
+    total_steps: int
+    mastered_steps: int
+    average_mastery: float  # 0-100, mean of step mastery scores
 
 
 class LearningPathRead(BaseModel):
@@ -85,6 +94,7 @@ class LearningPathRead(BaseModel):
     slug: str
     description: str | None
     items: list[LearningPathItemRead]
+    progress: LearningPathProgress | None = None  # null when anonymous
 
 
 class StudySessionCreate(BaseModel):
@@ -165,6 +175,15 @@ class ReviewRead(BaseModel):
     due_at: datetime
     last_reviewed_at: datetime | None
     last_recall_quality: int | None
+
+
+class ReviewDueRead(ReviewRead):
+    """A due review enriched with the competency/subject context, so clients
+    don't need extra calls to render it. Additive over ReviewRead."""
+
+    competency_name: str
+    subject_id: uuid.UUID
+    subject_name: str
 
 
 class ReviewRecallSubmit(BaseModel):

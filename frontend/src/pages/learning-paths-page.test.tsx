@@ -87,3 +87,54 @@ describe('LearningPathDetailPage', () => {
     expect(await screen.findByText('Path not found')).toBeInTheDocument()
   })
 })
+
+describe('learning path progress', () => {
+  const progressPath: LearningPath = {
+    ...path,
+    items: [
+      { competency: comp('First'), sort_order: 1, mastery_score: 90, state: 'mastered' },
+      { competency: comp('Second'), sort_order: 2, mastery_score: 40, state: 'learning' },
+    ],
+    progress: { total_steps: 2, mastered_steps: 1, average_mastery: 65 },
+  }
+
+  it('shows per-step progress bars, state badges and an aggregate summary', async () => {
+    svc.getLearningPath.mockResolvedValue(progressPath)
+    renderAt('/learning-paths/backend-basics')
+
+    expect(await screen.findByText(/1 of 2 steps mastered/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Path progress' })).toHaveAttribute(
+      'aria-valuenow',
+      '65',
+    )
+    expect(screen.getByRole('progressbar', { name: 'First mastery' })).toHaveAttribute(
+      'aria-valuenow',
+      '90',
+    )
+    expect(screen.getByRole('progressbar', { name: 'Second mastery' })).toHaveAttribute(
+      'aria-valuenow',
+      '40',
+    )
+    expect(screen.getByText('Mastered')).toBeInTheDocument()
+    expect(screen.getByText('Learning')).toBeInTheDocument()
+  })
+
+  it('renders without progress UI when the API returns none', async () => {
+    svc.getLearningPath.mockResolvedValue(path)
+    renderAt('/learning-paths/backend-basics')
+
+    expect(await screen.findByRole('heading', { name: 'Backend basics' })).toBeInTheDocument()
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  })
+
+  it('shows aggregate progress on the list', async () => {
+    svc.listLearningPaths.mockResolvedValue([progressPath])
+    renderAt('/learning-paths')
+
+    expect(await screen.findByText(/2 steps · 1 mastered/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Backend basics progress' })).toHaveAttribute(
+      'aria-valuenow',
+      '65',
+    )
+  })
+})

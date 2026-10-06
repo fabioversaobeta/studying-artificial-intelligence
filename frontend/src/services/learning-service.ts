@@ -4,6 +4,7 @@ import type {
   ChallengeSubmission,
   ChallengeSubmissionStatus,
   Dashboard,
+  DueReview,
   LearningGoal,
   LearningPath,
   LearningResource,
@@ -51,7 +52,7 @@ export const learningService = {
     }),
 
   listDueReviews: (params?: PageParams) =>
-    apiClient.getPaged<Review>('/api/v1/reviews/due', params),
+    apiClient.getPaged<DueReview>('/api/v1/reviews/due', params),
   submitRecall: (competencyId: string, quality: number) =>
     apiClient.post<Review>(`/api/v1/reviews/${competencyId}/recall`, { quality }),
 }

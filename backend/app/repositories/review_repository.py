@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models.learning import Review
+from app.models.learning import Competency, Review, Subject
 
 
 def get_review(db: Session, user_id: uuid.UUID, competency_id: uuid.UUID) -> Review | None:
@@ -29,6 +29,22 @@ def list_due_reviews(
     if limit is not None:
         stmt = stmt.limit(limit)
     return list(db.execute(stmt).scalars().all())
+
+
+def list_due_reviews_with_context(
+    db: Session, user_id: uuid.UUID, *, as_of: datetime, limit: int, offset: int
+) -> list[tuple[Review, str, uuid.UUID, str]]:
+    """Due reviews plus competency name and subject id/name in ONE joined query."""
+    stmt = (
+        select(Review, Competency.name, Subject.id, Subject.name)
+        .join(Competency, Competency.id == Review.competency_id)
+        .join(Subject, Subject.id == Competency.subject_id)
+        .where(Review.user_id == user_id, Review.due_at <= as_of)
+        .order_by(Review.due_at, Review.id)
+        .offset(offset)
+        .limit(limit)
+    )
+    return [(r, cn, sid, sn) for r, cn, sid, sn in db.execute(stmt).all()]
 
 
 def count_due_reviews(db: Session, user_id: uuid.UUID, *, as_of: datetime) -> int:

@@ -6,21 +6,22 @@ import { ReviewsPage } from '@/pages/reviews-page'
 import { learningService } from '@/services/learning-service'
 import { paged } from '@/test/paged'
 import { ApiError } from '@/services/api-client'
-import type { Review } from '@/types/api'
+import type { DueReview } from '@/types/api'
 
 vi.mock('@/services/learning-service', () => ({
   learningService: {
     listDueReviews: vi.fn(),
     submitRecall: vi.fn(),
-    listSubjects: vi.fn(),
-    getSubject: vi.fn(),
   },
 }))
 
 const svc = vi.mocked(learningService)
 
-const review: Review = {
+const review: DueReview = {
   id: 'r1',
+  competency_name: 'Gradient Descent',
+  subject_id: 's1',
+  subject_name: 'Machine Learning',
   competency_id: 'c1',
   interval_days: 1,
   ease_factor: 2.5,
@@ -40,7 +41,6 @@ function renderPage() {
 
 beforeEach(() => {
   vi.resetAllMocks()
-  svc.listSubjects.mockResolvedValue([])
 })
 
 describe('ReviewsPage', () => {
@@ -54,6 +54,18 @@ describe('ReviewsPage', () => {
     svc.listDueReviews.mockRejectedValue(new ApiError('server_error', 'Boom', 500))
     renderPage()
     expect(await screen.findByText('Boom')).toBeInTheDocument()
+  })
+
+  it('shows the competency name and links to its subject without extra calls', async () => {
+    svc.listDueReviews.mockResolvedValue(paged([review]))
+    renderPage()
+
+    expect(await screen.findByRole('heading', { name: 'Gradient Descent' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Machine Learning' })).toHaveAttribute(
+      'href',
+      '/subjects/s1',
+    )
+    expect(svc.listDueReviews).toHaveBeenCalledTimes(1)
   })
 
   it('submits a recall and shows the next interval', async () => {
@@ -80,7 +92,7 @@ describe('ReviewsPage', () => {
   })
 
   it('loads more reviews with the next offset and hides the button at the end', async () => {
-    const r2: Review = { ...review, id: 'r2', competency_id: 'c2' }
+    const r2: DueReview = { ...review, id: 'r2', competency_id: 'c2', competency_name: 'Backprop' }
     svc.listDueReviews.mockResolvedValueOnce(paged([review], 2))
     svc.listDueReviews.mockResolvedValueOnce(paged([r2], 2))
     renderPage()

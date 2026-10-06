@@ -1,5 +1,6 @@
 import uuid
 from datetime import UTC, date, datetime
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,7 @@ from app.domain.skill_tree import MASTERY_THRESHOLD, compute_competency_state
 from app.models.gamification import XPSource
 from app.models.learning import (
     Competency,
+    CompetencyState,
     GoalStatus,
     LearningGoal,
     LearningPath,
@@ -184,15 +186,65 @@ def list_competency_resources(db: Session, competency_id: uuid.UUID) -> list[Lea
     return learning_catalog_repository.list_resources_by_competency(db, competency_id)
 
 
-def list_learning_paths(db: Session) -> list[LearningPath]:
-    return learning_catalog_repository.list_learning_paths(db)
+def list_learning_paths(db: Session, user_id: uuid.UUID | None = None) -> list[dict]:
+    paths = learning_catalog_repository.list_learning_paths(db)
+    return _paths_with_progress(db, user_id, paths)
 
 
-def get_learning_path(db: Session, slug: str) -> LearningPath:
+def get_learning_path(db: Session, slug: str, user_id: uuid.UUID | None = None) -> dict:
     path = learning_catalog_repository.get_learning_path_by_slug(db, slug)
     if path is None:
         raise NotFoundError("Learning path not found")
-    return path
+    return _paths_with_progress(db, user_id, [path])[0]
+
+
+def _paths_with_progress(
+    db: Session, user_id: uuid.UUID | None, paths: list[LearningPath]
+) -> list[dict]:
+    """Attach per-step mastery/state and an aggregate to each path.
+
+    Reuses the skill-tree state derivation on every distinct competency of all
+    given paths at once, so the query count is constant (no N+1)."""
+    states: dict[uuid.UUID, dict] = {}
+    if user_id is not None:
+        distinct = {item.competency_id: item.competency for p in paths for item in p.items}
+        states = {
+            entry["competency"].id: entry
+            for entry in _competencies_with_state(db, user_id, list(distinct.values()))
+        }
+
+    result = []
+    for path in paths:
+        items: list[dict[str, Any]] = []
+        for item in path.items:
+            entry = states.get(item.competency_id)
+            items.append(
+                {
+                    "competency": item.competency,
+                    "sort_order": item.sort_order,
+                    "mastery_score": entry["mastery_score"] if entry else None,
+                    "state": entry["state"] if entry else None,
+                }
+            )
+        progress = None
+        if user_id is not None:
+            scores = [i["mastery_score"] for i in items]
+            progress = {
+                "total_steps": len(items),
+                "mastered_steps": sum(1 for i in items if i["state"] == CompetencyState.MASTERED),
+                "average_mastery": round(sum(scores) / len(scores), 2) if scores else 0.0,
+            }
+        result.append(
+            {
+                "id": path.id,
+                "title": path.title,
+                "slug": path.slug,
+                "description": path.description,
+                "items": items,
+                "progress": progress,
+            }
+        )
+    return result
 
 
 def create_goal(

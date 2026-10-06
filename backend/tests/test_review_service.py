@@ -57,6 +57,53 @@ class TestDueList:
         due = client.get(f"{API}/reviews/due", headers=auth_headers).json()
         assert [d["competency_id"] for d in due] == [str(studied.id)]
 
+    def test_due_review_includes_competency_and_subject_context(
+        self, client: TestClient, auth_headers: dict[str, str], db: Session, studied: Competency
+    ):
+        _make_due(db, studied)
+        (item,) = client.get(f"{API}/reviews/due", headers=auth_headers).json()
+        assert item["competency_name"] == studied.name
+        assert item["subject_id"] == str(studied.subject_id)
+        assert item["subject_name"] == studied.subject.name
+        # existing fields are untouched (additive contract)
+        assert item["competency_id"] == str(studied.id)
+        assert "interval_days" in item and "due_at" in item
+
+    def test_due_list_query_count_does_not_grow_with_reviews(
+        self, client: TestClient, auth_headers: dict[str, str], db: Session
+    ):
+        from sqlalchemy import event
+
+        def run() -> int:
+            count = 0
+
+            def _count(*_args) -> None:
+                nonlocal count
+                count += 1
+
+            bind = db.get_bind()
+            event.listen(bind, "before_cursor_execute", _count)
+            try:
+                assert client.get(f"{API}/reviews/due", headers=auth_headers).status_code == 200
+            finally:
+                event.remove(bind, "before_cursor_execute", _count)
+            return count
+
+        def add(n: int) -> None:
+            for _ in range(n):
+                comp, _ = make_competency(db)
+                client.post(
+                    f"{API}/study-sessions",
+                    headers=auth_headers,
+                    json={"competency_id": str(comp.id), "duration_minutes": 5},
+                )
+                _make_due(db, comp)
+
+        add(1)
+        few = run()
+        add(5)
+        assert run() == few
+
     def test_due_reviews_are_ordered_oldest_first(
         self, client: TestClient, auth_headers: dict[str, str], db: Session, studied: Competency
     ):

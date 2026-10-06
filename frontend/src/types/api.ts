@@ -82,6 +82,15 @@ export interface LearningResource {
 export interface LearningPathItem {
   competency: Competency
   sort_order: number
+  /** Per-user progress; null/absent when the request was anonymous. */
+  mastery_score?: number | null
+  state?: CompetencyState | null
+}
+
+export interface LearningPathProgress {
+  total_steps: number
+  mastered_steps: number
+  average_mastery: number
 }
 
 export interface LearningPath {
@@ -90,6 +99,7 @@ export interface LearningPath {
   slug: string
   description: string | null
   items: LearningPathItem[]
+  progress?: LearningPathProgress | null
 }
 
 export interface StudySession {
@@ -137,6 +147,12 @@ export interface Review {
   due_at: string
   last_reviewed_at: string | null
   last_recall_quality: number | null
+}
+
+export interface DueReview extends Review {
+  competency_name: string
+  subject_id: Uuid
+  subject_name: string
 }
 
 export interface MasteryRecord {
