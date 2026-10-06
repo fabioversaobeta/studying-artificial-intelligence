@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -17,6 +18,11 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Tokens issued before this instant are rejected (set on refresh-token
+    # reuse detection to kill every outstanding session of the user).
+    tokens_valid_after: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     learning_goals: Mapped[list["LearningGoal"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
