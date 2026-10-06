@@ -9,7 +9,7 @@ import json
 from functools import lru_cache
 from typing import Annotated, Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 INSECURE_DEFAULT_SECRET_KEY = "dev-secret-key-change-me-in-production"
@@ -120,6 +120,33 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    # --- AI layer (roadmap I1; see docs/DECISIONS.md) ---
+    # "fake" is deterministic and needs no key (default, used by the test suite).
+    ai_provider: Literal["fake", "claude"] = "fake"
+    # Only ever set in the deploy environment (Railway); never commit it.
+    anthropic_api_key: SecretStr | None = None
+    ai_model: str = "claude-sonnet-5-5"
+    ai_timeout_seconds: float = Field(default=30.0, gt=0)
+    ai_max_retries: int = Field(default=2, ge=0, le=5)
+    # Optional ceiling on tokens (input + output) per user per UTC day.
+    # 0 = off (default): usage is measured in ai_usage but never blocked.
+    ai_daily_token_limit: int = Field(default=0, ge=0)
+    # Hard cap applied to every request's max_tokens.
+    ai_max_output_tokens: int = Field(default=4096, ge=1)
+
+    @field_validator("anthropic_api_key", mode="before")
+    @classmethod
+    def _blank_api_key_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @model_validator(mode="after")
+    def _require_api_key_for_claude_in_production(self) -> "Settings":
+        if self.is_production and self.ai_provider == "claude" and self.anthropic_api_key is None:
+            raise ValueError("AI_PROVIDER=claude requires ANTHROPIC_API_KEY in production")
+        return self
 
 
 @lru_cache
