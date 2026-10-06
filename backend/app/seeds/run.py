@@ -10,7 +10,14 @@ import logging
 
 from sqlalchemy.orm import Session
 
+from app.domain.assessments import xp_for_difficulty
 from app.infrastructure.database.session import SessionLocal
+from app.models.assessment import (
+    Assessment,
+    AssessmentQuestion,
+    Question,
+    QuestionTranslation,
+)
 from app.models.gamification import Achievement, Quest
 from app.models.learning import (
     Challenge,
@@ -31,6 +38,9 @@ from app.seeds.content import (
     ResourceSeed,
     SubjectSeed,
 )
+from app.seeds.questions.loader import load_question_sets
+from app.seeds.questions.types import AssessmentSeed, QuestionSeed
+from app.seeds.questions.validate import validate_question_sets
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +179,142 @@ def seed_learning_paths(db: Session, competency_by_key: dict[tuple[str, str], Co
     db.flush()
 
 
+def _upsert_question(db: Session, competency: Competency, seed: QuestionSeed) -> Question:
+    question = db.query(Question).filter(Question.code == seed.code).one_or_none()
+    if question is None:
+        question = Question(code=seed.code)
+        db.add(question)
+    question.competency_id = competency.id
+    question.type = seed.type
+    question.difficulty = seed.difficulty
+    question.xp_value = xp_for_difficulty(seed.difficulty.value)
+    question.correct_option_ids = list(seed.correct) if seed.correct is not None else None
+    question.tags = list(seed.tags)
+    question.source = seed.source
+    question.is_active = True
+    db.flush()
+
+    existing = {
+        t.language: t for t in db.query(QuestionTranslation).filter_by(question_id=question.id)
+    }
+    for language, text in seed.text.items():
+        translation = existing.pop(language, None)
+        if translation is None:
+            translation = QuestionTranslation(question_id=question.id, language=language)
+            db.add(translation)
+        translation.prompt = text.prompt
+        translation.options = (
+            [{"id": o.id, "text": o.text} for o in text.options] if text.options else None
+        )
+        translation.explanation = text.explanation
+        translation.model_answer = text.model_answer
+    for stale in existing.values():  # a language removed from the seed
+        db.delete(stale)
+    db.flush()
+    return question
+
+
+def _upsert_assessment(
+    db: Session,
+    seed: AssessmentSeed,
+    order: int,
+    competency_by_key: dict[tuple[str, str], Competency],
+    subject_slug: str,
+    question_by_code: dict[str, Question],
+    set_question_codes: list[str],
+) -> Assessment:
+    assessment = db.query(Assessment).filter(Assessment.code == seed.code).one_or_none()
+    if assessment is None:
+        assessment = Assessment(code=seed.code)
+        db.add(assessment)
+    assessment.title = seed.title
+    assessment.description = seed.description
+    assessment.translations = {lang: dict(content) for lang, content in seed.translations.items()}
+    assessment.kind = seed.kind
+    assessment.pass_threshold = seed.pass_threshold
+    assessment.completion_bonus_xp = seed.completion_bonus_xp
+    assessment.sort_order = order
+    assessment.is_active = True
+    competency = (
+        competency_by_key.get((subject_slug, seed.competency_slug))
+        if seed.competency_slug
+        else None
+    )
+    assessment.competency_id = competency.id if competency else None
+    path = (
+        db.query(LearningPath).filter(LearningPath.slug == seed.learning_path_slug).one_or_none()
+        if seed.learning_path_slug
+        else None
+    )
+    assessment.learning_path_id = path.id if path else None
+    db.flush()
+
+    codes = (
+        list(seed.question_codes)
+        if seed.question_codes is not None
+        else [
+            code
+            for code in set_question_codes
+            if competency is not None and question_by_code[code].competency_id == competency.id
+        ]
+    )
+    existing = {
+        m.question_id: m
+        for m in db.query(AssessmentQuestion).filter_by(assessment_id=assessment.id)
+    }
+    for position, code in enumerate(codes):
+        question = question_by_code[code]
+        membership = existing.pop(question.id, None)
+        if membership is None:
+            db.add(
+                AssessmentQuestion(
+                    assessment_id=assessment.id, question_id=question.id, sort_order=position
+                )
+            )
+        else:
+            membership.sort_order = position
+    for stale in existing.values():
+        db.delete(stale)
+    db.flush()
+    return assessment
+
+
+def seed_questions(db: Session, competency_by_key: dict[tuple[str, str], Competency]) -> int:
+    """Upsert the question bank and its assessments (idempotent, keyed by code).
+
+    Refuses to seed a bank that fails the validator, so a bad batch never
+    reaches the database. Returns the number of questions seeded.
+    """
+    sets = load_question_sets()
+    errors = validate_question_sets(sets)
+    if errors:
+        problems = "\n".join(f"  - {e}" for e in errors)
+        raise ValueError(f"Invalid question seeds:\n{problems}")
+
+    question_by_code: dict[str, Question] = {}
+    for question_set in sets:
+        for seed in question_set.questions:
+            competency = competency_by_key[(question_set.subject_slug, seed.competency_slug)]
+            question_by_code[seed.code] = _upsert_question(db, competency, seed)
+
+    order = 0
+    for question_set in sets:
+        set_codes = [q.code for q in question_set.questions]
+        for assessment_seed in question_set.assessments:
+            _upsert_assessment(
+                db,
+                assessment_seed,
+                order,
+                competency_by_key,
+                question_set.subject_slug,
+                question_by_code,
+                set_codes,
+            )
+            order += 1
+    db.flush()
+    return len(question_by_code)
+
+
 def seed_achievements(db: Session) -> None:
     for seed in ACHIEVEMENTS:
         achievement = db.query(Achievement).filter(Achievement.code == seed.code).one_or_none()
@@ -207,15 +353,17 @@ def run() -> None:
         seed_learning_paths(db, competency_by_key)
         seed_achievements(db)
         seed_quests(db)
+        question_count = seed_questions(db, competency_by_key)
         db.commit()
         logger.info(
             "Seed complete: %d subjects, %d competencies, %d learning paths, "
-            "%d achievements, %d quests",
+            "%d achievements, %d quests, %d questions",
             len(SUBJECTS),
             len(competency_by_key),
             len(LEARNING_PATHS),
             len(ACHIEVEMENTS),
             len(QUESTS),
+            question_count,
         )
     except Exception:
         db.rollback()
