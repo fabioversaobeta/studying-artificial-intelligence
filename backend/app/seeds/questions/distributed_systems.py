@@ -497,7 +497,430 @@ _CAP: tuple[QuestionSeed, ...] = (
 )
 
 
-_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP,)
+_QUORUM_CODE = """```python
+# A key is replicated on N = 5 nodes, identified as 0..4.
+def overlaps(w_nodes, r_nodes):
+    return bool(set(w_nodes) & set(r_nodes))
+
+
+print(overlaps({0, 1, 2}, {2, 3, 4}), overlaps({0, 1}, {2, 3, 4}))
+```"""
+
+
+_REPL: tuple[QuestionSeed, ...] = (
+    _q(
+        "replication-q01",
+        "replication",
+        MC,
+        EASY,
+        ("b",),
+        ("replication", "async", "durability"),
+        _text(
+            "What is the main trade-off of **asynchronous** leader-follower replication "
+            "compared with synchronous replication?",
+            "With asynchronous replication the leader acknowledges a write as soon as it is "
+            "committed locally, so write latency does not depend on followers. The price is "
+            "that, if the leader crashes before followers receive the write, a write the client "
+            "was told succeeded can be lost. A describes the synchronous trade-off, C and D "
+            "describe benefits that asynchronous replication does not provide.",
+            "It guarantees that acknowledged writes survive a leader crash, but writes are slower.",
+            "It gives lower write latency, but a write acknowledged to the client can be lost "
+            "if the leader crashes before followers receive it.",
+            "It gives followers stronger consistency than the leader, but uses more storage.",
+            "It removes replication lag, because followers apply each write in parallel with "
+            "the client's acknowledgment.",
+        ),
+        _text(
+            "Qual é o principal trade-off da replicação líder-seguidor **assíncrona** em "
+            "comparação com a síncrona?",
+            "Na replicação assíncrona o líder confirma a escrita assim que a persiste "
+            "localmente, então a latência de escrita não depende dos seguidores. O preço é que, "
+            "se o líder falhar antes de os seguidores receberem a escrita, uma escrita que o "
+            "cliente foi informado que deu certo pode ser perdida. A descreve o trade-off da "
+            "replicação síncrona; C e D descrevem benefícios que a assíncrona não oferece.",
+            "Garante que escritas confirmadas sobrevivem à queda do líder, mas as escritas são "
+            "mais lentas.",
+            "Dá menor latência de escrita, mas uma escrita confirmada ao cliente pode ser "
+            "perdida se o líder falhar antes de os seguidores a receberem.",
+            "Dá aos seguidores consistência mais forte que a do líder, mas usa mais armazenamento.",
+            "Elimina o replication lag, porque os seguidores aplicam cada escrita em paralelo "
+            "com a confirmação ao cliente.",
+        ),
+    ),
+    _q(
+        "replication-q02",
+        "replication",
+        MC,
+        EASY,
+        ("c",),
+        ("replication", "read-your-writes", "lag"),
+        _text(
+            "A user posts a comment (the write goes to the leader) and the page reloads. The "
+            "comment list is read from an asynchronous follower and the new comment is missing. "
+            "Which guarantee was violated?",
+            "Read-your-writes (read-after-write) consistency says a user must always see their "
+            "own writes. Here the follower had not yet applied the user's write because of "
+            "replication lag. Monotonic reads (A) concerns time moving backwards across "
+            "successive reads, durability (B) is not at stake since the leader has the write, "
+            "and atomicity (D) is about all-or-nothing transactions.",
+            "Monotonic reads",
+            "Durability",
+            "Read-your-writes",
+            "Atomicity",
+        ),
+        _text(
+            "Um usuário publica um comentário (a escrita vai para o líder) e a página recarrega. "
+            "A lista de comentários é lida de um seguidor assíncrono e o novo comentário não "
+            "aparece. Qual garantia foi violada?",
+            "Read-your-writes (consistência de leitura após escrita) diz que o usuário deve "
+            "sempre enxergar as próprias escritas. Aqui o seguidor ainda não tinha aplicado a "
+            "escrita do usuário devido ao replication lag. Monotonic reads (A) trata do tempo "
+            "andar para trás entre leituras sucessivas, durabilidade (B) não está em jogo, pois "
+            "o líder tem a escrita, e atomicidade (D) trata de transações tudo-ou-nada.",
+            "Monotonic reads",
+            "Durabilidade",
+            "Read-your-writes",
+            "Atomicidade",
+        ),
+    ),
+    _q(
+        "replication-q03",
+        "replication",
+        MC,
+        EASY,
+        ("a",),
+        ("replication", "leader-follower"),
+        _text(
+            "Why does single-leader replication avoid write conflicts?",
+            "Only the leader accepts writes, and followers apply the leader's replication log in "
+            "the order the leader applied it, so there is a single order of truth and nothing "
+            "to reconcile. B and C describe mechanisms (locking, timestamps) that this design "
+            "does not need, and D is not required: the leader does not wait for all followers.",
+            "Only the leader accepts writes, and followers apply its log in the same order.",
+            "Followers lock the affected rows on the leader before it applies each write.",
+            "Every node accepts writes, and timestamps resolve any conflicts afterwards.",
+            "The leader waits for every follower to apply a write before accepting the next one.",
+        ),
+        _text(
+            "Por que a replicação com líder único evita conflitos de escrita?",
+            "Só o líder aceita escritas, e os seguidores aplicam o log de replicação do líder "
+            "na ordem em que ele o aplicou, então há uma única ordem de verdade e nada a "
+            "reconciliar. B e C descrevem mecanismos (locks, timestamps) de que esse projeto "
+            "não precisa, e D não é necessário: o líder não espera todos os seguidores.",
+            "Só o líder aceita escritas, e os seguidores aplicam o log dele na mesma ordem.",
+            "Os seguidores bloqueiam as linhas afetadas no líder antes de ele aplicar cada "
+            "escrita.",
+            "Todos os nós aceitam escritas, e timestamps resolvem os conflitos depois.",
+            "O líder espera todos os seguidores aplicarem uma escrita antes de aceitar a próxima.",
+        ),
+    ),
+    _q(
+        "replication-q04",
+        "replication",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("replication", "monotonic-reads", "routing"),
+        _text(
+            "Reads are load-balanced across several asynchronous followers. A user refreshes "
+            "a page twice and the second response shows older data than the first. What is "
+            "this anomaly, and what is a common fix?",
+            "This is a monotonic-reads violation: the two requests hit followers with "
+            "different lag, so time appears to go backwards. Pinning a user's reads to the same "
+            "replica (for example by hashing the session ID) makes the view only move forward. "
+            "Reading from the leader after a write (A) addresses read-your-writes, and "
+            "more followers (B) would make the lag differences worse, while split-brain (D) "
+            "is about two leaders.",
+            "A read-your-writes violation; read from the leader after every write.",
+            "A monotonic-reads violation; add more followers so each one has less load.",
+            "A monotonic-reads violation; route each user's reads consistently to the same "
+            "replica.",
+            "Split-brain; require a quorum before promoting a follower.",
+        ),
+        _text(
+            "As leituras são distribuídas entre vários seguidores assíncronos. Um usuário "
+            "atualiza uma página duas vezes e a segunda resposta mostra dados mais antigos que "
+            "a primeira. Que anomalia é essa e qual é uma correção comum?",
+            "É uma violação de monotonic reads: as duas requisições caíram em seguidores com "
+            "lag diferente, então o tempo parece andar para trás. Fixar as leituras de um "
+            "usuário na mesma réplica (por exemplo, por hash do ID de sessão) faz a visão só "
+            "avançar. Ler do líder após uma escrita (A) trata de read-your-writes, mais "
+            "seguidores (B) aumentariam as diferenças de lag, e split-brain (D) trata de dois "
+            "líderes.",
+            "Violação de read-your-writes; ler do líder após toda escrita.",
+            "Violação de monotonic reads; adicionar mais seguidores para que cada um tenha "
+            "menos carga.",
+            "Violação de monotonic reads; direcionar as leituras de cada usuário sempre para "
+            "a mesma réplica.",
+            "Split-brain; exigir um quórum antes de promover um seguidor.",
+        ),
+    ),
+    _q(
+        "replication-q05",
+        "replication",
+        MS,
+        MEDIUM,
+        ("a", "c"),
+        ("replication", "read-your-writes", "routing"),
+        _text(
+            "Which techniques help provide **read-your-writes** for a user when reads are "
+            "served by asynchronous followers? Select all that apply.",
+            "A and C work: after a write, send that user's reads to the leader for a short "
+            "window, or remember the log position of the write and serve the read only from a "
+            "replica that has applied at least that position. Adding followers (B) and a "
+            "longer heartbeat timeout (D) have no effect on whether a given follower has "
+            "applied a specific write, and always choosing the least-lagged follower (E) "
+            "reduces staleness but does not guarantee the user's own write is there.",
+            "For a short window after a user writes, serve that user's reads from the leader.",
+            "Add more followers so that reads are spread over more replicas.",
+            "Record the log position of the user's last write and serve the read only from a "
+            "replica that has applied at least that position.",
+            "Increase the leader's heartbeat timeout.",
+            "Always read from the follower with the smallest current lag, without tracking the "
+            "user's writes.",
+        ),
+        _text(
+            "Quais técnicas ajudam a oferecer **read-your-writes** a um usuário quando as "
+            "leituras são atendidas por seguidores assíncronos? Selecione todas que se "
+            "aplicam.",
+            "A e C funcionam: após uma escrita, envie as leituras daquele usuário ao líder por "
+            "uma janela curta, ou guarde a posição no log da escrita e atenda a leitura só "
+            "com uma réplica que já aplicou ao menos essa posição. Adicionar seguidores (B) e "
+            "aumentar o timeout de heartbeat (D) não mudam se um seguidor específico já aplicou "
+            "determinada escrita, e escolher sempre o seguidor com menor lag (E) reduz a "
+            "defasagem mas não garante que a escrita do usuário esteja lá.",
+            "Por uma janela curta após o usuário escrever, atender as leituras dele pelo líder.",
+            "Adicionar mais seguidores para que as leituras se espalhem por mais réplicas.",
+            "Registrar a posição no log da última escrita do usuário e atender a leitura só "
+            "com uma réplica que já aplicou ao menos essa posição.",
+            "Aumentar o timeout de heartbeat do líder.",
+            "Ler sempre do seguidor com menor lag no momento, sem rastrear as escritas do usuário.",
+        ),
+    ),
+    _q(
+        "replication-q06",
+        "replication",
+        MC,
+        MEDIUM,
+        ("d",),
+        ("replication", "failover", "data-loss"),
+        _text(
+            "A leader using asynchronous replication crashes and a follower is promoted. Some "
+            "writes that clients were told had succeeded are gone. Which setup best reduces "
+            "this risk?",
+            "Keeping at least one synchronous follower guarantees that a copy of every "
+            "acknowledged write exists on that follower, and promoting it avoids the loss. "
+            "A shorter timeout (A) only changes when failover starts, promoting a random "
+            "follower (B) ignores that followers are at different positions, and blind client "
+            "retries (C) can duplicate writes and do not recover what was lost.",
+            "A shorter heartbeat timeout, so failover starts sooner.",
+            "Promote a random follower, since all followers hold identical data.",
+            "Have clients retry every write after a failover.",
+            "Keep at least one synchronous follower and promote that one.",
+        ),
+        _text(
+            "Um líder com replicação assíncrona cai e um seguidor é promovido. Algumas escritas "
+            "que os clientes foram informados que deram certo sumiram. Qual configuração "
+            "reduz melhor esse risco?",
+            "Manter ao menos um seguidor síncrono garante que existe uma cópia de toda escrita "
+            "confirmada nele, e promovê-lo evita a perda. Um timeout menor (A) só muda quando o "
+            "failover começa, promover um seguidor aleatório (B) ignora que os seguidores "
+            "estão em posições diferentes, e retries cegos dos clientes (C) podem duplicar "
+            "escritas e não recuperam o que foi perdido.",
+            "Um timeout de heartbeat menor, para o failover começar mais cedo.",
+            "Promover um seguidor aleatório, já que todos os seguidores têm dados idênticos.",
+            "Fazer os clientes repetirem toda escrita após um failover.",
+            "Manter ao menos um seguidor síncrono e promover esse.",
+        ),
+    ),
+    _q(
+        "replication-q07",
+        "replication",
+        MC,
+        MEDIUM,
+        ("a",),
+        ("replication", "failover", "heartbeats"),
+        _text(
+            "A cluster detects leader failure with heartbeats and a 5-second timeout. The "
+            "leader occasionally freezes for 20 seconds because of a long garbage-collection "
+            "pause. What is the main risk of this timeout?",
+            "A node that is merely slow looks identical to a dead one, so the timeout causes "
+            "a false-positive failover; if the old leader wakes up still believing it leads, "
+            "the cluster can have two leaders. B is the problem of a timeout that is too long, "
+            "and C and D are unrelated to how failure is detected.",
+            "A false-positive failover away from a leader that is only paused, possibly "
+            "leaving two nodes acting as leader.",
+            "A long write-unavailability window after a real crash.",
+            "Followers fall further behind the leader's replication log.",
+            "The replication log grows without bound on the leader.",
+        ),
+        _text(
+            "Um cluster detecta a falha do líder com heartbeats e um timeout de 5 segundos. O "
+            "líder às vezes congela por 20 segundos devido a uma longa pausa de garbage "
+            "collection. Qual é o principal risco desse timeout?",
+            "Um nó apenas lento é indistinguível de um nó morto, então o timeout causa um "
+            "failover falso positivo; se o líder antigo acordar ainda acreditando que lidera, "
+            "o cluster pode ficar com dois líderes. B é o problema de um timeout longo demais, "
+            "e C e D não têm relação com a detecção de falhas.",
+            "Um failover falso positivo, afastando um líder que só estava pausado e "
+            "possivelmente deixando dois nós agindo como líder.",
+            "Uma longa janela de indisponibilidade de escrita após uma queda real.",
+            "Os seguidores ficam ainda mais atrás no log de replicação do líder.",
+            "O log de replicação cresce sem limite no líder.",
+        ),
+    ),
+    _q(
+        "replication-q08",
+        "replication",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("replication", "split-brain", "quorum"),
+        _text(
+            "A partition isolates the current leader from the rest of the cluster, and the "
+            "majority side promotes a new leader. What is the standard defense against the "
+            "resulting **split-brain**?",
+            "Promotion must be approved by a majority, and a leader that cannot reach a "
+            "majority must step down and refuse writes, so at most one side can accept them. "
+            "Promoting on a single missed heartbeat (A) creates the problem, wall-clock "
+            "last-write-wins (B) silently discards one side's writes, and a short DNS TTL (D) "
+            "only helps clients find a leader, it does not stop the old one from accepting "
+            "writes.",
+            "Promote a new leader as soon as any single follower misses a heartbeat.",
+            "Let both leaders accept writes and keep the one with the later wall-clock timestamp.",
+            "Require a majority quorum to authorize promotion, and make a leader that loses "
+            "contact with the majority step down.",
+            "Use a short DNS TTL so clients switch to the new leader quickly.",
+        ),
+        _text(
+            "Uma partição isola o líder atual do resto do cluster, e o lado majoritário "
+            "promove um novo líder. Qual é a defesa padrão contra o **split-brain** resultante?",
+            "A promoção precisa ser aprovada por uma maioria, e um líder que não alcança a "
+            "maioria deve renunciar e recusar escritas, de modo que no máximo um lado aceite "
+            "escritas. Promover após um único heartbeat perdido (A) cria o problema, "
+            "last-write-wins por relógio (B) descarta silenciosamente as escritas de um lado, "
+            "e um TTL de DNS curto (D) só ajuda os clientes a achar um líder, não impede o "
+            "antigo de aceitar escritas.",
+            "Promover um novo líder assim que qualquer seguidor perder um heartbeat.",
+            "Deixar ambos os líderes aceitarem escritas e manter a de timestamp de relógio "
+            "mais recente.",
+            "Exigir um quórum de maioria para autorizar a promoção e fazer o líder que perde "
+            "contato com a maioria renunciar.",
+            "Usar um TTL de DNS curto para os clientes migrarem rápido para o novo líder.",
+        ),
+    ),
+    _q(
+        "replication-q09",
+        "replication",
+        CODE,
+        HARD,
+        ("b",),
+        ("replication", "quorum", "overlap"),
+        _text(
+            "A write was acknowledged by the nodes in `w_nodes`, and a later read contacts "
+            "`r_nodes`. What does this print, and what does it show about quorum sizes?\n\n"
+            + _QUORUM_CODE,
+            "It prints `True False`. With N = 5, W = 3 and R = 3 give W + R > N, so any write "
+            "set and any read set share at least one node, which means the read reaches a node "
+            "holding the acknowledged write. With W = 2 and R = 3, W + R = N, so a read set "
+            "can miss the write set entirely, as in the second call. Option A is wrong because "
+            "R = 3 is a majority yet still missed the write, C is contradicted by the second "
+            "call, and D is wrong because the guarantee comes from the sizes, not from lucky "
+            "node ids. Overlap alone does not make a system linearizable; other mechanisms "
+            "build on it.",
+            "`True False`: reading from a majority of nodes is always enough to see every "
+            "acknowledged write.",
+            "`True False`: when W + R > N every read set intersects every write set, but with "
+            "W = 2 and R = 3 a read can miss the write entirely.",
+            "`True True`: any read set overlaps any write set, whatever the quorum sizes.",
+            "`False True`: overlap depends on the node ids chosen, not on the quorum sizes.",
+        ),
+        _text(
+            "Uma escrita foi confirmada pelos nós em `w_nodes`, e uma leitura posterior "
+            "contata `r_nodes`. O que isto imprime, e o que mostra sobre tamanhos de quórum?\n\n"
+            + _QUORUM_CODE,
+            "Imprime `True False`. Com N = 5, W = 3 e R = 3 dão W + R > N, então qualquer "
+            "conjunto de escrita e qualquer conjunto de leitura compartilham ao menos um nó, "
+            "ou seja, a leitura alcança um nó que tem a escrita confirmada. Com W = 2 e R = 3, "
+            "W + R = N, então um conjunto de leitura pode não encontrar o de escrita, como na "
+            "segunda chamada. A opção A erra porque R = 3 é uma maioria e mesmo assim perdeu a "
+            "escrita, C é contradita pela segunda chamada, e D erra porque a garantia vem dos "
+            "tamanhos, não de ids de nós com sorte. A interseção sozinha não torna um sistema "
+            "linearizável; outros mecanismos se constroem sobre ela.",
+            "`True False`: ler de uma maioria de nós sempre basta para ver toda escrita "
+            "confirmada.",
+            "`True False`: quando W + R > N todo conjunto de leitura intersecta todo conjunto "
+            "de escrita, mas com W = 2 e R = 3 uma leitura pode perder a escrita por completo.",
+            "`True True`: qualquer conjunto de leitura sobrepõe qualquer de escrita, quaisquer "
+            "que sejam os tamanhos de quórum.",
+            "`False True`: a sobreposição depende dos ids dos nós escolhidos, não dos tamanhos "
+            "de quórum.",
+        ),
+    ),
+    _q(
+        "replication-q10",
+        "replication",
+        SHORT,
+        HARD,
+        None,
+        ("replication", "failover", "interview", "design"),
+        _text(
+            "Design the automatic failover procedure for a primary with two asynchronous "
+            "replicas of a relational database. Cover how you detect the failure, how you "
+            "choose and promote a new primary, how you protect against split-brain, and what "
+            "you tell the business about possible data loss.",
+            "Self-check: did you mention (1) failure detection with a tuned timeout and "
+            "multiple observers, (2) quorum or fencing to prevent two primaries, (3) promoting "
+            "the most up-to-date replica and redirecting clients, (4) the old primary rejoining "
+            "as a follower, and (5) the data-loss window of async replication?",
+            model_answer="Detection: health checks or heartbeats from more than one observer "
+            "with a timeout tuned between failover speed and false positives. Authorization: "
+            "a majority-based coordination service (etcd, ZooKeeper, Consul or a consensus "
+            "layer) decides that failover happens, so one isolated observer cannot promote "
+            "alone. Fencing: make sure the old primary cannot keep accepting writes, by "
+            "making it step down when it loses the majority, cutting it off at the network or "
+            "storage level, or shutting it down. Promotion: pick the replica with the most "
+            "complete replication log (the highest log position), promote it and reconfigure "
+            "the other replica to follow it. Redirection: update the proxy, virtual IP, DNS "
+            "or service-discovery entry so clients find the new primary. Recovery: when the "
+            "old primary returns, discard or rewind any writes the new primary never saw and "
+            "rejoin it as a follower. Data loss: with asynchronous replication, writes "
+            "acknowledged but not yet received by the promoted replica are lost, so state this "
+            "window (RPO) explicitly, or reduce it with one synchronous standby at a "
+            "write-latency cost. Rehearse the whole procedure regularly.",
+        ),
+        _text(
+            "Projete o procedimento de failover automático para um primário com duas réplicas "
+            "assíncronas de um banco relacional. Cubra como detectar a falha, como escolher e "
+            "promover o novo primário, como se proteger contra split-brain e o que dizer ao "
+            "negócio sobre possível perda de dados.",
+            "Autoavaliação: você mencionou (1) detecção de falha com timeout ajustado e vários "
+            "observadores, (2) quórum ou fencing para evitar dois primários, (3) promover a "
+            "réplica mais atualizada e redirecionar os clientes, (4) o primário antigo "
+            "voltando como seguidor e (5) a janela de perda de dados da replicação "
+            "assíncrona?",
+            model_answer="Detecção: health checks ou heartbeats de mais de um observador, com "
+            "um timeout ajustado entre velocidade de failover e falsos positivos. Autorização: "
+            "um serviço de coordenação baseado em maioria (etcd, ZooKeeper, Consul ou uma "
+            "camada de consenso) decide que o failover acontece, de modo que um observador "
+            "isolado não promova sozinho. Fencing: garantir que o primário antigo não continue "
+            "aceitando escritas, fazendo-o renunciar ao perder a maioria, isolando-o na rede "
+            "ou no armazenamento, ou desligando-o. Promoção: escolher a réplica com o log de "
+            "replicação mais completo (maior posição no log), promovê-la e reconfigurar a "
+            "outra réplica para segui-la. Redirecionamento: atualizar o proxy, o IP virtual, o "
+            "DNS ou o service discovery para que os clientes achem o novo primário. "
+            "Recuperação: quando o primário antigo voltar, descartar ou reverter as escritas "
+            "que o novo primário nunca viu e reintegrá-lo como seguidor. Perda de dados: com "
+            "replicação assíncrona, escritas confirmadas mas ainda não recebidas pela réplica "
+            "promovida são perdidas, então declare essa janela (RPO) explicitamente, ou "
+            "reduza-a com um standby síncrono ao custo de latência de escrita. Ensaie todo o "
+            "procedimento regularmente.",
+        ),
+    ),
+)
+
+
+_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP, *_REPL)
 
 _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
@@ -512,6 +935,20 @@ _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "title": "Quiz do Teorema CAP",
                 "description": "O que o CAP realmente diz, consistência e disponibilidade "
                 "definidas com precisão, e PACELC.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="distributed-systems-replication-quiz",
+        title="Replication Quiz",
+        description="Sync vs async, replication lag, failover, split-brain and quorums.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="replication",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Replicação",
+                "description": "Síncrona vs assíncrona, replication lag, failover, split-brain "
+                "e quóruns.",
             }
         },
     ),
