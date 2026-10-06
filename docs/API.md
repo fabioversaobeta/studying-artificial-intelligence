@@ -5,7 +5,12 @@ schemas) is served at `/docs` (Swagger UI) and `/redoc` when the backend is
 running. This file is a map, not a duplicate of that reference.
 
 Base path: `/api/v1`. Authenticated endpoints expect
-`Authorization: Bearer <access_token>`.
+`Authorization: Bearer <access_token>`. The refresh token is never in a body: it is an
+`HttpOnly` cookie (`Path=/api/v1/auth`) set by login/register/refresh, so the browser
+must call the API same-origin with credentials (see `docs/DEPLOYMENT.md`).
+`/auth/refresh` and `/auth/logout` additionally require the header
+`X-CSRF-Protection: 1` and, when present, an `Origin`/`Referer` listed in
+`CORS_ALLOW_ORIGINS` (403 otherwise).
 
 ## Error shape
 
@@ -42,10 +47,10 @@ dependency when they are introduced.
 | Method & Path | Auth | Purpose |
 |---|---|---|
 | `GET /auth/registration-info` | — | `{enabled, invite_required}` signup policy |
-| `POST /auth/register` | — | Create account, returns tokens. Optional `invite_code`; 403 if closed or bad code; 429 when rate limited |
-| `POST /auth/login` | — | Returns tokens |
-| `POST /auth/refresh` | — | Rotate: exchange a refresh token for a new access+refresh pair; the presented token is invalidated. Reusing it returns 401 and revokes all the user's sessions |
-| `POST /auth/logout` | Bearer | Body `{refresh_token?}`. Revokes the current access token and the given refresh token. 204 |
+| `POST /auth/register` | — | Create account; body `{access_token, token_type}` plus the refresh cookie. Optional `invite_code`; 403 if closed or bad code; 429 when rate limited |
+| `POST /auth/login` | — | Body `{access_token, token_type}` plus the refresh cookie |
+| `POST /auth/refresh` | refresh cookie + CSRF header | No body. Rotates the cookie and returns a new `{access_token}`; the presented refresh token is invalidated. Missing/invalid cookie: 401 (and the cookie is expired). Reusing a token returns 401 and revokes all the user's sessions. 403 on CSRF failure |
+| `POST /auth/logout` | refresh cookie and/or Bearer (both optional) + CSRF header | No body. Revokes the cookie's refresh token and the Bearer access token (each if valid), expires the cookie. Always 204 |
 | `GET /auth/me` | ✓ | Current user |
 | `GET /subjects` | ✓ | List subjects with competency count + average mastery |
 | `GET /subjects/{id}` | ✓ | Subject detail: competencies with computed skill-tree state |
