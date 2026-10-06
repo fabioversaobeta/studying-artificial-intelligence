@@ -517,25 +517,500 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
+SOLID_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-solid-principles-quiz",
+    title="SOLID Principles Quiz",
+    description="The five SOLID principles: definitions, trade-offs and spotting violations.",
+    kind=AssessmentKind.COMPETENCY,
+    competency_slug="solid-principles",
+    translations={
+        "pt-BR": {
+            "title": "Quiz de Princípios SOLID",
+            "description": "Os cinco princípios SOLID: definições, trade-offs e como "
+            "identificar violações.",
+        }
+    },
+)
+
+# ----------------------------------------------------------------------
+# design-patterns
+# ----------------------------------------------------------------------
+
+_DECORATOR_CODE = """```python
+class Source:
+    def read(self):
+        return "  hello  "
+
+
+class Upper:
+    def __init__(self, inner):
+        self.inner = inner
+
+    def read(self):
+        return self.inner.read().upper()
+
+
+class Wrap:
+    def __init__(self, inner):
+        self.inner = inner
+
+    def read(self):
+        return f"[{self.inner.read()}]"
+
+
+class Strip:
+    def __init__(self, inner):
+        self.inner = inner
+
+    def read(self):
+        return self.inner.read().strip()
+
+
+pipeline = Strip(Wrap(Upper(Source())))
+print(pipeline.read())
+```"""
+
+_PAT = "design-patterns"
+
+PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        _PAT,
+        1,
+        MC,
+        EASY,
+        "c",
+        ("strategy",),
+        _t(
+            "What is the intent of the Strategy pattern?",
+            "Strategy puts each member of a family of algorithms behind a common interface "
+            "so they are interchangeable and can be chosen at runtime, without the context "
+            "knowing the details. A describes Singleton, B describes Observer, and D "
+            "describes Builder.",
+            (
+                "Guarantee that a class has exactly one instance with a global access point.",
+                "Notify many dependents automatically when an object's state changes.",
+                "Encapsulate interchangeable algorithms behind a common interface so the "
+                "behavior can be swapped at runtime.",
+                "Construct a complex object step by step through a readable sequence of calls.",
+            ),
+        ),
+        _t(
+            "Qual é a intenção do padrão Strategy?",
+            "O Strategy coloca cada algoritmo de uma família atrás de uma interface comum, "
+            "para que sejam intercambiáveis e possam ser escolhidos em tempo de execução, "
+            "sem que o contexto conheça os detalhes. A descreve o Singleton, a B descreve o "
+            "Observer e a D descreve o Builder.",
+            (
+                "Garantir que uma classe tenha exatamente uma instância com um ponto de "
+                "acesso global.",
+                "Notificar automaticamente vários dependentes quando o estado de um objeto muda.",
+                "Encapsular algoritmos intercambiáveis atrás de uma interface comum, para "
+                "trocar o comportamento em tempo de execução.",
+                "Construir um objeto complexo passo a passo por uma sequência legível de chamadas.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        2,
+        MC,
+        EASY,
+        "a",
+        ("decorator",),
+        _t(
+            "Which pattern lets you add responsibilities to an object dynamically by wrapping "
+            "it in another object that exposes the same interface?",
+            "Decorator wraps a component with an object of the same interface and adds "
+            "behavior before or after delegating, so decorators can be combined freely. "
+            "Adapter (B) wraps to change the interface, Observer (C) is about notifications, "
+            "and Builder (D) is about constructing objects.",
+            (
+                "Decorator",
+                "Adapter",
+                "Observer",
+                "Builder",
+            ),
+        ),
+        _t(
+            "Qual padrão permite adicionar responsabilidades a um objeto dinamicamente, "
+            "envolvendo-o em outro objeto que expõe a mesma interface?",
+            "O Decorator envolve um componente com um objeto de mesma interface e adiciona "
+            "comportamento antes ou depois de delegar, de modo que decorators podem ser "
+            "combinados livremente. O Adapter (B) envolve para mudar a interface, o "
+            "Observer (C) trata de notificações e o Builder (D) trata da construção de "
+            "objetos.",
+            (
+                "Decorator",
+                "Adapter",
+                "Observer",
+                "Builder",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        3,
+        MC,
+        EASY,
+        "b",
+        ("observer",),
+        _t(
+            "A chart, a table and a summary panel must all refresh whenever a data model "
+            "changes, but the model should not know which views exist. Which pattern fits?",
+            "Observer lets the subject (the model) keep a list of subscribers and notify "
+            "them on change, without depending on their concrete types. Singleton (A) "
+            "controls instance count, Factory Method (C) is about creating objects, and "
+            "Adapter (D) reconciles incompatible interfaces; none of them provide change "
+            "notification.",
+            (
+                "Singleton",
+                "Observer",
+                "Factory Method",
+                "Adapter",
+            ),
+        ),
+        _t(
+            "Um gráfico, uma tabela e um painel de resumo precisam ser atualizados sempre "
+            "que um modelo de dados muda, mas o modelo não deve saber quais views existem. "
+            "Qual padrão se encaixa?",
+            "O Observer permite que o sujeito (o modelo) mantenha uma lista de inscritos e "
+            "os notifique quando muda, sem depender dos seus tipos concretos. O Singleton "
+            "(A) controla o número de instâncias, o Factory Method (C) trata da criação de "
+            "objetos e o Adapter (D) concilia interfaces incompatíveis; nenhum deles "
+            "oferece notificação de mudanças.",
+            (
+                "Singleton",
+                "Observer",
+                "Factory Method",
+                "Adapter",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        4,
+        MC,
+        MEDIUM,
+        "d",
+        ("builder",),
+        _t(
+            "A constructor call such as `HttpRequest(url, True, False, True, None, 30)` is "
+            "unreadable, and most of the parameters are optional. Which pattern addresses "
+            "this most directly?",
+            "Builder assembles an object through named, optional steps "
+            "(`.timeout(30).follow_redirects()`) and can validate the combination in a final "
+            "`build()` call, which fixes both readability and invalid states. Factory Method "
+            "(A) chooses which class to create but does not make the arguments readable, "
+            "Observer (B) and Adapter (C) address different problems.",
+            (
+                "Factory Method, to pick the concrete request class.",
+                "Observer, to notify the request about its own parameters.",
+                "Adapter, to convert the positional arguments into a dictionary.",
+                "Builder, to set each option through named steps and validate in a final "
+                "`build()`.",
+            ),
+        ),
+        _t(
+            "Uma chamada de construtor como `HttpRequest(url, True, False, True, None, 30)` "
+            "é ilegível, e a maioria dos parâmetros é opcional. Qual padrão resolve isso "
+            "de forma mais direta?",
+            "O Builder monta o objeto por passos nomeados e opcionais "
+            "(`.timeout(30).follow_redirects()`) e pode validar a combinação em uma chamada "
+            "final `build()`, resolvendo legibilidade e estados inválidos. O Factory Method "
+            "(A) escolhe qual classe criar, mas não deixa os argumentos legíveis; o "
+            "Observer (B) e o Adapter (C) resolvem outros problemas.",
+            (
+                "Factory Method, para escolher a classe concreta da requisição.",
+                "Observer, para notificar a requisição sobre seus próprios parâmetros.",
+                "Adapter, para converter os argumentos posicionais em um dicionário.",
+                "Builder, para definir cada opção por passos nomeados e validar em um "
+                "`build()` final.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        5,
+        CODE,
+        MEDIUM,
+        "b",
+        ("decorator", "composition-order"),
+        _t(
+            "What does this program print?\n\n" + _DECORATOR_CODE,
+            "Decorators apply from the innermost outwards. `Source` returns `'  hello  '`, "
+            "`Upper` makes it `'  HELLO  '`, `Wrap` brackets it as `'[  HELLO  ]'`, and "
+            "`Strip` finally removes whitespace only from the ends of that string. The spaces "
+            "are inside the brackets, so they remain. The order of wrapping matters: putting "
+            "`Strip` innermost would give `[HELLO]`.",
+            (
+                "`[HELLO]`",
+                "`[  HELLO  ]`",
+                "`  [HELLO]  `",
+                "`HELLO`",
+            ),
+        ),
+        _t(
+            "O que este programa imprime?\n\n" + _DECORATOR_CODE,
+            "Os decorators são aplicados de dentro para fora. `Source` retorna "
+            "`'  hello  '`, `Upper` transforma em `'  HELLO  '`, `Wrap` coloca entre "
+            "colchetes: `'[  HELLO  ]'`, e `Strip` remove espaços apenas das pontas dessa "
+            "string. Os espaços estão dentro dos colchetes, então permanecem. A ordem do "
+            "empilhamento importa: com `Strip` mais interno o resultado seria `[HELLO]`.",
+            (
+                "`[HELLO]`",
+                "`[  HELLO  ]`",
+                "`  [HELLO]  `",
+                "`HELLO`",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        6,
+        MC,
+        MEDIUM,
+        "a",
+        ("observer", "memory-leaks"),
+        _t(
+            "A long-lived `EventBus` receives a new listener every time a screen opens, and "
+            "the listeners are never removed. Memory keeps growing even after screens are "
+            "closed. Which known weakness of the Observer pattern is this?",
+            "This is the lapsed listener problem: the subject holds strong references to its "
+            "observers, so they cannot be garbage-collected until explicitly unsubscribed. "
+            "The usual remedies are unsubscribing on teardown (or returning an unsubscribe "
+            "handle) and, where available, weak references. Observers do not need to be "
+            "singletons (B), and the other options do not describe a leak.",
+            (
+                "Lapsed listeners: the subject keeps strong references until observers "
+                "explicitly unsubscribe.",
+                "Observers must be singletons, so every screen shares one listener.",
+                "The subject should notify observers in separate processes to free memory.",
+                "Observer is limited to a single subscriber per event type.",
+            ),
+        ),
+        _t(
+            "Um `EventBus` de longa duração recebe um novo listener toda vez que uma tela "
+            "abre, e os listeners nunca são removidos. A memória continua crescendo mesmo "
+            "depois que as telas são fechadas. Qual fraqueza conhecida do padrão Observer "
+            "é essa?",
+            "É o problema do lapsed listener: o sujeito mantém referências fortes aos "
+            "observadores, que não podem ser coletados pelo garbage collector até que "
+            "cancelem a inscrição explicitamente. Os remédios usuais são cancelar a "
+            "inscrição no encerramento (ou devolver um handle de cancelamento) e, quando "
+            "disponível, usar referências fracas. Observadores não precisam ser singletons "
+            "(B) e as demais opções não descrevem um vazamento.",
+            (
+                "Lapsed listeners: o sujeito mantém referências fortes até que os "
+                "observadores cancelem a inscrição explicitamente.",
+                "Os observadores precisam ser singletons, então toda tela compartilha um "
+                "único listener.",
+                "O sujeito deveria notificar os observadores em processos separados para "
+                "liberar memória.",
+                "O Observer se limita a um único inscrito por tipo de evento.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        7,
+        MS,
+        MEDIUM,
+        "ad",
+        ("adapter", "decorator"),
+        _t(
+            "Which TWO statements correctly contrast Adapter and Decorator?",
+            "An Adapter exists to make an existing class fit an interface the client expects, "
+            "so it changes the interface. A Decorator keeps the interface and adds behavior, "
+            "and because each decorator is itself a component, they can be stacked. Decorator "
+            "is not tied to inheritance (B), Adapter does not add behavior to every call (C), "
+            "and Adapter wraps the adaptee without modifying its source (E).",
+            (
+                "An Adapter changes the interface the client sees; a Decorator keeps the same "
+                "interface.",
+                "A Decorator can only be implemented with inheritance, never with composition.",
+                "An Adapter adds extra behavior to every method call it forwards.",
+                "Decorators can be stacked because each one wraps an object that has the same "
+                "interface.",
+                "An Adapter requires modifying the source code of the class it adapts.",
+            ),
+        ),
+        _t(
+            "Quais DUAS afirmações contrastam corretamente Adapter e Decorator?",
+            "Um Adapter existe para fazer uma classe existente se encaixar em uma interface "
+            "que o cliente espera, portanto muda a interface. Um Decorator mantém a "
+            "interface e adiciona comportamento, e como cada decorator também é um "
+            "componente, eles podem ser empilhados. O Decorator não depende de herança (B), "
+            "o Adapter não adiciona comportamento a cada chamada (C) e o Adapter envolve o "
+            "adaptado sem modificar seu código-fonte (E).",
+            (
+                "Um Adapter muda a interface que o cliente enxerga; um Decorator mantém a "
+                "mesma interface.",
+                "Um Decorator só pode ser implementado com herança, nunca com composição.",
+                "Um Adapter adiciona comportamento extra a cada chamada que repassa.",
+                "Decorators podem ser empilhados porque cada um envolve um objeto que tem a "
+                "mesma interface.",
+                "Um Adapter exige modificar o código-fonte da classe que ele adapta.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        8,
+        MC,
+        MEDIUM,
+        "c",
+        ("factory-method", "ocp"),
+        _t(
+            "Twelve places in a codebase contain `if kind == 'email': EmailNotifier(...) "
+            "elif kind == 'sms': SmsNotifier(...)`. What is the main benefit of moving "
+            "creation into a single factory method that returns a `Notifier`?",
+            "Callers now depend only on the `Notifier` abstraction, and supporting a new "
+            "kind means changing the one place that creates notifiers instead of twelve. "
+            "A factory does not by itself make instances unique (A) or immutable (B), and "
+            "the decision logic still exists somewhere, so it does not remove every "
+            "conditional (D).",
+            (
+                "It guarantees that only one `Notifier` instance can ever exist.",
+                "It makes every `Notifier` immutable.",
+                "Callers depend only on the `Notifier` interface, and adding a kind changes "
+                "one place instead of many.",
+                "It removes every conditional from the program.",
+            ),
+        ),
+        _t(
+            "Doze lugares de uma base de código contêm `if kind == 'email': "
+            "EmailNotifier(...) elif kind == 'sms': SmsNotifier(...)`. Qual o principal "
+            "benefício de mover a criação para um único factory method que retorna um "
+            "`Notifier`?",
+            "Os chamadores passam a depender apenas da abstração `Notifier`, e suportar um "
+            "novo tipo significa alterar o único lugar que cria notificadores, em vez de "
+            "doze. Uma factory, por si só, não torna instâncias únicas (A) nem imutáveis "
+            "(B), e a lógica de decisão continua existindo em algum lugar, então ela não "
+            "remove todas as condicionais (D).",
+            (
+                "Garante que só possa existir uma instância de `Notifier`.",
+                "Torna todo `Notifier` imutável.",
+                "Os chamadores dependem apenas da interface `Notifier`, e adicionar um tipo "
+                "altera um lugar em vez de vários.",
+                "Remove todas as condicionais do programa.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        9,
+        MC,
+        HARD,
+        "d",
+        ("state", "strategy"),
+        _t(
+            "State and Strategy have almost the same class structure. Which statement "
+            "correctly distinguishes them?",
+            "The difference is intent. In State, the object's current behavior object "
+            "changes as part of its own lifecycle (for example an order moving from Draft to "
+            "Paid to Shipped), and state objects often trigger the transitions. In Strategy, "
+            "the client typically picks one interchangeable algorithm and the strategies "
+            "know nothing about each other. Both use composition and an interface, and "
+            "neither is structural in the GoF sense.",
+            (
+                "Strategy needs an interface while State does not.",
+                "State uses inheritance of the context while Strategy uses composition.",
+                "State is a structural pattern and Strategy is a creational pattern.",
+                "In State the object's behavior changes as its own state changes, often with "
+                "the state objects driving transitions; in Strategy the client chooses an "
+                "algorithm and the strategies are independent of each other.",
+            ),
+        ),
+        _t(
+            "State e Strategy têm estrutura de classes quase idêntica. Qual afirmação os "
+            "distingue corretamente?",
+            "A diferença está na intenção. No State, o objeto de comportamento atual muda "
+            "como parte do ciclo de vida do próprio objeto (por exemplo, um pedido indo de "
+            "Draft para Paid e Shipped), e os objetos de estado costumam disparar as "
+            "transições. No Strategy, o cliente tipicamente escolhe um algoritmo "
+            "intercambiável e as estratégias não sabem nada umas das outras. Ambos usam "
+            "composição e uma interface, e nenhum é estrutural no sentido do GoF.",
+            (
+                "O Strategy precisa de uma interface, enquanto o State não.",
+                "O State usa herança do contexto, enquanto o Strategy usa composição.",
+                "O State é um padrão estrutural e o Strategy é um padrão de criação.",
+                "No State o comportamento do objeto muda conforme o próprio estado muda, "
+                "muitas vezes com os objetos de estado conduzindo as transições; no "
+                "Strategy o cliente escolhe um algoritmo e as estratégias são independentes "
+                "entre si.",
+            ),
+        ),
+    ),
+    _q(
+        _PAT,
+        10,
+        SHORT,
+        HARD,
+        None,
+        ("strategy", "overengineering", "tradeoffs"),
+        _t(
+            "A colleague proposes replacing a three-branch `if/elif` that has not changed "
+            "in two years with the Strategy pattern (an interface, three classes and a "
+            "factory). Do you accept the proposal? Justify your answer.",
+            "Self-check: did you mention (1) that patterns answer a recurring force such as "
+            "frequent variation, (2) the cost of added indirection and files, and (3) an "
+            "alternative or trigger such as waiting for the rule of three or using a "
+            "function or dictionary?",
+            None,
+            "Probably not. A pattern is a response to a recurring force, such as a rule that "
+            "keeps changing or branches that must be added by different teams. A stable "
+            "three-branch conditional has no such force, so Strategy only adds indirection, "
+            "more files and more to read (speculative generality). Better to keep the "
+            "conditional, and refactor when it actually grows or a fourth case appears. In "
+            "languages with first-class functions a dictionary of functions is often enough, "
+            "giving the same extensibility without the class hierarchy.",
+        ),
+        _t(
+            "Um colega propõe substituir um `if/elif` de três ramos, que não muda há dois "
+            "anos, pelo padrão Strategy (uma interface, três classes e uma factory). Você "
+            "aceita a proposta? Justifique.",
+            "Autoavaliação: você mencionou (1) que padrões respondem a uma força recorrente, "
+            "como variação frequente, (2) o custo de indireção e de arquivos extras e (3) "
+            "uma alternativa ou gatilho, como esperar a regra dos três ou usar uma função "
+            "ou dicionário?",
+            None,
+            "Provavelmente não. Um padrão é uma resposta a uma força recorrente, como uma "
+            "regra que não para de mudar ou ramos que precisam ser adicionados por times "
+            "diferentes. Uma condicional estável de três ramos não tem essa força, então o "
+            "Strategy só acrescenta indireção, mais arquivos e mais código para ler "
+            "(generalidade especulativa). É melhor manter a condicional e refatorar quando "
+            "ela realmente crescer ou surgir um quarto caso. Em linguagens com funções de "
+            "primeira classe, um dicionário de funções muitas vezes basta, dando a mesma "
+            "extensibilidade sem a hierarquia de classes.",
+        ),
+    ),
+)
+
+PATTERNS_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-design-patterns-quiz",
+    title="Design Patterns Quiz",
+    description="Creational, structural and behavioral patterns: intent, trade-offs and misuse.",
+    kind=AssessmentKind.COMPETENCY,
+    competency_slug="design-patterns",
+    translations={
+        "pt-BR": {
+            "title": "Quiz de Design Patterns",
+            "description": "Padrões de criação, estruturais e comportamentais: intenção, "
+            "trade-offs e uso indevido.",
+        }
+    },
+)
+
 # @@NEXT@@
 
-QUESTIONS: tuple[QuestionSeed, ...] = SOLID_QUESTIONS
+QUESTIONS: tuple[QuestionSeed, ...] = (
+    *SOLID_QUESTIONS,
+    *PATTERNS_QUESTIONS,
+)
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
-    AssessmentSeed(
-        code="software-engineering-solid-principles-quiz",
-        title="SOLID Principles Quiz",
-        description="The five SOLID principles: definitions, trade-offs and spotting violations.",
-        kind=AssessmentKind.COMPETENCY,
-        competency_slug="solid-principles",
-        translations={
-            "pt-BR": {
-                "title": "Quiz de Princípios SOLID",
-                "description": "Os cinco princípios SOLID: definições, trade-offs e como "
-                "identificar violações.",
-            }
-        },
-    ),
+    SOLID_ASSESSMENT,
+    PATTERNS_ASSESSMENT,
 )
 
 QUESTION_SET = SubjectQuestionSet(
