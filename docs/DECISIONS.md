@@ -5,6 +5,33 @@ Newest first.
 
 ---
 
+## Auth hardening: in-memory rate limiting, registration policy, strict CORS
+
+**Decision**: (1) `/auth/login`, `/auth/register` and `/auth/refresh` are
+rate limited by a small in-house sliding-window limiter
+(`app/core/rate_limit.py`), per client IP (separate bucket per endpoint) and,
+on login, per e-mail. Over the limit: 429 `rate_limited` in the standard
+error format plus `Retry-After`. (2) `REGISTRATION_ENABLED=false` closes
+signups (403); `REGISTRATION_INVITE_CODE`, when set, must be sent as
+`invite_code` in the register body (constant-time compare, 403 otherwise).
+`GET /auth/registration-info` publicly exposes `{enabled, invite_required}`
+so the UI shows the invite field only when needed. (3) CORS allows only the
+configured origins, methods `GET/POST/PUT/PATCH/DELETE/OPTIONS` and headers
+`Authorization/Content-Type/Accept`; `CORS_ALLOW_ORIGINS` accepts JSON or
+CSV and `*` is rejected at boot when `ENVIRONMENT=production`.
+**Why in-house instead of `slowapi`**: three endpoints and one counter; a
+~60-line limiter is trivially testable (settings are injected via a FastAPI
+dependency, so tests turn it off by default) and avoids a dependency.
+**Trade-offs**: state is per process, so N workers/replicas multiply the
+effective limit and a restart resets it — acceptable for a single-instance
+Railway deploy; move to Redis if the backend is ever scaled out.
+**Proxy/IP**: `X-Forwarded-For` is ignored unless `TRUST_PROXY_HEADERS=true`
+(otherwise clients could spoof it to evade limits). When trusted, the
+*last* entry is used: it is the one appended by our own proxy; earlier
+entries are client-controlled. Assumes exactly one trusted proxy hop.
+
+---
+
 ## Lesson content: modular per-competency, module count scales with complexity
 
 **Context**: manual testing surfaced that the platform had subject/

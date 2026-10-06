@@ -35,7 +35,11 @@ Target architecture: frontend on **Vercel**, backend + PostgreSQL on
 | `SECRET_KEY` | a long random string | Generate with `python -c "import secrets; print(secrets.token_urlsafe(64))"`. **Never reuse the local dev default.** With `ENVIRONMENT=production` the app refuses to boot if this is the dev default or shorter than 32 characters. |
 | `ENVIRONMENT` | `production` | |
 | `DEBUG` | `false` | Defaults to `false`; with `ENVIRONMENT=production` the app refuses to boot if `DEBUG=true`. |
-| `CORS_ALLOW_ORIGINS` | `["https://<your-vercel-app>.vercel.app"]` | JSON array. Update after the frontend's Vercel URL is known — see step 4 below. |
+| `CORS_ALLOW_ORIGINS` | `["https://<your-vercel-app>.vercel.app"]` | JSON array (or comma-separated list). `*` is rejected when `ENVIRONMENT=production`. Update after the frontend's Vercel URL is known — see step 4 below. |
+| `TRUST_PROXY_HEADERS` | `true` on Railway | Makes rate limiting use the `X-Forwarded-For` entry added by Railway's proxy. Leave `false` when not behind a trusted proxy (the header is spoofable). |
+| `RATE_LIMIT_ENABLED` / `RATE_LIMIT_MAX_REQUESTS` / `RATE_LIMIT_WINDOW_SECONDS` | `true` / `10` / `60` (defaults) | In-memory limit on `/auth/login`, `/register`, `/refresh` (per IP; login also per e-mail); 429 when exceeded. Per process. |
+| `REGISTRATION_ENABLED` | `true` (default) | Set `false` to close signups (403). |
+| `REGISTRATION_INVITE_CODE` | *(unset)* | If set, `/auth/register` requires this code. Recommended for a public deploy. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` (default) | Override only if you want a different session length. |
 | `REFRESH_TOKEN_EXPIRE_MINUTES` | `43200` (default) | |
 

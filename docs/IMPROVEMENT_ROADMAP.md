@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 3 |
+| P1 — Curto prazo | 16 | 6 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -91,11 +91,11 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | C1 | **Falhar o boot em produção** se `secret_key` for o valor default (ou curto demais) ou se `debug=True`. Default de `debug` deve ser seguro. Atualizar `.env.example` e `docs/DEPLOYMENT.md`. Cobrir com testes. | P0 | S | DONE | S2 (`fix/s2-secret-guard-and-ci`) | — | `backend/app/core/config.py`, `backend/.env.example`, `docs/DEPLOYMENT.md`, novo teste | | Risco atual: sem a env var, qualquer um forja JWT. |
-| C2 | **Rate limiting** em `/auth/login`, `/auth/register` e `/auth/refresh` (ex.: `slowapi`, por IP e/ou por e-mail). Limites configuráveis via env. Retornar 429 no formato de erro padrão. | P1 | M | IN_PROGRESS | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/api/v1/auth.py`, `backend/pyproject.toml`, `backend/app/core/config.py` | | Atrás de proxy (Railway), usar o IP correto (`X-Forwarded-For`). |
+| C2 | **Rate limiting** em `/auth/login`, `/auth/register` e `/auth/refresh` (ex.: `slowapi`, por IP e/ou por e-mail). Limites configuráveis via env. Retornar 429 no formato de erro padrão. | P1 | M | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/api/v1/auth.py`, `backend/pyproject.toml`, `backend/app/core/config.py` | 60f5eb7 | Atrás de proxy (Railway), usar o IP correto (`X-Forwarded-For`). |
 | C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | TODO | | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
-| C4 | **Política de cadastro**: flag `REGISTRATION_ENABLED` e/ou código de convite, para o deploy público não aceitar signups arbitrários. | P1 | S | IN_PROGRESS | S7 (`fix/s7-auth-hardening`) | — | `backend/app/core/config.py`, `backend/app/services/auth_service.py`, `backend/app/api/v1/auth.py`, `frontend/src/pages/register-page.tsx` | | Conflita com C2/C3 em `auth.py` — combinar ordem. |
+| C4 | **Política de cadastro**: flag `REGISTRATION_ENABLED` e/ou código de convite, para o deploy público não aceitar signups arbitrários. | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/core/config.py`, `backend/app/services/auth_service.py`, `backend/app/api/v1/auth.py`, `frontend/src/pages/register-page.tsx` | 60f5eb7, 77feace | Conflita com C2/C3 em `auth.py` — combinar ordem. |
 | C5 | **Decisão sobre armazenamento de tokens no frontend** (localStorage vs cookie httpOnly + CSRF). Se mantiver localStorage, documentar o risco e adicionar CSP/headers de segurança (Vercel `headers`). | P2 | M | TODO | | C3 | `frontend/vercel.json`, `frontend/src/lib/token-storage.ts`, `docs/DECISIONS.md` | | Hoje não há `dangerouslySetInnerHTML`/`rehype-raw` (verificado), então o risco é baixo, mas o refresh dura 30 dias. |
-| C6 | Revisar CORS para produção (origens explícitas via env; `allow_methods`/`allow_headers` restritos em vez de `*`). | P1 | S | IN_PROGRESS | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/core/config.py` | | Conflita com C2 em `main.py`. |
+| C6 | Revisar CORS para produção (origens explícitas via env; `allow_methods`/`allow_headers` restritos em vez de `*`). | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/core/config.py` | 0d81d42 | Conflita com C2 em `main.py`. |
 
 ## Trilha D — Robustez do backend
 
@@ -194,6 +194,9 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — C2 — rate limiting em memória (por IP; login também por e-mail) em login/register/refresh, 429 padronizado + Retry-After; X-Forwarded-For só com TRUST_PROXY_HEADERS — `60f5eb7`
+- 2026-10-06 — C4 — `REGISTRATION_ENABLED` e `REGISTRATION_INVITE_CODE`; `GET /auth/registration-info`; campo de convite na register-page — `60f5eb7`, `77feace`
+- 2026-10-06 — C6 — CORS com métodos/headers restritos, origens via JSON ou CSV, `*` rejeitado em produção — `0d81d42`
 - 2026-10-06 — F3 + F4 — testes dedicados de challenge/quest/review/dashboard/gamification e `test_authorization.py` (+130 testes, 1 xfail estrito documentando bug de conquistas duplicadas) — `444d509`..`88f54a8`
 - 2026-10-06 — F1 — Vitest + Testing Library + jsdom; testes de api-client, token-storage e protected-route (20 testes); corrigido crash do api-client com corpo de erro sem `error` — `6a1358b`..`42dfaab`
 - 2026-10-06 — E1 — N+1 eliminado em learning_service (queries em lote; detalhe 62→5, lista 10→4 em 15 competências); testes de caracterização e contagem de queries — de8d0b9
