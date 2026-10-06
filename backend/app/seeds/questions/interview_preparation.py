@@ -1006,9 +1006,487 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
     ),
 )
 
-# @@BEHAVIORAL@@
+_BEHAVIORAL: tuple[QuestionSeed, ...] = (
+    # ------------------------------------------------------------------
+    # behavioral-interviews
+    # ------------------------------------------------------------------
+    QuestionSeed(
+        code="behavioral-interviews-q01",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("c",),
+        tags=("star", "structure"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="In a STAR answer (Situation, Task, Action, Result), which part should "
+                "usually get the most of your time?",
+                options=_options(
+                    "Situation, so the interviewer understands the company's background.",
+                    "Task, so the goal is stated in detail.",
+                    "Action: what you personally did and why you chose it.",
+                    "Result, repeated several times for emphasis.",
+                ),
+                explanation="Interviewers use behavioral questions to learn how you act, so "
+                "the Action (your own decisions, trade-offs and reasoning) carries the most "
+                "signal. Situation and Task should be brief, just enough context, and the "
+                "Result should be concrete but concise.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Em uma resposta no método STAR (Situation, Task, Action, Result), qual "
+                "parte normalmente deve ocupar a maior parte do seu tempo?",
+                options=_options(
+                    "Situation, para o entrevistador entender o contexto da empresa.",
+                    "Task, para declarar o objetivo em detalhes.",
+                    "Action: o que você mesmo fez e por que escolheu fazer assim.",
+                    "Result, repetido várias vezes para dar ênfase.",
+                ),
+                explanation="Os entrevistadores usam perguntas comportamentais para entender "
+                "como você age, então a Action (suas decisões, trade-offs e raciocínio) é a "
+                "que mais informa. Situation e Task devem ser breves, só o contexto "
+                "necessário, e o Result deve ser concreto, porém conciso.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q02",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("a",),
+        tags=("failure", "self-awareness"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="An interviewer asks: \"Tell me about a time you failed.\" Which approach "
+                "is best?",
+                options=_options(
+                    "Describe a real failure with genuine consequences, own your part in it, "
+                    "and explain what you changed afterwards.",
+                    "Describe a disguised strength, such as \"I care too much about quality.\"",
+                    "Explain how outside circumstances made the failure unavoidable.",
+                    "Say you cannot think of one, because you prepare carefully.",
+                ),
+                explanation="This question probes self-awareness and growth. A real failure, "
+                "honest ownership and a concrete change in behavior show all of that. "
+                "Disguised strengths and blame-shifting are easy to spot and read as a lack of "
+                "reflection, and having no example suggests you have not taken risks or have "
+                "not looked back at your work.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Um entrevistador pergunta: \"Conte sobre uma vez em que você "
+                "falhou.\" Qual abordagem é a melhor?",
+                options=_options(
+                    "Descrever uma falha real, com consequências genuínas, assumir sua parte "
+                    "nela e explicar o que você mudou depois.",
+                    "Descrever uma qualidade disfarçada, como \"eu me importo demais com "
+                    "qualidade\".",
+                    "Explicar como circunstâncias externas tornaram a falha inevitável.",
+                    "Dizer que não lembra de nenhuma, porque você se prepara com cuidado.",
+                ),
+                explanation="Essa pergunta avalia autoconsciência e crescimento. Uma falha "
+                "real, a responsabilidade assumida com honestidade e uma mudança concreta de "
+                "comportamento mostram tudo isso. Qualidades disfarçadas e transferência de "
+                "culpa são fáceis de notar e passam falta de reflexão, e não ter exemplo "
+                "sugere que você não assumiu riscos ou não revisitou seu trabalho.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q03",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("d",),
+        tags=("star", "ownership"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You are describing a project a team of six delivered together. "
+                "Interviewers keep asking \"but what did *you* do?\" What is the best way to "
+                "tell the story?",
+                options=_options(
+                    "Use \"we\" throughout to show you are a team player.",
+                    "Claim the whole result as your own so your impact is clear.",
+                    "Skip the team context entirely and talk only about code.",
+                    "Give the team context briefly, then say \"I\" for your own decisions "
+                    "and actions, crediting teammates for theirs.",
+                ),
+                explanation="The interviewer is hiring you, not the team, so they need to "
+                "see your specific contribution. Using only 'we' hides it, while taking credit "
+                "for everything hurts credibility and signals poor collaboration. A short "
+                "team context plus precise 'I' statements, with credit given where due, "
+                "satisfies both needs.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você está descrevendo um projeto entregue por uma equipe de seis "
+                "pessoas. Os entrevistadores insistem em perguntar \"mas o que *você* fez?\". "
+                "Qual é a melhor forma de contar a história?",
+                options=_options(
+                    "Usar \"nós\" o tempo todo para mostrar que você trabalha bem em equipe.",
+                    "Atribuir todo o resultado a si mesmo para deixar seu impacto claro.",
+                    "Pular o contexto da equipe e falar apenas de código.",
+                    "Dar o contexto da equipe rapidamente e então dizer \"eu\" para as suas "
+                    "decisões e ações, dando crédito aos colegas pelas deles.",
+                ),
+                explanation="O entrevistador está contratando você, não a equipe, então "
+                "precisa ver sua contribuição específica. Usar só 'nós' a esconde, enquanto "
+                "levar crédito por tudo prejudica a credibilidade e sugere pouca "
+                "colaboração. Um contexto curto da equipe com afirmações precisas em primeira "
+                "pessoa, creditando os colegas quando cabe, atende as duas necessidades.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q04",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("b",),
+        tags=("conflict", "collaboration"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="\"Tell me about a time you disagreed with a teammate.\" Interviewers "
+                "look for a specific example, ownership of your own part, collaboration and a "
+                "clear outcome. Which answer summary meets those criteria best?",
+                options=_options(
+                    "\"A colleague kept writing sloppy code. I told the team how careless "
+                    "they were and eventually they changed.\"",
+                    "\"We disagreed on whether to build a queue or call the service "
+                    "directly. I asked about their constraints, realized I had underweighted "
+                    "operational cost, and we agreed to prototype both and compare latency. "
+                    "We shipped the simpler option, and we still pair on design reviews.\"",
+                    "\"I have never had a real conflict; I get along with everyone.\"",
+                    "\"I escalated to my manager right away and they decided for us.\"",
+                ),
+                explanation="The strongest answer is one concrete event, shows curiosity about "
+                "the other view, admits where the narrator was wrong, uses evidence to resolve "
+                "the disagreement and ends with a result and a healthy relationship. Venting "
+                "about a colleague, claiming no conflicts, or immediate escalation each avoid "
+                "showing how you handle disagreement yourself.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="\"Conte sobre uma vez em que você discordou de um colega.\" Os "
+                "entrevistadores procuram um exemplo específico, responsabilidade pela sua "
+                "parte, colaboração e um resultado claro. Qual resumo de resposta atende "
+                "melhor a esses critérios?",
+                options=_options(
+                    "\"Um colega escrevia código descuidado. Eu disse ao time como ele era "
+                    "relaxado e, com o tempo, ele mudou.\"",
+                    "\"Discordamos sobre criar uma fila ou chamar o serviço diretamente. "
+                    "Perguntei sobre as restrições dele, percebi que eu tinha subestimado o "
+                    "custo operacional e combinamos prototipar as duas opções e comparar a "
+                    "latência. Entregamos a opção mais simples e ainda fazemos design reviews "
+                    "juntos.\"",
+                    "\"Nunca tive um conflito de verdade; eu me dou bem com todo mundo.\"",
+                    "\"Escalei para o meu gestor imediatamente e ele decidiu por nós.\"",
+                ),
+                explanation="A resposta mais forte é um evento concreto, mostra curiosidade "
+                "pelo outro ponto de vista, admite onde o narrador errou, usa evidências para "
+                "resolver a discordância e termina com um resultado e uma relação saudável. "
+                "Desabafar sobre um colega, dizer que nunca houve conflito ou escalar de "
+                "imediato evitam mostrar como você mesmo lida com discordâncias.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q05",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("d",),
+        tags=("story-bank", "preparation"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You have a week to prepare for behavioral rounds that will cover "
+                "conflict, failure, leadership, ambiguity and incidents. What is the most "
+                "effective preparation?",
+                options=_options(
+                    "Write and memorize a word-for-word script for every question you can "
+                    "think of.",
+                    "Prepare one excellent story and reuse it for every question.",
+                    "Prepare a different story for each possible question and never repeat "
+                    "any.",
+                    "Pick a handful of real, substantial experiences, map each to several "
+                    "themes, and rehearse short versions you can emphasize differently.",
+                ),
+                explanation="A small story bank that covers multiple themes is flexible: the "
+                "same project can illustrate ambiguity in one answer and leadership in "
+                "another. Memorized scripts sound robotic and break when the question is "
+                "phrased differently, a single story is repetitive, and trying to prepare a "
+                "unique story per question is unrealistic.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você tem uma semana para se preparar para rodadas comportamentais que "
+                "vão cobrir conflito, falha, liderança, ambiguidade e incidentes. Qual é a "
+                "preparação mais eficaz?",
+                options=_options(
+                    "Escrever e decorar um roteiro palavra por palavra para cada pergunta "
+                    "imaginável.",
+                    "Preparar uma única história excelente e reutilizá-la em todas as "
+                    "perguntas.",
+                    "Preparar uma história diferente para cada pergunta possível e nunca "
+                    "repetir nenhuma.",
+                    "Escolher algumas experiências reais e substanciais, associar cada uma a "
+                    "vários temas e ensaiar versões curtas que você possa enfatizar de formas "
+                    "diferentes.",
+                ),
+                explanation="Um pequeno banco de histórias que cobre vários temas é flexível: "
+                "o mesmo projeto pode ilustrar ambiguidade em uma resposta e liderança em "
+                "outra. Roteiros decorados soam robóticos e falham quando a pergunta vem com "
+                "outra formulação, uma única história é repetitiva, e preparar uma história "
+                "única por pergunta é irrealista.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q06",
+        competency_slug="behavioral-interviews",
+        type=MS,
+        difficulty=MEDIUM,
+        correct=("a", "c", "e"),
+        tags=("star", "answer-quality"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Which elements make a behavioral answer strong? Select all that apply.",
+                options=_options(
+                    "One specific, real situation with enough context to see what was at "
+                    "stake.",
+                    "A description of how you generally behave (\"I usually...\") instead of "
+                    "a single event.",
+                    "Your own decisions and the trade-offs you weighed.",
+                    "Several minutes of background about the company and its products.",
+                    "A concrete result, plus what you would do differently now.",
+                ),
+                explanation="Strong answers are anchored in one real event, show your "
+                "reasoning and decisions, and close with a measurable result and a reflection. "
+                "General statements about habits are unverifiable, and long background eats "
+                "the time you need for the Action, which carries the most signal.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Quais elementos tornam forte uma resposta comportamental? Selecione "
+                "todos que se aplicam.",
+                options=_options(
+                    "Uma situação real e específica, com contexto suficiente para ver o que "
+                    "estava em jogo.",
+                    "Uma descrição de como você costuma agir (\"eu normalmente...\") em vez "
+                    "de um único evento.",
+                    "Suas próprias decisões e os trade-offs que você ponderou.",
+                    "Vários minutos de contexto sobre a empresa e seus produtos.",
+                    "Um resultado concreto, mais o que você faria diferente hoje.",
+                ),
+                explanation="Respostas fortes se ancoram em um evento real, mostram seu "
+                "raciocínio e suas decisões e terminam com um resultado mensurável e uma "
+                "reflexão. Afirmações genéricas sobre hábitos não são verificáveis, e muito "
+                "contexto consome o tempo da Action, que é a parte que mais informa.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q07",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("a",),
+        tags=("honesty", "preparation"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You are asked to describe a time you led a project without formal "
+                "authority, and no experience fits exactly. What should you do?",
+                options=_options(
+                    "Take a moment, pick the closest real experience, and say how it relates "
+                    "to the question, noting any difference in context.",
+                    "Invent a convincing story, since nobody can verify it.",
+                    "Answer hypothetically with \"I would...\" and describe an ideal approach.",
+                    "Say you have not had that experience and wait for the next question.",
+                ),
+                explanation="Pausing to choose a relevant real example is normal, and "
+                "being open about the context gap is honest and still gives evidence. "
+                "Invented stories collapse under follow-up questions and damage trust. "
+                "Hypotheticals do not show past behavior, which is what the question tests, "
+                "and giving up wastes the chance to show related strengths.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Pedem que você descreva uma vez em que liderou um projeto sem "
+                "autoridade formal, e nenhuma experiência sua se encaixa exatamente. O que "
+                "fazer?",
+                options=_options(
+                    "Pedir um momento, escolher a experiência real mais próxima e explicar "
+                    "como ela se relaciona com a pergunta, apontando a diferença de contexto.",
+                    "Inventar uma história convincente, já que ninguém pode verificar.",
+                    "Responder de forma hipotética, com \"eu faria...\", descrevendo uma "
+                    "abordagem ideal.",
+                    "Dizer que não teve essa experiência e esperar a próxima pergunta.",
+                ),
+                explanation="Fazer uma pausa para escolher um exemplo real relevante é "
+                "normal, e ser claro sobre a diferença de contexto é honesto e ainda traz "
+                "evidência. Histórias inventadas desmoronam diante de perguntas de "
+                "aprofundamento e minam a confiança. Hipóteses não mostram comportamento "
+                "passado, que é o que a pergunta testa, e desistir desperdiça a chance de "
+                "mostrar pontos fortes relacionados.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q08",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("c",),
+        tags=("result", "learning"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You worked hard on a project that was cancelled before launch, and you "
+                "want to use it for \"tell me about a challenging project.\" How should you "
+                "handle the Result?",
+                options=_options(
+                    "Skip the Result and end the story at the last thing you built.",
+                    "Say the project was a success because the team learned a lot, without "
+                    "mentioning the cancellation.",
+                    "State plainly that it was cancelled, say why you understand that "
+                    "happened, and describe what you took from it and applied later.",
+                    "Blame the leadership's decision and explain why they were wrong.",
+                ),
+                explanation="A mixed or negative outcome is acceptable if you are honest and "
+                "reflective. Omitting the Result looks evasive, reframing a cancellation as a "
+                "success is not credible, and blaming others shows poor judgment. Stating the "
+                "outcome plainly and showing a concrete lesson you later applied turns it "
+                "into evidence of growth.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você trabalhou duro em um projeto que foi cancelado antes do "
+                "lançamento e quer usá-lo para \"conte sobre um projeto desafiador\". Como "
+                "tratar o Result?",
+                options=_options(
+                    "Pular o Result e encerrar a história na última coisa que você "
+                    "construiu.",
+                    "Dizer que o projeto foi um sucesso porque a equipe aprendeu muito, sem "
+                    "mencionar o cancelamento.",
+                    "Dizer com clareza que foi cancelado, explicar por que entende que isso "
+                    "aconteceu e descrever o que tirou dessa experiência e aplicou depois.",
+                    "Culpar a decisão da liderança e explicar por que ela estava errada.",
+                ),
+                explanation="Um resultado misto ou negativo é aceitável se você for honesto "
+                "e reflexivo. Omitir o Result parece evasivo, reapresentar um cancelamento "
+                "como sucesso não é crível, e culpar outros mostra mau julgamento. Dizer o "
+                "resultado com clareza e mostrar uma lição concreta que você aplicou depois "
+                "o transforma em evidência de crescimento.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q09",
+        competency_slug="behavioral-interviews",
+        type=MC,
+        difficulty=HARD,
+        correct=("b",),
+        tags=("judgment", "decision-making"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="\"Tell me about a decision you made with incomplete information.\" "
+                "Which answer summary best shows sound judgment?",
+                options=_options(
+                    "\"I kept collecting data for three weeks until I was certain, then "
+                    "decided.\"",
+                    "\"I listed what I knew and did not know, chose the option that was "
+                    "easiest to reverse, told stakeholders my confidence level and what would "
+                    "make me change course, and reviewed the outcome at a set checkpoint.\"",
+                    "\"I trusted my gut because of my experience, and it worked out.\"",
+                    "\"I escalated so my manager would own the decision.\"",
+                ),
+                explanation="Incomplete information is the normal case, so good judgment is "
+                "about bounding the risk: separating known from unknown, preferring "
+                "reversible choices, communicating uncertainty and setting a checkpoint. "
+                "Waiting for certainty has its own cost, a gut call that happened to work does "
+                "not show a repeatable method, and escalating by default avoids ownership.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="\"Conte sobre uma decisão que você tomou com informação "
+                "incompleta.\" Qual resumo de resposta melhor demonstra bom julgamento?",
+                options=_options(
+                    "\"Continuei coletando dados por três semanas até ter certeza e só "
+                    "então decidi.\"",
+                    "\"Listei o que eu sabia e o que não sabia, escolhi a opção mais fácil "
+                    "de reverter, contei aos stakeholders meu nível de confiança e o que me "
+                    "faria mudar de rumo, e revisei o resultado em um checkpoint "
+                    "combinado.\"",
+                    "\"Confiei na minha intuição por causa da minha experiência, e deu "
+                    "certo.\"",
+                    "\"Escalei para que meu gestor fosse o dono da decisão.\"",
+                ),
+                explanation="Informação incompleta é o caso normal, então bom julgamento é "
+                "limitar o risco: separar o conhecido do desconhecido, preferir escolhas "
+                "reversíveis, comunicar a incerteza e definir um checkpoint. Esperar certeza "
+                "tem seu próprio custo, uma intuição que por acaso funcionou não mostra um "
+                "método repetível, e escalar por padrão evita a responsabilidade.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="behavioral-interviews-q10",
+        competency_slug="behavioral-interviews",
+        type=SHORT,
+        difficulty=HARD,
+        correct=None,
+        tags=("star", "communication", "stakeholders"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Describe how you would structure a two-to-three-minute answer to "
+                "\"Tell me about a time you had to deliver bad news to a stakeholder.\" What "
+                "goes into each STAR part, and what would make the answer credible?",
+                model_answer="Situation (a sentence or two): a real project with a date and "
+                "stakes, and what went wrong, for example a delivery slipping because of an "
+                "underestimated dependency. Task: you owned the communication and the "
+                "recovery plan. Action (the longest part): you gathered the facts first, "
+                "told the stakeholder early and directly instead of waiting, explained cause "
+                "and impact without blaming individuals, and arrived with options and a "
+                "recommendation; also mention one thing you would do better, such as raising "
+                "the risk a week sooner. Result: the concrete outcome (the decision made, the "
+                "new date and whether it held, what the stakeholder said or did afterward), "
+                "plus what you changed in your process. Credibility comes from specific "
+                "details, honest imperfection and an outcome that is not too tidy.",
+                explanation="Self-check: did you include (1) a brief, specific situation, "
+                "(2) your own actions: early, factual communication with options, (3) a "
+                "concrete result and a lesson, and (4) honesty about what did not go "
+                "perfectly?",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Descreva como você estruturaria uma resposta de dois a três minutos "
+                "para \"Conte sobre uma vez em que você precisou dar uma má notícia a um "
+                "stakeholder.\" O que entra em cada parte do STAR e o que tornaria a resposta "
+                "crível?",
+                model_answer="Situation (uma ou duas frases): um projeto real, com data e o "
+                "que estava em jogo, e o que deu errado, por exemplo uma entrega atrasando "
+                "por causa de uma dependência subestimada. Task: você era responsável pela "
+                "comunicação e pelo plano de recuperação. Action (a parte mais longa): você "
+                "levantou os fatos primeiro, avisou o stakeholder cedo e de forma direta em "
+                "vez de esperar, explicou causa e impacto sem culpar pessoas e chegou com "
+                "opções e uma recomendação; mencione também algo que faria melhor, como "
+                "levantar o risco uma semana antes. Result: o desfecho concreto (a decisão "
+                "tomada, a nova data e se foi cumprida, o que o stakeholder disse ou fez "
+                "depois), mais o que você mudou no seu processo. A credibilidade vem de "
+                "detalhes específicos, de imperfeição honesta e de um desfecho que não seja "
+                "arrumado demais.",
+                explanation="Autoavaliação: você incluiu (1) uma situação breve e específica, "
+                "(2) suas próprias ações: comunicação cedo e baseada em fatos, com opções, "
+                "(3) um resultado concreto e uma lição e (4) honestidade sobre o que não deu "
+                "totalmente certo?",
+            ),
+        },
+    ),
+)
+
+# @@COMMUNICATION@@
 
 QUESTION_SET = SubjectQuestionSet(
     subject_slug="interview-preparation",
-    questions=_CODING + _SYSTEM_DESIGN,
+    questions=_CODING + _SYSTEM_DESIGN + _BEHAVIORAL,
 )
