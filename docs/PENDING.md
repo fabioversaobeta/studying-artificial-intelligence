@@ -16,17 +16,13 @@ pushed: https://github.com/fabioversaobeta/studying-artificial-intelligence
 
 ## Token revocation / logout
 
-**Question**: JWT access tokens are stateless and valid until they expire
-(24h) — there's no server-side revocation list. Is that acceptable for a
-personal tool?
-**Current assumption**: yes. "Logout" is client-side (discard the tokens).
-**Options if revisited**: a Redis-backed denylist of revoked token IDs
-(`jti` claim), or shortening access-token lifetime further and relying on
-refresh-token rotation.
-**Impact of the current assumption**: a stolen access token remains valid
-for up to 24h with no way to kill it server-side. Low risk for a
-single-user tool behind HTTPS, not acceptable if this ever has real
-multi-user stakes.
+**Status**: RESOLVED (roadmap item C3). See "Refresh-token rotation and
+revocation (Postgres denylist)" in `docs/DECISIONS.md`.
+**Resolution**: tokens carry a `jti`; refresh tokens are rotated on every
+`/auth/refresh` (reuse is rejected and revokes all of the user's sessions);
+`POST /auth/logout` revokes the current access token and the refresh token
+server-side via a Postgres `revoked_tokens` table (no Redis). Access tokens
+now live 60 minutes instead of 24h.
 
 ---
 
