@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    ai,
     auth,
     challenges,
     dashboard,
@@ -24,3 +25,4 @@ api_router.include_router(resources.router)
 api_router.include_router(reviews.router)
 api_router.include_router(gamification.router)
 api_router.include_router(dashboard.router)
+api_router.include_router(ai.router)
