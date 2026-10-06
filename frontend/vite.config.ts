@@ -30,5 +30,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,
+    // Hermetic: a developer's local .env (VITE_API_URL) must not change what the tests assert.
+    env: { VITE_API_URL: '' },
   },
 })
