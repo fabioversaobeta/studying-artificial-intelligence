@@ -528,7 +528,470 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
-QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS
+# ----------------------------------------------------------------------
+# authentication-authorization
+# ----------------------------------------------------------------------
+
+_IDOR_CODE = """```python
+@app.get("/invoices/{invoice_id}")
+def get_invoice(
+    invoice_id: UUID,
+    user: User = Depends(current_user),  # raises 401 if not logged in
+    db: Session = Depends(get_db),
+):
+    return db.get(Invoice, invoice_id)
+```"""
+
+_AUTH = "authentication-authorization"
+
+AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "authentication-authorization-q01",
+        _AUTH,
+        MC,
+        EASY,
+        ("d",),
+        ("password-hashing", "argon2"),
+        _t(
+            "How should a backend store user passwords?",
+            "Passwords must be stored with a deliberately slow, salted, one-way password "
+            "hashing function (Argon2id, bcrypt, scrypt), so a leaked database is expensive "
+            "to brute-force. Encryption is reversible, so whoever gets the key gets every "
+            "password; fast general-purpose hashes (MD5, SHA-256) let attackers test billions "
+            "of guesses per second; and Base64 is an encoding, not protection at all.",
+            _options(
+                "Encrypted with AES, so support staff can recover forgotten passwords.",
+                "Hashed with a fast function such as SHA-256, because fast is better for "
+                "login performance.",
+                "Encoded with Base64, which makes them unreadable.",
+                "Hashed with a slow, salted password-hashing algorithm such as Argon2id or "
+                "bcrypt.",
+            ),
+        ),
+        _t(
+            "Como um backend deve armazenar as senhas dos usuários?",
+            "Senhas devem ser armazenadas com uma função de hash de senhas deliberadamente "
+            "lenta, com salt e de mão única (Argon2id, bcrypt, scrypt), para que um banco "
+            "vazado seja caro de atacar por força bruta. Criptografia é reversível, então "
+            "quem obtém a chave obtém todas as senhas; hashes rápidos de uso geral (MD5, "
+            "SHA-256) permitem testar bilhões de palpites por segundo; e Base64 é uma "
+            "codificação, não uma proteção.",
+            _options(
+                "Criptografadas com AES, para que o suporte possa recuperar senhas "
+                "esquecidas.",
+                "Com hash de uma função rápida como SHA-256, pois rápido é melhor para o "
+                "desempenho do login.",
+                "Codificadas em Base64, o que as torna ilegíveis.",
+                "Com hash de um algoritmo lento e com salt, como Argon2id ou bcrypt.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q02",
+        _AUTH,
+        MC,
+        EASY,
+        ("c",),
+        ("authentication", "authorization", "http-status-codes"),
+        _t(
+            "A user with a valid session tries to delete a project that belongs to another "
+            "team, and the system decides they have no permission to do so. Which status "
+            "code is the standard response?",
+            "The caller is authenticated, but not allowed: that is `403 Forbidden`. `401` "
+            "means the credentials are missing or invalid (authentication failed), `400` is "
+            "for a malformed request, and `405` means the HTTP method is not supported on "
+            "that route. (Some APIs deliberately answer `404` to avoid revealing that the "
+            "resource exists, but `403` is the standard answer here.)",
+            _options(
+                "`401 Unauthorized`",
+                "`400 Bad Request`",
+                "`403 Forbidden`",
+                "`405 Method Not Allowed`",
+            ),
+        ),
+        _t(
+            "Um usuário com sessão válida tenta excluir um projeto que pertence a outra "
+            "equipe, e o sistema decide que ele não tem permissão. Qual é o status padrão "
+            "da resposta?",
+            "O chamador está autenticado, mas não autorizado: isso é `403 Forbidden`. `401` "
+            "significa credenciais ausentes ou inválidas (falha de autenticação), `400` é "
+            "para requisições malformadas e `405` indica que o método HTTP não é suportado "
+            "na rota. (Algumas APIs respondem `404` de propósito para não revelar que o "
+            "recurso existe, mas `403` é a resposta padrão aqui.)",
+            _options(
+                "`401 Unauthorized`",
+                "`400 Bad Request`",
+                "`403 Forbidden`",
+                "`405 Method Not Allowed`",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q03",
+        _AUTH,
+        MC,
+        EASY,
+        ("b",),
+        ("jwt", "security-basics"),
+        _t(
+            "Which statement about a standard signed JWT is correct?",
+            "A signed JWT has a Base64url-encoded header and payload plus a signature. The "
+            "signature gives integrity (tampering is detected), not confidentiality: anyone "
+            "who holds the token can decode and read the claims, so secrets must not go in "
+            "them. The payload is not encrypted, the signature does not hide anything, and "
+            "verification can be done locally with the key, with no call to the issuer on "
+            "every request.",
+            _options(
+                "The payload is encrypted, so the client cannot read the claims.",
+                "The payload is only encoded: anyone holding the token can read it, and the "
+                "signature only protects against tampering.",
+                "The signature makes the claims confidential.",
+                "A server must call the issuer on every request to verify the token.",
+            ),
+        ),
+        _t(
+            "Qual afirmação sobre um JWT assinado padrão está correta?",
+            "Um JWT assinado tem header e payload codificados em Base64url mais uma "
+            "assinatura. A assinatura dá integridade (adulterações são detectadas), não "
+            "confidencialidade: qualquer um que tenha o token pode decodificar e ler as "
+            "claims, então segredos não devem ir nelas. O payload não é criptografado, a "
+            "assinatura não esconde nada, e a verificação pode ser feita localmente com a "
+            "chave, sem consultar o emissor a cada requisição.",
+            _options(
+                "O payload é criptografado, então o cliente não consegue ler as claims.",
+                "O payload é apenas codificado: qualquer um com o token pode lê-lo, e a "
+                "assinatura só protege contra adulteração.",
+                "A assinatura torna as claims confidenciais.",
+                "O servidor precisa consultar o emissor a cada requisição para verificar o "
+                "token.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q04",
+        _AUTH,
+        MC,
+        MEDIUM,
+        ("d",),
+        ("sessions", "jwt", "revocation"),
+        _t(
+            "After a password change, the product must immediately sign the user out of every "
+            "device. Which approach makes that requirement simplest to satisfy?",
+            "With server-side sessions, the server owns the state, so deleting the user's "
+            "session records revokes access at once. A self-contained JWT stays valid until "
+            "it expires, because nothing on the server says otherwise; longer lifetimes make "
+            "that worse, a stronger signature algorithm does not change it, and where the "
+            "token is stored in the browser is irrelevant to revocation. Stateless tokens "
+            "need extra machinery (short expiry plus revocable refresh tokens, or a "
+            "denylist) to approximate this.",
+            _options(
+                "Stateless JWT access tokens valid for 24 hours, with no server-side state.",
+                "Stateless JWTs with longer lifetimes, so users rarely need to log in.",
+                "Stateless JWTs signed with a stronger algorithm.",
+                "Server-side sessions kept in a database or cache: delete all of the user's "
+                "session records.",
+            ),
+        ),
+        _t(
+            "Depois de uma troca de senha, o produto precisa deslogar imediatamente o usuário "
+            "de todos os dispositivos. Qual abordagem torna esse requisito mais simples de "
+            "atender?",
+            "Com sessões no servidor, o servidor é dono do estado, então apagar os registros "
+            "de sessão do usuário revoga o acesso na hora. Um JWT autocontido continua "
+            "válido até expirar, pois nada no servidor diz o contrário; vidas mais longas "
+            "pioram isso, um algoritmo de assinatura mais forte não muda nada, e onde o "
+            "token fica no navegador é irrelevante para a revogação. Tokens stateless "
+            "exigem mecanismos extras (expiração curta com refresh tokens revogáveis, ou "
+            "uma denylist) para aproximar isso.",
+            _options(
+                "Access tokens JWT stateless válidos por 24 horas, sem estado no servidor.",
+                "JWTs stateless com vida mais longa, para que os usuários raramente precisem "
+                "fazer login.",
+                "JWTs stateless assinados com um algoritmo mais forte.",
+                "Sessões no servidor guardadas em banco ou cache: apagar todos os registros "
+                "de sessão do usuário.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q05",
+        _AUTH,
+        MC,
+        MEDIUM,
+        ("b",),
+        ("oauth2", "pkce"),
+        _t(
+            "A single-page app (a public client that cannot keep a secret) signs users in "
+            "through an OAuth 2.0 authorization server. Which flow is recommended?",
+            "Authorization Code with PKCE: the app receives a short-lived code through the "
+            "redirect and exchanges it using a one-time `code_verifier`, so an intercepted "
+            "code is useless. The implicit flow exposes tokens in the redirect URL and is "
+            "discouraged; the password grant makes the app handle the user's password, "
+            "defeating delegation; and Client Credentials is for machine-to-machine calls "
+            "with no user involved.",
+            _options(
+                "Implicit flow, returning the access token in the redirect URL fragment.",
+                "Authorization Code flow with PKCE.",
+                "Resource Owner Password Credentials, with the app collecting the username "
+                "and password.",
+                "Client Credentials, with a client secret embedded in the app bundle.",
+            ),
+        ),
+        _t(
+            "Uma single-page app (um cliente público que não consegue guardar segredo) "
+            "autentica usuários por meio de um servidor de autorização OAuth 2.0. Qual fluxo "
+            "é recomendado?",
+            "Authorization Code com PKCE: o app recebe um code de curta duração pelo "
+            "redirecionamento e o troca usando um `code_verifier` de uso único, então um "
+            "code interceptado é inútil. O fluxo implicit expõe tokens na URL de "
+            "redirecionamento e é desencorajado; o password grant faz o app lidar com a "
+            "senha do usuário, anulando a delegação; e Client Credentials serve para "
+            "chamadas máquina a máquina, sem usuário.",
+            _options(
+                "Fluxo implicit, devolvendo o access token no fragmento da URL de "
+                "redirecionamento.",
+                "Fluxo Authorization Code com PKCE.",
+                "Resource Owner Password Credentials, com o app coletando usuário e senha.",
+                "Client Credentials, com um client secret embutido no bundle do app.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q06",
+        _AUTH,
+        MC,
+        MEDIUM,
+        ("c",),
+        ("oidc", "oauth2", "id-token"),
+        _t(
+            "What does OpenID Connect (OIDC) add on top of OAuth 2.0?",
+            "OAuth 2.0 is about delegated authorization (access to resources), not about "
+            "telling the client who the user is. OIDC adds an identity layer: the `openid` "
+            "scope, an ID token (a JWT with claims about the authentication event and the "
+            "user) and a standard userinfo endpoint. It does not replace the authorization "
+            "code flow, and refresh tokens already exist in OAuth 2.0.",
+            _options(
+                "Encryption of all access tokens in transit and at rest.",
+                "A new flow that replaces the authorization code flow.",
+                "An identity layer: an ID token with claims about the authenticated user, "
+                "the `openid` scope and a userinfo endpoint.",
+                "Refresh tokens, which OAuth 2.0 does not support.",
+            ),
+        ),
+        _t(
+            "O que o OpenID Connect (OIDC) acrescenta ao OAuth 2.0?",
+            "O OAuth 2.0 trata de autorização delegada (acesso a recursos), não de dizer ao "
+            "cliente quem é o usuário. O OIDC acrescenta uma camada de identidade: o scope "
+            "`openid`, um ID token (um JWT com claims sobre o evento de autenticação e o "
+            "usuário) e um endpoint userinfo padronizado. Ele não substitui o fluxo "
+            "authorization code, e refresh tokens já existem no OAuth 2.0.",
+            _options(
+                "Criptografia de todos os access tokens em trânsito e em repouso.",
+                "Um novo fluxo que substitui o fluxo authorization code.",
+                "Uma camada de identidade: um ID token com claims sobre o usuário "
+                "autenticado, o scope `openid` e um endpoint userinfo.",
+                "Refresh tokens, que o OAuth 2.0 não suporta.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q07",
+        _AUTH,
+        MS,
+        MEDIUM,
+        ("a", "c", "d"),
+        ("jwt", "token-validation"),
+        _t(
+            "Your API receives a JWT access token from an external identity provider. Which "
+            "checks must the API perform before trusting it? Select all that apply.",
+            "Verify the signature with the key and algorithm the API expects (never let the "
+            "token's own `alg` header decide, which is how `none` and key-confusion attacks "
+            "work), reject expired tokens, and check that `iss` and `aud` identify the "
+            "expected issuer and this API. Decoding the payload without verifying proves "
+            "nothing, since anyone can forge a payload, and HTTPS only protects the "
+            "transport, not the token's origin.",
+            _options(
+                "Verify the signature using the expected key and an allow-listed algorithm.",
+                "Base64-decode the payload and trust the claims, since the request came over "
+                "HTTPS.",
+                "Reject the token if it is expired (`exp`) or not yet valid (`nbf`).",
+                "Check that the issuer (`iss`) and audience (`aud`) match what the API "
+                "expects.",
+                "Accept whatever algorithm the token's `alg` header declares, for "
+                "compatibility with any issuer.",
+            ),
+        ),
+        _t(
+            "Sua API recebe um access token JWT de um provedor de identidade externo. Quais "
+            "verificações a API deve fazer antes de confiar nele? Selecione todas que se "
+            "aplicam.",
+            "Verificar a assinatura com a chave e o algoritmo que a API espera (nunca deixar "
+            "o header `alg` do próprio token decidir, que é como funcionam os ataques com "
+            "`none` e de confusão de chaves), rejeitar tokens expirados e checar se `iss` e "
+            "`aud` identificam o emissor esperado e esta API. Decodificar o payload sem "
+            "verificar não prova nada, pois qualquer um forja um payload, e o HTTPS protege "
+            "só o transporte, não a origem do token.",
+            _options(
+                "Verificar a assinatura usando a chave esperada e um algoritmo de uma lista "
+                "permitida.",
+                "Decodificar o payload em Base64 e confiar nas claims, já que a requisição "
+                "veio por HTTPS.",
+                "Rejeitar o token se estiver expirado (`exp`) ou ainda não válido (`nbf`).",
+                "Checar se o emissor (`iss`) e a audiência (`aud`) correspondem ao que a API "
+                "espera.",
+                "Aceitar o algoritmo que o header `alg` do token declarar, por "
+                "compatibilidade com qualquer emissor.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q08",
+        _AUTH,
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("idor", "bola", "authorization"),
+        _t(
+            "This endpoint requires login. What vulnerability does it have?\n\n" + _IDOR_CODE,
+            "Authentication only proves who the caller is. The handler never checks that the "
+            "invoice belongs to that user (or tenant), so any logged-in user can read any "
+            "invoice by guessing or obtaining its id: broken object-level authorization "
+            "(IDOR/BOLA), a leading API vulnerability. The fix is an ownership or tenant "
+            "check on every object access. Random UUIDs make guessing harder but are not an "
+            "authorization control. There is no SQL injection here, and CSRF concerns "
+            "state-changing requests.",
+            _options(
+                "None: because login is required, only legitimate users can reach it.",
+                "Broken object-level authorization (IDOR): any logged-in user can fetch any "
+                "invoice by id, since ownership is never checked.",
+                "SQL injection through `invoice_id`.",
+                "CSRF, because the endpoint answers a `GET` request.",
+            ),
+        ),
+        _t(
+            "Este endpoint exige login. Qual vulnerabilidade ele tem?\n\n" + _IDOR_CODE,
+            "A autenticação só prova quem é o chamador. O handler nunca verifica se a fatura "
+            "pertence àquele usuário (ou tenant), então qualquer usuário logado pode ler "
+            "qualquer fatura adivinhando ou obtendo seu id: autorização quebrada em nível "
+            "de objeto (IDOR/BOLA), uma das principais vulnerabilidades de API. A correção "
+            "é uma checagem de propriedade ou de tenant em todo acesso a objeto. UUIDs "
+            "aleatórios dificultam o palpite, mas não são um controle de autorização. Não há "
+            "SQL injection aqui, e CSRF diz respeito a requisições que alteram estado.",
+            _options(
+                "Nenhuma: como o login é exigido, só usuários legítimos chegam a ele.",
+                "Autorização quebrada em nível de objeto (IDOR): qualquer usuário logado "
+                "pode buscar qualquer fatura pelo id, pois a propriedade nunca é verificada.",
+                "SQL injection por meio de `invoice_id`.",
+                "CSRF, porque o endpoint responde a uma requisição `GET`.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q09",
+        _AUTH,
+        MC,
+        HARD,
+        ("a",),
+        ("xss", "csrf", "token-storage", "cookies"),
+        _t(
+            "A single-page app must keep a session credential in the browser. Which statement "
+            "about the trade-offs is correct?",
+            "A token in `localStorage` can be read by any script running on the page, so a "
+            "single XSS bug lets an attacker exfiltrate it. An `HttpOnly` cookie cannot be "
+            "read by JavaScript, but the browser attaches it automatically to requests, so "
+            "you need CSRF defenses (`SameSite`, anti-CSRF tokens). HttpOnly is not immune to "
+            "XSS, because injected script can still make authenticated requests from the "
+            "victim's browser. The same-origin policy does not protect against scripts "
+            "already running in your own origin, and tokens sent manually in an "
+            "`Authorization` header are not exposed to CSRF.",
+            _options(
+                "A token in `localStorage` can be stolen by any injected script (XSS), while "
+                "an `HttpOnly` cookie cannot be read by scripts but is sent automatically, "
+                "so it needs CSRF protection.",
+                "An `HttpOnly` cookie is immune to both XSS and CSRF, so it needs no further "
+                "defenses.",
+                "`localStorage` is protected by the same-origin policy, so XSS cannot read "
+                "tokens stored there.",
+                "A token sent in a manually set `Authorization` header is the one exposed to "
+                "CSRF, because browsers attach it to every request.",
+            ),
+        ),
+        _t(
+            "Uma single-page app precisa guardar uma credencial de sessão no navegador. Qual "
+            "afirmação sobre os trade-offs está correta?",
+            "Um token no `localStorage` pode ser lido por qualquer script rodando na página, "
+            "então um único bug de XSS permite que o atacante o exfiltre. Um cookie "
+            "`HttpOnly` não pode ser lido por JavaScript, mas o navegador o anexa "
+            "automaticamente às requisições, então são necessárias defesas contra CSRF "
+            "(`SameSite`, tokens anti-CSRF). HttpOnly não é imune a XSS, pois um script "
+            "injetado ainda pode fazer requisições autenticadas a partir do navegador da "
+            "vítima. A same-origin policy não protege contra scripts que já rodam na sua "
+            "própria origem, e tokens enviados manualmente em um header `Authorization` não "
+            "ficam expostos a CSRF.",
+            _options(
+                "Um token no `localStorage` pode ser roubado por qualquer script injetado "
+                "(XSS), enquanto um cookie `HttpOnly` não pode ser lido por scripts, mas é "
+                "enviado automaticamente, então precisa de proteção contra CSRF.",
+                "Um cookie `HttpOnly` é imune a XSS e a CSRF, então não precisa de mais "
+                "nenhuma defesa.",
+                "O `localStorage` é protegido pela same-origin policy, então XSS não "
+                "consegue ler os tokens guardados nele.",
+                "Um token enviado em um header `Authorization` definido manualmente é o que "
+                "fica exposto a CSRF, porque os navegadores o anexam a toda requisição.",
+            ),
+        ),
+    ),
+    _q(
+        "authentication-authorization-q10",
+        _AUTH,
+        SHORT,
+        HARD,
+        None,
+        ("refresh-tokens", "token-rotation", "jwt"),
+        _t(
+            "Design the token strategy for a web app with a JSON API. How do you combine "
+            "short-lived access tokens and refresh tokens, and how do you limit the damage "
+            "if a refresh token is stolen?",
+            "Self-check: did you mention (1) short-lived access tokens, (2) a long-lived, "
+            "opaque refresh token stored hashed on the server, (3) rotation on every use, "
+            "(4) reuse detection that revokes the whole token family, (5) safe client storage "
+            "and (6) revocation on logout or password change?",
+            model_answer="Issue a short-lived access token (for example 5 to 15 minutes, a "
+            "JWT verified locally) and a longer-lived refresh token that is an opaque random "
+            "value, stored hashed on the server, so it can be revoked. When the access token "
+            "expires, the client calls the refresh endpoint and gets a new access token and a "
+            "new refresh token (rotation); the old refresh token becomes invalid. If an "
+            "already-used refresh token is presented again, treat it as theft: revoke the "
+            "whole token family and force a new login. Keep the refresh token in an "
+            "`HttpOnly`, `Secure`, `SameSite` cookie scoped to the refresh path, set an "
+            "absolute lifetime, and revoke tokens on logout, password change or detected "
+            "compromise. This bounds a stolen access token to minutes and makes stolen "
+            "refresh tokens detectable.",
+        ),
+        _t(
+            "Projete a estratégia de tokens de um app web com uma API JSON. Como você combina "
+            "access tokens de vida curta e refresh tokens, e como limita o estrago se um "
+            "refresh token for roubado?",
+            "Autoavaliação: você mencionou (1) access tokens de vida curta, (2) um refresh "
+            "token longo e opaco, guardado com hash no servidor, (3) rotação a cada uso, "
+            "(4) detecção de reuso que revoga toda a família de tokens, (5) armazenamento "
+            "seguro no cliente e (6) revogação no logout ou na troca de senha?",
+            model_answer="Emitir um access token de vida curta (por exemplo 5 a 15 minutos, "
+            "um JWT verificado localmente) e um refresh token de vida mais longa que é um "
+            "valor aleatório opaco, guardado com hash no servidor, para que possa ser "
+            "revogado. Quando o access token expira, o cliente chama o endpoint de refresh e "
+            "recebe um novo access token e um novo refresh token (rotação); o refresh token "
+            "antigo se torna inválido. Se um refresh token já usado for apresentado de novo, "
+            "trata-se como roubo: revogar toda a família de tokens e exigir novo login. "
+            "Guardar o refresh token em um cookie `HttpOnly`, `Secure` e `SameSite` restrito "
+            "ao caminho de refresh, definir um tempo de vida absoluto e revogar tokens no "
+            "logout, na troca de senha ou ao detectar comprometimento. Isso limita um access "
+            "token roubado a minutos e torna detectável o roubo de refresh tokens.",
+        ),
+    ),
+)
+
+QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS + AUTH_QUESTIONS
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = ()
 
