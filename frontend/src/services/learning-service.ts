@@ -21,6 +21,8 @@ export const learningService = {
   getSubject: (id: string) => apiClient.get<SubjectDetail>(`/api/v1/subjects/${id}`),
 
   listLearningPaths: () => apiClient.get<LearningPath[]>('/api/v1/learning-paths'),
+  getLearningPath: (slug: string) =>
+    apiClient.get<LearningPath>(`/api/v1/learning-paths/${encodeURIComponent(slug)}`),
 
   logStudySession: (input: {
     competency_id?: string
