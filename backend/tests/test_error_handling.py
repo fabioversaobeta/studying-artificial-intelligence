@@ -45,9 +45,10 @@ class TestUnhandledError:
             )
 
         assert response.status_code == 500
-        assert response.json() == {
-            "error": {"code": "internal_error", "message": "Internal server error"}
-        }
+        body = response.json()
+        assert body["error"]["code"] == "internal_error"
+        assert body["error"]["message"] == "Internal server error"
+        assert body["error"]["request_id"] == response.headers["X-Request-ID"]
         assert "secret" not in response.text
 
 

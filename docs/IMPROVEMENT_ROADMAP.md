@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 13 |
-| P2 — Médio prazo | 21 | 0 |
+| P2 — Médio prazo | 21 | 1 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -141,7 +141,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | H1 | **Deploy real (ADIADO até o fim do roadmap)** em Railway (backend + Postgres) e Vercel (frontend), seguindo `docs/DEPLOYMENT.md`; verificar o fluxo completo em produção; corrigir o doc com o que for diferente da prática. | P1 | L | TODO | | C1, C6, D2 | `docs/DEPLOYMENT.md`, configs de deploy | | **Decisão do dono (2026-10-06): o deploy só acontece quando todo o resto deste roadmap estiver concluído.** Não iniciar antes. Requer ações do dono (contas/segredos); a sessão guia e verifica, sem inserir credenciais. |
-| H2 | Observabilidade mínima: `request_id` nos logs (middleware), logging estruturado e Sentry (opcional, via DSN em env). | P2 | M | IN_PROGRESS | S15 (`fix/s15-observability`) | H1 | `backend/app/main.py`, `backend/app/core/`, `backend/pyproject.toml` | | Conflita com outros itens em `main.py`. |
+| H2 | Observabilidade mínima: `request_id` nos logs (middleware), logging estruturado e Sentry (opcional, via DSN em env). | P2 | M | DONE | S15 (`fix/s15-observability`) | H1 | `backend/app/main.py`, `backend/app/core/`, `backend/pyproject.toml` | b5fa1d0 | Conflita com outros itens em `main.py`. Código pronto e testado com mock; Sentry real e deploy dependem do H1 (extra opcional `[observability]`). |
 | H3 | Backup/restore do Postgres de produção documentado (Railway) e teste de restauração. | P2 | S | TODO | | H1 | `docs/DEPLOYMENT.md` | | |
 
 ## Trilha I — Produto (alinhado ao objetivo de entrevistas)
@@ -206,6 +206,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — H2 — `X-Request-ID` + log de acesso (middleware ASGI), logging `LOG_FORMAT=text|json`/`LOG_LEVEL`, Sentry opcional (extra `[observability]`); Sentry real e deploy dependem do H1 — `b5fa1d0`
 - 2026-10-06 — C2 — rate limiting em memória (por IP; login também por e-mail) em login/register/refresh, 429 padronizado + Retry-After; X-Forwarded-For só com TRUST_PROXY_HEADERS — `60f5eb7`
 - 2026-10-06 — C4 — `REGISTRATION_ENABLED` e `REGISTRATION_INVITE_CODE`; `GET /auth/registration-info`; campo de convite na register-page — `60f5eb7`, `77feace`
 - 2026-10-06 — C6 — CORS com métodos/headers restritos, origens via JSON ou CSV, `*` rejeitado em produção — `0d81d42`

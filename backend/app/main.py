@@ -10,11 +10,13 @@ from app.api.deps import DbSession
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.exceptions import AppError, RateLimitError
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-logger = logging.getLogger(__name__)
+from app.core.logging import configure_logging, init_sentry
+from app.core.middleware import REQUEST_ID_HEADER, RequestIdMiddleware
 
 settings = get_settings()
+configure_logging(settings.log_level, settings.log_format)
+init_sentry(settings.sentry_dsn, settings.environment)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.app_name,
@@ -27,8 +29,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=settings.cors_allow_methods,
     allow_headers=settings.cors_allow_headers,
-    expose_headers=["X-Total-Count"],
+    expose_headers=["X-Total-Count", REQUEST_ID_HEADER],
 )
+# Added last so it is the outermost user middleware (wraps CORS too).
+app.add_middleware(RequestIdMiddleware)
 
 
 @app.exception_handler(AppError)
@@ -51,10 +55,21 @@ def handle_rate_limit_error(request: Request, exc: RateLimitError) -> JSONRespon
 @app.exception_handler(Exception)
 def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
     # Full details go to the log only; the client gets a generic message.
-    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    # This handler runs outside RequestIdMiddleware, so read the id from request.state.
+    request_id = getattr(request.state, "request_id", None)
+    logger.exception(
+        "Unhandled error on %s %s (request_id=%s)", request.method, request.url.path, request_id
+    )
     return JSONResponse(
         status_code=500,
-        content={"error": {"code": "internal_error", "message": "Internal server error"}},
+        content={
+            "error": {
+                "code": "internal_error",
+                "message": "Internal server error",
+                "request_id": request_id,
+            }
+        },
+        headers={REQUEST_ID_HEADER: request_id} if request_id else None,
     )
 
 

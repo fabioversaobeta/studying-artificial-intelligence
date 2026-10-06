@@ -7,7 +7,7 @@ settings discoverable in one place.
 
 import json
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -92,6 +92,12 @@ class Settings(BaseSettings):
     registration_enabled: bool = True
     # When set, /auth/register requires this code in the request body.
     registration_invite_code: str | None = None
+
+    # Observability.
+    log_level: str = "INFO"
+    log_format: Literal["text", "json"] = "text"
+    # Optional; requires the `observability` extra (sentry-sdk).
+    sentry_dsn: str | None = None
 
     @model_validator(mode="after")
     def _forbid_insecure_production_config(self) -> "Settings":
