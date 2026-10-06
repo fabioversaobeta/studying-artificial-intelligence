@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 8 |
+| P1 — Curto prazo | 16 | 9 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -121,7 +121,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | DONE | S4 (`fix/s4-frontend-tests`) | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | `6a1358b`..`42dfaab` (branch `fix/s4-frontend-tests`) | Maior risco de regressão hoje. |
-| F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | IN_PROGRESS | S10 (`fix/s10-frontend-page-tests`) | F1 | `frontend/src/pages/*.test.tsx` | | |
+| F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | DONE | S10 (`fix/s10-frontend-page-tests`) | F1 | `frontend/src/pages/*.test.tsx` | | 12984e4 |
 | F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | `444d509`..`b0d5919` | Só adiciona arquivos novos → baixo risco de conflito. Achado: bug de conquistas duplicadas (ver xfail em `test_gamification_service.py`); novo helper `tests/factories.py`. |
 | F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | `88f54a8` | |
 | F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | TODO | | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
@@ -193,6 +193,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
+- 2026-10-06 — F2 — testes de frontend (Vitest + fetch mock) para auth-context, login, register, dashboard, goals, subjects e subject-detail (43 testes novos) — 12984e4
 
 - 2026-10-06 — G3 — páginas de learning paths (lista + detalhe por slug) com link para a matéria de cada etapa — e77c3ea
 - 2026-10-06 — G2 — página de conquistas (desbloqueadas vs bloqueadas) e quests com barra de progresso — d3f0755
