@@ -66,6 +66,7 @@ dependency when they are introduced.
 | `GET /gamification/achievements` | ✓ | All achievements with earned/unearned status |
 | `GET /gamification/quests` | ✓ | Active quests with live progress (auto-completes on target) |
 | `GET /dashboard` | ✓ | Aggregate: level/XP/streak + active goals + due reviews + weakest competencies + recent sessions |
+| `GET /ai/status` | ✓ | Internal probe of the AI layer: `provider`, `model`, `configured` (bool; the API key is never exposed), `daily_token_limit` (null = off) and the caller's `usage_today` / `usage_total` (`calls`, `input_tokens`, `output_tokens`, `estimated_cost_usd`). No AI feature endpoints exist yet. |
 | `GET /health` | — | Liveness probe |
 | `GET /health/ready` | — | Readiness probe (checks DB connectivity) |
 

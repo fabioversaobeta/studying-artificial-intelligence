@@ -103,6 +103,36 @@ for new applications. The frontend stores tokens and attaches
 session store — logout is client-side token discardal (see
 `docs/PENDING.md` for token revocation, which is intentionally deferred).
 
+## AI layer (`app/services/ai/`, roadmap I1)
+
+Provider-agnostic foundation; no product feature uses it yet. Nothing outside
+this package imports a provider SDK.
+
+- `base.py` — narrow contract: `AIProvider.complete(AIRequest) -> AIResponse`
+  (messages, system, `max_tokens`, optional `temperature`, optional Pydantic
+  `output_schema`, `language`, `purpose`).
+- `fake_provider.py` — deterministic (queue/rules/fixtures, or a minimal
+  instance generated from the schema); default when `AI_PROVIDER=fake`.
+- `claude_provider.py` — Anthropic SDK (lazy import, injectable client,
+  SDK timeout/retries, structured output via `output_config.format`); maps SDK
+  errors to `AIProviderError` / `AIRateLimited` / `AIUnavailable`.
+- `service.py` — the facade features call (`get_ai_service(settings).complete(db, ...)`).
+  Implements the guardrails once: system prompt built with an injection
+  preamble and the response-language rule (`language` is a parameter, `en`
+  default, `pt-BR` supported); `max_tokens` cap; schema validation with exactly
+  one repair retry (`AIInvalidOutput` after that); usage row per provider call
+  (`ai_usage`: tokens, latency, status, estimated cost, `request_id`); optional
+  per-user daily token ceiling (`AIUsageLimitExceeded`); logs carry ids, sizes,
+  latency, tokens and model, never prompt or response text.
+- `prompts.py` — `delimit()` / `build_user_message()` fence user input as
+  `<user_data name="...">` blocks (delimiter look-alikes neutralised). Callers
+  must put user-controlled text only there, never in `system`.
+- `pricing.py` — price table (data) for cost estimates; `status.py` backs
+  `GET /ai/status`.
+
+Model output is data: it is validated and never executed. All `AIError`s are
+`AppError`s (429/502/503) so features can catch `AIError` and degrade.
+
 ## Cross-cutting concerns
 
 - **Errors**: domain code raises typed exceptions (`app.core.exceptions`);

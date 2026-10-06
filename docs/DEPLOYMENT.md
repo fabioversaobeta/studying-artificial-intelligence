@@ -43,6 +43,12 @@ Target architecture: frontend on **Vercel**, backend + PostgreSQL on
 | `LOG_FORMAT` | `json` on Railway (default `text`) | `json` prints one JSON object per line (`timestamp`, `level`, `logger`, `message`, `request_id`) for log aggregators. |
 | `LOG_LEVEL` | `INFO` (default) | Standard logging level. Every request is logged at INFO by the `app.access` logger (method, path, status, duration in ms). |
 | `SENTRY_DSN` | *(unset)* | Optional. Needs the extra: `pip install ".[observability]"`. If set without the package installed the app logs a warning and runs without Sentry. |
+| `AI_PROVIDER` | `fake` (default) / `claude` | `fake` is deterministic and needs no key. `claude` uses the Anthropic API. With `ENVIRONMENT=production` and `AI_PROVIDER=claude` the app **refuses to boot** without `ANTHROPIC_API_KEY`. |
+| `ANTHROPIC_API_KEY` | *(unset)* | **Set only in the Railway variables** (never in the repo or a committed `.env`). Never logged or returned by the API; `GET /api/v1/ai/status` only says `configured: true/false`. |
+| `AI_MODEL` | `claude-sonnet-5-5` (default) | Claude model id used by the AI layer. |
+| `AI_TIMEOUT_SECONDS` / `AI_MAX_RETRIES` | `30` / `2` (defaults) | Per-call timeout and SDK retry count (429/5xx/connection). |
+| `AI_MAX_OUTPUT_TOKENS` | `4096` (default) | Cap applied to every request's `max_tokens`. |
+| `AI_DAILY_TOKEN_LIMIT` | `0` (default = off) | Optional per-user daily ceiling (input+output tokens, UTC day). Usage is always measured in `ai_usage`; set a positive number to start blocking (the feature degrades to "AI unavailable"). |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` (default) | Override only if you want a different session length. |
 | `REFRESH_TOKEN_EXPIRE_MINUTES` | `43200` (default) | |
 
@@ -62,6 +68,10 @@ rejected by the CORS preflight.
 - `GET https://<railway-app>.up.railway.app/health/ready` → confirms DB
   connectivity
 - `GET https://<railway-app>.up.railway.app/docs` → interactive API docs
+- After enabling Claude (`AI_PROVIDER=claude` + `ANTHROPIC_API_KEY`):
+  `GET /api/v1/ai/status` (authenticated) should show `provider: "claude"`,
+  `configured: true`. The `anthropic` package is a regular dependency, so no
+  build-command change is needed.
 
 ## Frontend — Vercel
 
