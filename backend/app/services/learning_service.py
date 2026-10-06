@@ -79,6 +79,25 @@ def log_study_session(
     return session
 
 
+def delete_study_session(db: Session, *, user_id: uuid.UUID, session_id: uuid.UUID) -> None:
+    """Hard-delete one of the user's study sessions.
+
+    XP is deliberately NOT refunded: ``xp_awards`` (the ledger), ``total_xp``,
+    level, streak and already-earned achievements/quests are left untouched,
+    because XP measures activity that really happened. Mastery measures
+    knowledge, so it is recomputed for the affected competency.
+    """
+    session = study_repository.get_study_session(db, session_id)
+    if session is None or session.user_id != user_id:
+        raise NotFoundError("Study session not found")
+
+    competency_id = session.competency_id
+    study_repository.delete_study_session(db, session)
+    if competency_id is not None:
+        mastery_service.recompute_mastery(db, user_id=user_id, competency_id=competency_id)
+    db.commit()
+
+
 def list_study_sessions(
     db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: int = 0
 ) -> tuple[list[StudySession], int]:
@@ -198,6 +217,14 @@ def list_goals(
     """One page of the user's goals plus the total count."""
     items = goal_repository.list_goals_for_user(db, user_id, limit=limit, offset=offset)
     return items, goal_repository.count_goals_for_user(db, user_id)
+
+
+def delete_goal(db: Session, *, user_id: uuid.UUID, goal_id: uuid.UUID) -> None:
+    goal = goal_repository.get_goal(db, goal_id)
+    if goal is None or goal.user_id != user_id:
+        raise NotFoundError("Learning goal not found")
+    goal_repository.delete_goal(db, goal)
+    db.commit()
 
 
 def update_goal_status(

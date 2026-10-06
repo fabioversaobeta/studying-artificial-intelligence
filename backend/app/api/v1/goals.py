@@ -35,6 +35,12 @@ def list_goals(
     return items
 
 
+@router.delete("/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_goal(goal_id: uuid.UUID, current_user: CurrentUser, db: DbSession) -> Response:
+    learning_service.delete_goal(db, user_id=current_user.id, goal_id=goal_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.patch("/{goal_id}/status", response_model=LearningGoalRead)
 def update_goal_status(
     goal_id: uuid.UUID, payload: LearningGoalStatusUpdate, current_user: CurrentUser, db: DbSession
