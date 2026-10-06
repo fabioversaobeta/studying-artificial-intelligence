@@ -8,7 +8,10 @@ import { Button } from '@/components/ui/button'
 const navItems = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/subjects', label: 'Subjects' },
+  { to: '/learning-paths', label: 'Paths' },
   { to: '/goals', label: 'Goals' },
+  { to: '/reviews', label: 'Reviews' },
+  { to: '/achievements', label: 'Achievements' },
 ]
 
 export function AppLayout() {
