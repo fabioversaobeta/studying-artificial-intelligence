@@ -82,6 +82,8 @@ describe('RegisterPage', () => {
     const fetchMock = mockFetch({})
     renderPage()
     await submit()
-    expect(fetchMock).not.toHaveBeenCalled()
+    // The page itself fetches /auth/registration-info on mount; only the submit must not happen.
+    const registerCalls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/auth/register'))
+    expect(registerCalls).toHaveLength(0)
   })
 })
