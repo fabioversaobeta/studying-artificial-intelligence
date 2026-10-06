@@ -284,3 +284,28 @@ all sessions (`COUNT(*)` per user, pagination total) stays ~2 ms either way.
 **Why**: per-user activity tables grow without bound while the old
 `user_id`-only index forced reading every row of the user and sorting or
 filtering in memory.
+
+## Deleting study sessions and goals: hard delete, no XP refund (D6)
+
+**Decision (owner, 2026-10-06)**: `DELETE /study-sessions/{id}` and
+`DELETE /goals/{id}` return 204; a missing id or one owned by another user
+returns 404 (existence is not leaked). Deleting a session does **not** refund
+XP: `xp_awards` (the ledger), `gamification_profile.total_xp`, level, streak,
+and already-earned achievements/quest completions are untouched. XP measures
+activity that actually happened; removing the record of it later does not
+un-happen it, and refunding would also make levels and achievements move
+backwards. **Mastery** measures knowledge, so it is recomputed for the
+session's competency (`mastery_service.recompute_mastery`) -- it drops, or
+returns to 0 if that was the last session.
+
+Hard delete rather than soft delete: nothing references `study_sessions` or
+`learning_goals` by foreign key. `xp_awards.reference_id` is a plain nullable
+UUID without a FK, so the ledger row simply keeps pointing at an id that no
+longer exists (no migration needed). A `deleted_at` column would force every
+read/aggregate (mastery minutes, quests, achievements counts, dashboards) to
+filter it for no benefit. Consequences: counts derived from sessions
+(e.g. the "study sessions" achievement criterion, weekly quest progress)
+may decrease after a delete, but anything already earned stays earned. The
+spaced-repetition `reviews` row is not touched (it is review state, not
+session history).
+
