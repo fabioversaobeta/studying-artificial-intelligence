@@ -146,7 +146,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 ## Trilha I — Produto (alinhado ao objetivo de entrevistas)
 
-Itens maiores; cada um merece um plano próprio e entrada em `docs/DECISIONS.md`
+**Proposta de escopo e ordem em `docs/PROPOSAL_TRACK_I.md` (aguardando aprovação do dono — não iniciar antes).** Itens maiores; cada um merece um plano próprio e entrada em `docs/DECISIONS.md`
 antes de codar. Não iniciar antes das trilhas P0/P1 críticas (C, D, F1) estarem
 estáveis.
 
