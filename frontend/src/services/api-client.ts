@@ -71,8 +71,8 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as ApiErrorBody | null
     throw new ApiError(
-      body?.error.code ?? 'unknown_error',
-      body?.error.message ?? `Request failed with status ${response.status}`,
+      body?.error?.code ?? 'unknown_error',
+      body?.error?.message ?? `Request failed with status ${response.status}`,
       response.status,
     )
   }
