@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAsync } from '@/hooks/use-async'
 import { usePagedList } from '@/hooks/use-paged-list'
 import { learningService } from '@/services/learning-service'
 import { ApiError } from '@/services/api-client'
-import { loadCompetencyIndex, type CompetencyRef } from '@/features/learning/competency-index'
-import type { Review } from '@/types/api'
+import type { DueReview, Review } from '@/types/api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,12 +27,10 @@ function formatInterval(days: number): string {
 
 function ReviewCard({
   review,
-  competency,
   result,
   onSubmitted,
 }: {
-  review: Review
-  competency: CompetencyRef | undefined
+  review: DueReview
   result: Review | undefined
   onSubmitted: (updated: Review) => void
 }) {
@@ -60,16 +56,14 @@ function ReviewCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 id={titleId} className="font-medium text-heading">
-            {competency?.name ?? `Competency ${review.competency_id.slice(0, 8)}`}
+            {review.competency_name}
           </h2>
-          {competency && (
-            <Link
-              to={`/subjects/${competency.subjectId}`}
-              className="text-sm text-accent-light hover:underline"
-            >
-              {competency.subjectName}
-            </Link>
-          )}
+          <Link
+            to={`/subjects/${review.subject_id}`}
+            className="text-sm text-accent-light hover:underline"
+          >
+            {review.subject_name}
+          </Link>
         </div>
         <Badge tone={result ? 'success' : 'warning'}>{result ? 'Reviewed' : 'Due'}</Badge>
       </div>
@@ -107,7 +101,6 @@ function ReviewCard({
 export function ReviewsPage() {
   const list = usePagedList((page) => learningService.listDueReviews(page))
   const { items: data, error, isLoading, reload: refetch } = list
-  const { data: index } = useAsync(() => loadCompetencyIndex().catch(() => ({} as Record<string, CompetencyRef>)), [])
   const [results, setResults] = useState<Record<string, Review>>({})
 
   if (isLoading) return <PageSpinner />
@@ -143,7 +136,6 @@ export function ReviewsPage() {
               <ReviewCard
                 key={review.id}
                 review={review}
-                competency={index?.[review.competency_id]}
                 result={results[review.id]}
                 onSubmitted={(updated) => setResults((prev) => ({ ...prev, [review.id]: updated }))}
               />

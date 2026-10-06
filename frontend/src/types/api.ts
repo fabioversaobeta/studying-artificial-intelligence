@@ -139,6 +139,12 @@ export interface Review {
   last_recall_quality: number | null
 }
 
+export interface DueReview extends Review {
+  competency_name: string
+  subject_id: Uuid
+  subject_name: string
+}
+
 export interface MasteryRecord {
   competency_id: Uuid
   score: number
