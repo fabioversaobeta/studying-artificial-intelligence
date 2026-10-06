@@ -12,6 +12,7 @@ const navItems = [
   { to: '/goals', label: 'Goals' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/achievements', label: 'Achievements' },
+  { to: '/settings', label: 'Settings' },
 ]
 
 export function AppLayout() {

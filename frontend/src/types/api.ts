@@ -2,10 +2,13 @@
 
 export type Uuid = string
 
+export type Language = 'en' | 'pt-BR'
+
 export interface User {
   id: Uuid
   email: string
   display_name: string
+  preferred_language: Language
   is_active: boolean
 }
 
