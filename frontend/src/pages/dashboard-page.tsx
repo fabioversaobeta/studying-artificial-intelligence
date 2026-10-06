@@ -18,10 +18,10 @@ function StatCard({ label, value, hint }: { label: string; value: string | numbe
 }
 
 export function DashboardPage() {
-  const { data, error, isLoading } = useAsync(() => learningService.getDashboard(), [])
+  const { data, error, isLoading, refetch } = useAsync(() => learningService.getDashboard(), [])
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
   if (!data) return null
 
   return (

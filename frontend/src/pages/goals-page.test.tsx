@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GoalsPage } from '@/pages/goals-page'
+import { ToastProvider } from '@/features/feedback/toast-context'
+import { paged } from '@/test/paged'
 import { ApiError } from '@/services/api-client'
 import { learningService } from '@/services/learning-service'
 import type { LearningGoal } from '@/types/api'
@@ -37,28 +39,28 @@ beforeEach(() => {
 describe('GoalsPage', () => {
   it('shows a spinner while loading', () => {
     listGoals.mockReturnValue(new Promise(() => undefined))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument()
   })
 
   it('shows the API error when listing fails', async () => {
     listGoals.mockRejectedValue(new ApiError('server_error', 'Cannot load goals', 500))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     expect(await screen.findByText('Cannot load goals')).toBeInTheDocument()
   })
 
   it('shows an empty state', async () => {
-    listGoals.mockResolvedValue([])
-    render(<GoalsPage />)
+    listGoals.mockResolvedValue(paged([]))
+    render(<GoalsPage />, { wrapper: ToastProvider })
     expect(await screen.findByText(/No goals yet/)).toBeInTheDocument()
   })
 
   it('lists goals; only active goals have action buttons', async () => {
-    listGoals.mockResolvedValue([
+    listGoals.mockResolvedValue(paged([
       goal({ id: 'g1', title: 'Active one', description: 'details', status: 'active' }),
       goal({ id: 'g2', title: 'Done one', status: 'achieved' }),
-    ])
-    render(<GoalsPage />)
+    ]))
+    render(<GoalsPage />, { wrapper: ToastProvider })
     expect(await screen.findByText('Active one')).toBeInTheDocument()
     expect(screen.getByText('details')).toBeInTheDocument()
     expect(screen.getByText('achieved')).toBeInTheDocument()
@@ -67,8 +69,8 @@ describe('GoalsPage', () => {
   })
 
   it('requires a title and does not submit an empty form', async () => {
-    listGoals.mockResolvedValue([])
-    render(<GoalsPage />)
+    listGoals.mockResolvedValue(paged([]))
+    render(<GoalsPage />, { wrapper: ToastProvider })
     await screen.findByText(/No goals yet/)
     expect(screen.getByLabelText('Title')).toBeRequired()
     await userEvent.click(screen.getByRole('button', { name: 'Add goal' }))
@@ -76,10 +78,10 @@ describe('GoalsPage', () => {
   })
 
   it('creates a goal, clears the form and refetches', async () => {
-    listGoals.mockResolvedValueOnce([])
-    listGoals.mockResolvedValueOnce([goal({ id: 'g9', title: 'New goal' })])
+    listGoals.mockResolvedValueOnce(paged([]))
+    listGoals.mockResolvedValueOnce(paged([goal({ id: 'g9', title: 'New goal' })]))
     createGoal.mockResolvedValue(goal({ id: 'g9', title: 'New goal' }))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     await screen.findByText(/No goals yet/)
 
     await userEvent.type(screen.getByLabelText('Title'), 'New goal')
@@ -94,9 +96,9 @@ describe('GoalsPage', () => {
   })
 
   it('shows the API error when creation fails and keeps the input', async () => {
-    listGoals.mockResolvedValue([])
+    listGoals.mockResolvedValue(paged([]))
     createGoal.mockRejectedValue(new ApiError('validation_error', 'Title too long', 422))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     await screen.findByText(/No goals yet/)
 
     await userEvent.type(screen.getByLabelText('Title'), 'x')
@@ -107,9 +109,9 @@ describe('GoalsPage', () => {
   })
 
   it('shows a generic message when creation fails with a non-API error', async () => {
-    listGoals.mockResolvedValue([])
+    listGoals.mockResolvedValue(paged([]))
     createGoal.mockRejectedValue(new Error('network'))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     await screen.findByText(/No goals yet/)
     await userEvent.type(screen.getByLabelText('Title'), 'x')
     await userEvent.click(screen.getByRole('button', { name: 'Add goal' }))
@@ -117,10 +119,10 @@ describe('GoalsPage', () => {
   })
 
   it('marks a goal as achieved and refetches', async () => {
-    listGoals.mockResolvedValueOnce([goal({ id: 'g1', title: 'Learn Rust' })])
-    listGoals.mockResolvedValueOnce([goal({ id: 'g1', title: 'Learn Rust', status: 'achieved' })])
+    listGoals.mockResolvedValueOnce(paged([goal({ id: 'g1', title: 'Learn Rust' })]))
+    listGoals.mockResolvedValueOnce(paged([goal({ id: 'g1', title: 'Learn Rust', status: 'achieved' })]))
     updateGoalStatus.mockResolvedValue(goal({ status: 'achieved' }))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
 
     await userEvent.click(await screen.findByRole('button', { name: 'Mark achieved' }))
 
@@ -130,10 +132,34 @@ describe('GoalsPage', () => {
   })
 
   it('archives a goal', async () => {
-    listGoals.mockResolvedValue([goal({ id: 'g1' })])
+    listGoals.mockResolvedValue(paged([goal({ id: 'g1' })]))
     updateGoalStatus.mockResolvedValue(goal({ status: 'archived' }))
-    render(<GoalsPage />)
+    render(<GoalsPage />, { wrapper: ToastProvider })
     await userEvent.click(await screen.findByRole('button', { name: 'Archive' }))
     expect(updateGoalStatus).toHaveBeenCalledWith('g1', 'archived')
+  })
+
+  it('shows a toast when updating a goal fails', async () => {
+    listGoals.mockResolvedValue(paged([goal({ id: 'g1' })]))
+    updateGoalStatus.mockRejectedValue(new ApiError('server_error', 'Nope', 500))
+    render(<GoalsPage />, { wrapper: ToastProvider })
+    await userEvent.click(await screen.findByRole('button', { name: 'Archive' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Nope')
+  })
+
+  it('loads more goals and keeps the loaded ones when a page fails', async () => {
+    listGoals.mockResolvedValueOnce(paged([goal({ id: 'g1', title: 'First' })], 3))
+    listGoals.mockRejectedValueOnce(new ApiError('server_error', 'Page failed', 500))
+    listGoals.mockResolvedValueOnce(paged([goal({ id: 'g2', title: 'Second' })], 3))
+    render(<GoalsPage />, { wrapper: ToastProvider })
+
+    expect(await screen.findByText('First')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }))
+    expect(await screen.findByText('Page failed')).toBeInTheDocument()
+    expect(screen.getByText('First')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }))
+    expect(await screen.findByText('Second')).toBeInTheDocument()
+    expect(listGoals).toHaveBeenLastCalledWith({ limit: 20, offset: 1 })
   })
 })

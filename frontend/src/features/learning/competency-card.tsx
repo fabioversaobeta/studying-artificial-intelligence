@@ -38,6 +38,7 @@ export function CompetencyCard({
         type="button"
         onClick={() => !isLocked && setIsExpanded((v) => !v)}
         disabled={isLocked}
+        aria-expanded={isLocked ? undefined : isExpanded}
         className="flex w-full items-center justify-between gap-3 text-left disabled:cursor-not-allowed"
       >
         <div>
@@ -52,7 +53,14 @@ export function CompetencyCard({
         </div>
       </button>
 
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
+      <div
+        role="progressbar"
+        aria-label={`${competency.name} mastery`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(Math.min(100, mastery_score))}
+        className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised"
+      >
         <div
           className="h-full rounded-full bg-accent"
           style={{ width: `${Math.min(100, mastery_score)}%` }}

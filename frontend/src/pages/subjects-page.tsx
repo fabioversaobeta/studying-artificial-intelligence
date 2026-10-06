@@ -6,10 +6,10 @@ import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
 
 export function SubjectsPage() {
-  const { data: subjects, error, isLoading } = useAsync(() => learningService.listSubjects(), [])
+  const { data: subjects, error, isLoading, refetch } = useAsync(() => learningService.listSubjects(), [])
 
   if (isLoading) return <PageSpinner />
-  if (error) return <ErrorAlert message={error} />
+  if (error) return <ErrorAlert message={error} onRetry={refetch} />
 
   return (
     <div className="space-y-6">
