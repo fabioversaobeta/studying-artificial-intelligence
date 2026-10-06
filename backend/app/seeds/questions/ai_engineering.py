@@ -1326,9 +1326,447 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
+_AGENT_CODE = """```python
+MAX_STEPS = 3
+
+def run(llm, tools, task):
+    messages = [{"role": "user", "content": task}]
+    for _ in range(MAX_STEPS):
+        reply = llm(messages)
+        if reply["type"] == "final":
+            return reply["text"]
+        result = tools[reply["tool"]](**reply["args"])
+        messages.append({"role": "tool", "content": result})
+    return "stopped: step limit"
+
+calls = []
+
+def search(q):
+    calls.append(q)
+    return "no results"
+
+def llm(messages):  # a stub model that never decides to finish
+    return {"type": "tool", "tool": "search", "args": {"q": "weather"}}
+
+print(run(llm, {"search": search}, "What is the weather?"), len(calls))
+```"""
+
+# ----------------------------------------------------------------------
+# ai-agents-tool-use
+# ----------------------------------------------------------------------
+_AGENT = "ai-agents-tool-use"
+
+AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "ai-agents-tool-use-q01",
+        _AGENT,
+        MC,
+        EASY,
+        ("c",),
+        ("tool-calling", "mechanics"),
+        _t(
+            "Mechanically, how does tool calling work?",
+            "The model only produces text: it emits a structured request naming a tool and "
+            "its arguments. Your application executes the tool and sends the result back as "
+            "new input for the model. A and B assume the model executes code or network calls "
+            "itself, which it cannot. D is wrong: tools are defined at request time, not "
+            "baked into the weights.",
+            _options(
+                "The model runs the function inside its own process.",
+                "The model opens network connections to the tool's API directly.",
+                "The model emits a structured request (tool name and arguments), your "
+                "application runs it and returns the result to the model.",
+                "Tools are compiled into the model's weights during training.",
+            ),
+        ),
+        _t(
+            "Do ponto de vista mecânico, como funciona o tool calling (chamada de "
+            "ferramentas)?",
+            "O modelo apenas produz texto: ele emite uma requisição estruturada com o nome da "
+            "ferramenta e seus argumentos. Sua aplicação executa a ferramenta e devolve o "
+            "resultado como nova entrada para o modelo. A e B supõem que o modelo executa "
+            "código ou chamadas de rede por conta própria, o que ele não faz. D está errada: "
+            "as ferramentas são definidas na requisição, não embutidas nos pesos.",
+            _options(
+                "O modelo executa a função dentro do próprio processo.",
+                "O modelo abre conexões de rede diretamente com a API da ferramenta.",
+                "O modelo emite uma requisição estruturada (nome da ferramenta e argumentos), "
+                "sua aplicação a executa e devolve o resultado ao modelo.",
+                "As ferramentas são compiladas nos pesos do modelo durante o treinamento.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q02",
+        _AGENT,
+        MC,
+        EASY,
+        ("b",),
+        ("agent-loop", "definition"),
+        _t(
+            "What best distinguishes an **agent** from a single LLM call?",
+            "An agent runs a loop in which the model chooses its next action (often a tool "
+            "call) based on the results of earlier ones, until it decides it is done or a "
+            "limit is reached. A confuses agents with prompt length, C with model size, and D "
+            "describes a fixed workflow, where code rather than the model decides the steps.",
+            _options(
+                "It is any LLM call with a long prompt.",
+                "It runs a loop where the model picks its next action based on earlier "
+                "results until it finishes or hits a limit.",
+                "It is a model with more parameters.",
+                "It is a fixed pipeline where code decides every step in advance.",
+            ),
+        ),
+        _t(
+            "O que melhor distingue um **agente** de uma única chamada a um LLM?",
+            "Um agente executa um laço em que o modelo escolhe a próxima ação (geralmente uma "
+            "chamada de ferramenta) com base nos resultados das anteriores, até decidir que "
+            "terminou ou atingir um limite. A confunde agente com tamanho do prompt, C com "
+            "tamanho do modelo, e D descreve um workflow fixo, em que o código, e não o "
+            "modelo, decide as etapas.",
+            _options(
+                "É qualquer chamada a um LLM com um prompt longo.",
+                "Executa um laço em que o modelo escolhe a próxima ação com base nos "
+                "resultados anteriores até terminar ou atingir um limite.",
+                "É um modelo com mais parâmetros.",
+                "É um pipeline fixo em que o código decide cada etapa de antemão.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q03",
+        _AGENT,
+        MC,
+        EASY,
+        ("d",),
+        ("tool-design", "descriptions"),
+        _t(
+            "Why do the name, description and parameter schema of a tool matter so much?",
+            "The model chooses which tool to call, and with which arguments, mostly from those "
+            "descriptions. Vague or overlapping ones lead to wrong or missed calls. A and B "
+            "are wrong because the model is not given the tool's source code, and C is wrong "
+            "because descriptions do not change the context window size.",
+            _options(
+                "The model reads the tool's source code to understand what it does.",
+                "They are only for human documentation and are ignored by the model.",
+                "They enlarge the context window available to the model.",
+                "The model decides which tool to call and how to fill the arguments mostly "
+                "from them.",
+            ),
+        ),
+        _t(
+            "Por que o nome, a descrição e o schema de parâmetros de uma ferramenta importam "
+            "tanto?",
+            "O modelo escolhe qual ferramenta chamar, e com quais argumentos, principalmente a "
+            "partir dessas descrições. Descrições vagas ou sobrepostas levam a chamadas "
+            "erradas ou omitidas. A e B estão erradas porque o modelo não recebe o código-fonte "
+            "da ferramenta, e C está errada porque descrições não alteram o tamanho da janela "
+            "de contexto.",
+            _options(
+                "O modelo lê o código-fonte da ferramenta para entender o que ela faz.",
+                "Servem só como documentação para humanos e são ignorados pelo modelo.",
+                "Ampliam a janela de contexto disponível para o modelo.",
+                "O modelo decide qual ferramenta chamar e como preencher os argumentos "
+                "principalmente a partir delas.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q04",
+        _AGENT,
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("agent-loop", "stop-conditions"),
+        _t(
+            "What does this code print?\n\n" + _AGENT_CODE,
+            "The stub model never returns a `final` reply, so each iteration calls the tool "
+            "and the loop runs until `MAX_STEPS` (3) is exhausted. The function then returns "
+            "the step-limit message and `calls` holds three entries. A and C assume the model "
+            "stops early; D is wrong because the bounded `for` loop guarantees termination, "
+            "which is exactly why agent loops need a step limit.",
+            _options(
+                "`What is the weather? 1`",
+                "`stopped: step limit 3`",
+                "`stopped: step limit 1`",
+                "It never terminates.",
+            ),
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _AGENT_CODE,
+            "O modelo simulado nunca devolve uma resposta `final`, então cada iteração chama a "
+            "ferramenta e o laço roda até esgotar `MAX_STEPS` (3). A função então retorna a "
+            "mensagem de limite de passos e `calls` contém três entradas. A e C supõem que o "
+            "modelo para antes; D está errada porque o laço `for` limitado garante a "
+            "terminação, e é exatamente por isso que loops de agentes precisam de um limite "
+            "de passos.",
+            _options(
+                "`What is the weather? 1`",
+                "`stopped: step limit 3`",
+                "`stopped: step limit 1`",
+                "Nunca termina.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q05",
+        _AGENT,
+        MC,
+        MEDIUM,
+        ("c",),
+        ("idempotency", "side-effects"),
+        _t(
+            "An agent calls a `create_invoice` tool; the call times out, the loop retries, and "
+            "the customer ends up with two invoices. What is the most robust fix?",
+            "Make the side-effecting tool idempotent, for example with an idempotency key so "
+            "repeating the same request does not create a second invoice. Retries are normal "
+            "in agent loops, so safety should not depend on the model's behavior. A hides the "
+            "symptom, B relies on the model's judgment, and D is a prompt instruction, none of "
+            "which gives a guarantee.",
+            _options(
+                "Increase the timeout so the call never fails.",
+                "Rely on the model to check whether an invoice exists before each call.",
+                "Make the tool idempotent, for example with an idempotency key, so repeated "
+                "calls do not create duplicates.",
+                "Tell the model in the prompt never to retry.",
+            ),
+        ),
+        _t(
+            "Um agente chama uma ferramenta `create_invoice`; a chamada expira por timeout, o "
+            "laço tenta de novo e o cliente acaba com duas faturas. Qual é a correção mais "
+            "robusta?",
+            "Tornar a ferramenta com efeito colateral idempotente, por exemplo com uma "
+            "idempotency key, de modo que repetir a mesma requisição não crie uma segunda "
+            "fatura. Novas tentativas são normais em loops de agentes, então a segurança não "
+            "deve depender do comportamento do modelo. A esconde o sintoma, B depende do "
+            "julgamento do modelo e D é uma instrução no prompt; nenhuma dá garantia.",
+            _options(
+                "Aumentar o timeout para que a chamada nunca falhe.",
+                "Confiar que o modelo verifique se a fatura existe antes de cada chamada.",
+                "Tornar a ferramenta idempotente, por exemplo com uma idempotency key, para "
+                "que chamadas repetidas não criem duplicatas.",
+                "Dizer no prompt para o modelo nunca tentar de novo.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q06",
+        _AGENT,
+        MS,
+        MEDIUM,
+        ("a", "b", "c"),
+        ("safety", "guardrails"),
+        _t(
+            "Which safeguards are appropriate for an agent that can call tools with side "
+            "effects? Select all that apply.",
+            "A step/time/cost limit prevents runaway loops, B (human confirmation for "
+            "irreversible actions) keeps a person in control of risky steps, and C (least "
+            "privilege) limits the damage a wrong call can do. D is unsafe: model-generated "
+            "arguments must be validated like any untrusted input. E violates least "
+            "privilege and widens the blast radius.",
+            _options(
+                "Limits on steps, time and cost for each run.",
+                "Human confirmation before irreversible actions.",
+                "Giving each agent only the tools and permissions its task needs.",
+                "Trusting model-generated arguments without validation, since the model wrote "
+                "them.",
+                "Granting every tool to every agent in case it needs one.",
+            ),
+        ),
+        _t(
+            "Quais salvaguardas são apropriadas para um agente que pode chamar ferramentas com "
+            "efeitos colaterais? Selecione todas que se aplicam.",
+            "A (limites de passos, tempo e custo) evita loops descontrolados, B (confirmação "
+            "humana para ações irreversíveis) mantém uma pessoa no controle dos passos "
+            "arriscados, e C (menor privilégio) limita o dano de uma chamada errada. D é "
+            "inseguro: argumentos gerados pelo modelo devem ser validados como qualquer "
+            "entrada não confiável. E viola o menor privilégio e amplia o raio de dano.",
+            _options(
+                "Limites de passos, tempo e custo por execução.",
+                "Confirmação humana antes de ações irreversíveis.",
+                "Dar a cada agente apenas as ferramentas e permissões de que a tarefa "
+                "precisa.",
+                "Confiar nos argumentos gerados pelo modelo sem validação, já que foi o "
+                "modelo que os escreveu.",
+                "Conceder todas as ferramentas a todos os agentes, caso algum precise.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q07",
+        _AGENT,
+        MC,
+        MEDIUM,
+        ("a",),
+        ("error-handling", "observations"),
+        _t(
+            "A tool call fails because the model passed an invalid argument. What is the best "
+            "way to handle it in the loop?",
+            "Return a clear error message as the tool result so the model can correct its "
+            "arguments or choose another approach, and cap the number of retries. B gives "
+            "the model no chance to recover. C leads it to assume success and build on a "
+            "false premise. D invents data, which is worse than failing.",
+            _options(
+                "Return a clear error message as the tool result so the model can adjust, with "
+                "a cap on retries.",
+                "Abort the entire run on any tool error.",
+                "Ignore the error silently and let the model assume the call worked.",
+                "Generate a plausible fake result in code so the loop can continue.",
+            ),
+        ),
+        _t(
+            "Uma chamada de ferramenta falha porque o modelo passou um argumento inválido. "
+            "Qual é a melhor forma de tratar isso no laço?",
+            "Devolver uma mensagem de erro clara como resultado da ferramenta, para que o "
+            "modelo corrija os argumentos ou escolha outra abordagem, com um limite de "
+            "tentativas. B não dá ao modelo chance de se recuperar. C o leva a assumir "
+            "sucesso e construir sobre uma premissa falsa. D inventa dados, o que é pior do "
+            "que falhar.",
+            _options(
+                "Devolver uma mensagem de erro clara como resultado da ferramenta para o "
+                "modelo se ajustar, com um limite de tentativas.",
+                "Abortar a execução inteira a qualquer erro de ferramenta.",
+                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada "
+                "funcionou.",
+                "Gerar em código um resultado falso plausível para o laço continuar.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q08",
+        _AGENT,
+        MC,
+        MEDIUM,
+        ("d",),
+        ("react", "planning"),
+        _t(
+            "What is the key idea of the ReAct pattern?",
+            "ReAct interleaves reasoning with actions: the model reasons about what to do, "
+            "calls a tool, observes the result, and uses that observation to decide the next "
+            "step. A describes rigid up-front planning, which ReAct deliberately avoids. B "
+            "describes voting among several agents, and C a single retrieval step followed "
+            "by one answer.",
+            _options(
+                "Planning the full sequence of actions up front and never revising it.",
+                "Running several agents and taking a majority vote.",
+                "Retrieving documents once and then producing a single answer.",
+                "Interleaving reasoning with actions, feeding each observation back to guide "
+                "the next step.",
+            ),
+        ),
+        _t(
+            "Qual é a ideia central do padrão ReAct?",
+            "O ReAct intercala raciocínio e ação: o modelo raciocina sobre o que fazer, chama "
+            "uma ferramenta, observa o resultado e usa essa observação para decidir o próximo "
+            "passo. A descreve um planejamento rígido antecipado, que o ReAct evita "
+            "deliberadamente. B descreve votação entre vários agentes, e C uma única etapa de "
+            "recuperação seguida de uma resposta.",
+            _options(
+                "Planejar toda a sequência de ações de antemão e nunca revisá-la.",
+                "Executar vários agentes e adotar o voto da maioria.",
+                "Recuperar documentos uma vez e então produzir uma única resposta.",
+                "Intercalar raciocínio e ação, realimentando cada observação para guiar o "
+                "próximo passo.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q09",
+        _AGENT,
+        MC,
+        HARD,
+        ("a",),
+        ("multi-agent", "tradeoffs"),
+        _t(
+            "A team proposes splitting a task into six specialized agents that pass work to "
+            "one another. What is the most important reason to be cautious?",
+            "Every handoff adds cost and latency, loses some context, and gives errors a "
+            "chance to compound, so extra agents often make a system worse. Multiple agents "
+            "pay off mainly when subtasks are truly independent or need separate contexts or "
+            "tool sets. B is false: more agents do not improve accuracy by themselves. C "
+            "and D are not real limits.",
+            _options(
+                "Each handoff adds cost and latency, loses context and lets errors compound, "
+                "so extra agents often make things worse.",
+                "Adding agents always improves accuracy, so six is too few.",
+                "Models cannot read messages written by another agent.",
+                "Agents cannot use more than one tool each.",
+            ),
+        ),
+        _t(
+            "Uma equipe propõe dividir uma tarefa em seis agentes especializados que passam o "
+            "trabalho entre si. Qual é a razão mais importante para ter cautela?",
+            "Cada transferência adiciona custo e latência, perde parte do contexto e dá aos "
+            "erros chance de se acumular, então agentes extras muitas vezes pioram o sistema. "
+            "Vários agentes compensam principalmente quando as subtarefas são realmente "
+            "independentes ou exigem contextos ou conjuntos de ferramentas separados. B é "
+            "falsa: mais agentes não melhoram a precisão por si só. C e D não são limites "
+            "reais.",
+            _options(
+                "Cada transferência adiciona custo e latência, perde contexto e permite que "
+                "erros se acumulem, então agentes extras muitas vezes pioram o sistema.",
+                "Adicionar agentes sempre melhora a precisão, então seis é pouco.",
+                "Modelos não conseguem ler mensagens escritas por outro agente.",
+                "Agentes não podem usar mais de uma ferramenta cada.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-agents-tool-use-q10",
+        _AGENT,
+        SHORT,
+        HARD,
+        None,
+        ("workflow", "architecture"),
+        _t(
+            "When would you choose a fixed workflow, a single agent, or a multi-agent system? "
+            "Give the deciding criteria.",
+            "Self-check: did you mention (1) fixed workflows for known, repeatable steps, "
+            "(2) a single agent when the path is open-ended, (3) multi-agent only when "
+            "subtasks are independent or need separate contexts, and (4) the cost of added "
+            "complexity?",
+            model_answer="Choose a fixed workflow (code-defined steps, possibly with LLM calls "
+            "inside) when the task and its steps are known and repeatable: it is cheaper, "
+            "faster, more predictable and easier to test. Choose a single agent with tools when "
+            "the path cannot be known in advance and the model must decide the next step from "
+            "intermediate results, accepting more cost, variance and the need for limits and "
+            "guardrails. Move to multiple agents only when subtasks are genuinely independent "
+            "(parallelism), need separate contexts or tool sets, or a single context is "
+            "overloaded, because handoffs add latency, cost, context loss and compounding "
+            "errors. Start with the simplest option that meets the requirement and add "
+            "complexity only when evaluations show a need.",
+        ),
+        _t(
+            "Quando você escolheria um workflow fixo, um único agente ou um sistema "
+            "multiagente? Dê os critérios de decisão.",
+            "Autoavaliação: você mencionou (1) workflows fixos para etapas conhecidas e "
+            "repetíveis, (2) um único agente quando o caminho é aberto, (3) multiagente só "
+            "quando as subtarefas são independentes ou exigem contextos separados e (4) o "
+            "custo da complexidade adicional?",
+            model_answer="Escolher um workflow fixo (etapas definidas em código, possivelmente "
+            "com chamadas a LLM dentro) quando a tarefa e suas etapas são conhecidas e "
+            "repetíveis: é mais barato, mais rápido, mais previsível e mais fácil de testar. "
+            "Escolher um único agente com ferramentas quando o caminho não pode ser conhecido "
+            "de antemão e o modelo precisa decidir o próximo passo a partir de resultados "
+            "intermediários, aceitando mais custo, variância e a necessidade de limites e "
+            "guardrails. Passar para vários agentes só quando as subtarefas forem realmente "
+            "independentes (paralelismo), exigirem contextos ou conjuntos de ferramentas "
+            "separados, ou um único contexto estiver sobrecarregado, pois as transferências "
+            "adicionam latência, custo, perda de contexto e acúmulo de erros. Começar pela "
+            "opção mais simples que atenda ao requisito e adicionar complexidade apenas "
+            "quando as avaliações mostrarem necessidade.",
+        ),
+    ),
+)
+
 # @@NEXT-COMPETENCY@@
 
-QUESTIONS: tuple[QuestionSeed, ...] = (*LLM_QUESTIONS, *CONTEXT_QUESTIONS, *RAG_QUESTIONS)
+QUESTIONS: tuple[QuestionSeed, ...] = (
+    *LLM_QUESTIONS,
+    *CONTEXT_QUESTIONS,
+    *RAG_QUESTIONS,
+    *AGENT_QUESTIONS,
+)
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
