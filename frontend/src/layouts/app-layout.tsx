@@ -20,11 +20,17 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-bg"
+      >
+        Skip to main content
+      </a>
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-8">
             <span className="text-sm font-semibold text-heading">Learning Platform</span>
-            <nav className="flex items-center gap-1">
+            <nav aria-label="Main" className="flex items-center gap-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -51,7 +57,12 @@ export function AppLayout() {
                 </span>
                 <span className="text-fg-muted">{profile.total_xp} XP</span>
                 {profile.current_streak_days > 0 && (
-                  <span className="text-fg-muted">🔥 {profile.current_streak_days}d</span>
+                  <span
+                    className="text-fg-muted"
+                    aria-label={`${profile.current_streak_days} day streak`}
+                  >
+                    <span aria-hidden="true">🔥 {profile.current_streak_days}d</span>
+                  </span>
                 )}
               </div>
             )}
@@ -63,7 +74,7 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 focus:outline-none">
         <Outlet />
       </main>
     </div>

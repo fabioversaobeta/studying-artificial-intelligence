@@ -23,6 +23,7 @@ function LessonModule({ resource, defaultOpen }: { resource: LearningResource; d
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
       >
         <span className="text-sm font-medium text-fg">{resource.title}</span>

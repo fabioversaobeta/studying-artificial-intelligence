@@ -2,8 +2,8 @@ import { type InputHTMLAttributes, type TextareaHTMLAttributes, forwardRef } fro
 import clsx from 'clsx'
 
 const fieldClasses =
-  'w-full rounded-xl border border-border bg-surface-raised px-3.5 py-2.5 text-sm text-fg ' +
-  'placeholder:text-fg-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
+  'w-full rounded-xl border border-border-strong bg-surface-raised px-3.5 py-2.5 text-sm text-fg ' +
+  'placeholder:text-fg-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (

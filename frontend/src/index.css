@@ -12,6 +12,8 @@
   --color-surface: #10141f;
   --color-surface-raised: #161b28;
   --color-border: #232938;
+  /* Form-control borders need 3:1 against the surface (WCAG 1.4.11). */
+  --color-border-strong: #66728a;
 
   --color-fg: #eef1f6;
   --color-fg-muted: #96a2b8;
@@ -39,4 +41,10 @@ body {
 
 * {
   border-color: var(--color-border);
+}
+
+/* Visible keyboard focus for every interactive element (WCAG 2.4.7). */
+:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 2px;
 }
