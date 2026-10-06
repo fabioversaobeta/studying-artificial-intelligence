@@ -116,22 +116,25 @@ See `docs/DOMAIN.md` for both formulas.
 
 ---
 
-## Quests auto-complete on read instead of exposing a "claim" endpoint
+## Quests complete on activity events; `GET /gamification/quests` is read-only
 
-**Context**: quest progress could either be tracked incrementally (update a
-progress counter on every relevant event) or computed fresh from existing
-activity data whenever the quest list is requested.
-**Decision**: compute fresh on every `GET /gamification/quests`, and
-auto-complete (persist a `QuestCompletion`, award XP) the moment a quest's
-target is met within that same request.
-**Why**: no denormalized progress counter to keep in sync across every
-place XP-worthy activity can happen (study sessions, challenges, reviews).
-The tradeoff is that a completed quest's XP isn't awarded until the next
-time the quest list happens to be fetched (e.g. on a dashboard visit) —
-acceptable for a personal tool with no real-time notification requirement.
-**Revisit trigger**: if quests need real-time "you just completed a quest!"
-notifications, this needs an event-driven trigger instead of read-time
-evaluation.
+**Supersedes**: the earlier decision to auto-complete quests on read.
+**Context**: completing quests (persisting a `QuestCompletion` and paying XP)
+inside a GET made a read mutate state, delayed XP until someone happened to
+open the quest list, and could not be reasoned about as idempotent.
+**Decision**: progress is still computed fresh from existing activity data
+(no denormalized counters), but completion is recorded when activity happens.
+`gamification_service.settle_rewards` evaluates achievements and quests, pays
+their XP, and loops until nothing new unlocks (a reward can satisfy another
+criterion). It runs from `award_xp` and, for activity that awards no XP
+(short study sessions, repeated challenge passes), is called directly by the
+activity service. `quest_service.complete_due_quests` only records completions
+and returns the quests; the gamification service pays the XP, so there is no
+`award_xp` recursion. `GET /gamification/quests` only reads.
+**Why**: GET is safe and idempotent, rewards arrive in real time, and the
+JSON contract is unchanged.
+**Revisit trigger**: if activity sources multiply, move `settle_rewards`
+behind a domain event/outbox instead of explicit calls.
 
 ---
 
