@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 13 |
-| P2 — Médio prazo | 21 | 0 |
+| P2 — Médio prazo | 21 | 3 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -133,8 +133,8 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | G1 | **UI de revisão espaçada**: página com a fila de `GET /reviews/due` e envio de recall (`quality` 0–5) em `POST /reviews/{id}/recall`; estado vazio; atalho no dashboard. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/reviews-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d0842bd | É o diferencial de retenção do produto. |
 | G2 | **UI de conquistas e quests** (`/gamification/achievements`, `/gamification/quests`): progresso, desbloqueadas vs bloqueadas. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | D4 (idealmente) | `frontend/src/pages/achievements-page.tsx` (novo), `frontend/src/services/gamification-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d3f0755 | Pode começar antes de D4; o contrato não muda. |
 | G3 | **UI de learning paths** (`/learning-paths`): listagem e detalhe, com progresso por etapa. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/learning-paths-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | e77c3ea | Sem "progresso por etapa" (maestria por competência exigiria N chamadas); links levam à matéria. G1/G2/G3 colidem em `router.tsx`, `app-layout.tsx` e `types/api.ts` — são edições pequenas, mas **faça rebase frequente**. |
-| G4 | Tratamento global de erros no frontend: Error Boundary, toasts de erro de API, estados de loading/erro consistentes (`use-async`). | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/app/app.tsx`, `frontend/src/hooks/use-async.ts`, `frontend/src/components/ui/*` | | |
-| G5 | Revisão de acessibilidade (WCAG AA): foco, contraste do tema escuro, labels, navegação por teclado. | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/**` | | Usar a skill `design:accessibility-review`. |
+| G4 | Tratamento global de erros no frontend: Error Boundary, toasts de erro de API, estados de loading/erro consistentes (`use-async`). | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/app/app.tsx`, `frontend/src/hooks/use-async.ts`, `frontend/src/components/ui/*` | 87e5ef0 | |
+| G5 | Revisão de acessibilidade (WCAG AA): foco, contraste do tema escuro, labels, navegação por teclado. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/**` | 122b081 | Usar a skill `design:accessibility-review`. |
 
 ## Trilha H — Deploy e observabilidade
 
@@ -168,7 +168,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 |---|---|---|---|---|---|---|---|---|---|
 | J1 | Incluir nome da competência e da matéria no payload de `GET /reviews/due` e remover o `competency-index.ts` do frontend (hoje faz N+1 chamadas a `/subjects` e `/subjects/{id}`). | P2 | S | TODO | | — | `backend/app/schemas/learning.py`, `backend/app/services/review_service.py`, `backend/app/repositories/review_repository.py`, `frontend/src/features/learning/competency-index.ts`, `frontend/src/pages/reviews-page.tsx` | | Achado da S11. Mudança aditiva no contrato. |
 | J2 | Progresso por etapa nas learning paths: expor a maestria do usuário por etapa em `GET /learning-paths/{slug}` e mostrar na UI (o G3 entregou sem progresso). | P2 | M | TODO | | — | `backend/app/api/v1/learning_paths.py`, `backend/app/schemas/learning.py`, `backend/app/services/learning_service.py`, `frontend/src/pages/learning-path-detail-page.tsx` | | Achado da S11. Reaproveitar o carregamento em lote do E1. |
-| J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | | O D5 manteve o corpo como array; falta consumir o header. |
+| J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | 0714c3f | O D5 manteve o corpo como array; falta consumir o header. |
 | J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
 
@@ -206,6 +206,9 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — J3 — `apiClient.getPaged()` (lê `X-Total-Count`), hook `usePagedList` e "Carregar mais" em goals e reviews; `listStudySessions` paginado no service (sem listagem na UI) — `0714c3f`
+- 2026-10-06 — G5 — a11y: skip link, landmarks, foco visível, contraste (botão primário, bordas de inputs), aria-expanded/progressbar; pendências em PENDING.md — `122b081`
+- 2026-10-06 — G4 — ErrorBoundary na raiz, ToastProvider (`useToast`), `ErrorAlert` com `role="alert"` e retry nas páginas — `87e5ef0`
 - 2026-10-06 — C2 — rate limiting em memória (por IP; login também por e-mail) em login/register/refresh, 429 padronizado + Retry-After; X-Forwarded-For só com TRUST_PROXY_HEADERS — `60f5eb7`
 - 2026-10-06 — C4 — `REGISTRATION_ENABLED` e `REGISTRATION_INVITE_CODE`; `GET /auth/registration-info`; campo de convite na register-page — `60f5eb7`, `77feace`
 - 2026-10-06 — C6 — CORS com métodos/headers restritos, origens via JSON ou CSV, `*` rejeitado em produção — `0d81d42`
