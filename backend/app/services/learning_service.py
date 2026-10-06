@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError
-from app.domain.skill_tree import compute_competency_state
+from app.domain.skill_tree import MASTERY_THRESHOLD, compute_competency_state
 from app.models.gamification import XPSource
 from app.models.learning import (
     Competency,
@@ -82,13 +82,16 @@ def list_study_sessions(db: Session, user_id: uuid.UUID) -> list[StudySession]:
 
 def list_subjects_with_progress(db: Session, user_id: uuid.UUID) -> list[dict]:
     subjects = learning_catalog_repository.list_subjects(db)
+    competencies_by_subject = learning_catalog_repository.list_competencies_by_subjects(
+        db, [s.id for s in subjects]
+    )
     mastery_by_competency = {
         m.competency_id: m.score for m in mastery_repository.list_mastery_for_user(db, user_id)
     }
 
     result = []
     for subject in subjects:
-        competencies = learning_catalog_repository.list_competencies_by_subject(db, subject.id)
+        competencies = competencies_by_subject[subject.id]
         scores = [mastery_by_competency.get(c.id, 0.0) for c in competencies]
         avg_mastery = round(sum(scores) / len(scores), 2) if scores else 0.0
         result.append(
@@ -109,33 +112,44 @@ def get_subject_detail(db: Session, user_id: uuid.UUID, subject_id: uuid.UUID) -
     competencies = learning_catalog_repository.list_competencies_by_subject(db, subject_id)
     return {
         "subject": subject,
-        "competencies": [_competency_with_state(db, user_id, c) for c in competencies],
+        "competencies": _competencies_with_state(db, user_id, competencies),
     }
 
 
-def _competency_with_state(db: Session, user_id: uuid.UUID, competency: Competency) -> dict:
-    mastery = mastery_repository.get_mastery(db, user_id, competency.id)
-    total_minutes = study_repository.total_study_minutes_for_competency(db, user_id, competency.id)
-    prerequisite_ids = learning_catalog_repository.get_prerequisite_ids(db, competency.id)
-
-    prerequisites_mastered = True
-    for prereq_id in prerequisite_ids:
-        prereq_mastery = mastery_repository.get_mastery(db, user_id, prereq_id)
-        if prereq_mastery is None or prereq_mastery.score < 80.0:
-            prerequisites_mastered = False
-            break
-
-    state = compute_competency_state(
-        mastery_score=mastery.score if mastery else None,
-        has_activity=total_minutes > 0,
-        prerequisites_mastered=prerequisites_mastered,
+def _competencies_with_state(
+    db: Session, user_id: uuid.UUID, competencies: list[Competency]
+) -> list[dict]:
+    """Derive each competency's skill-tree state with a constant number of queries
+    (prerequisites, mastery, study minutes), regardless of how many competencies."""
+    competency_ids = [c.id for c in competencies]
+    prerequisites = learning_catalog_repository.get_prerequisite_ids_by_competency(
+        db, competency_ids
     )
+    # Prerequisites may live in other subjects, so mastery is loaded for both sets.
+    all_ids = set(competency_ids).union(*prerequisites.values())
+    scores = mastery_repository.get_scores_by_competency(db, user_id, all_ids)
+    minutes = study_repository.total_study_minutes_by_competency(db, user_id, competency_ids)
 
-    return {
-        "competency": competency,
-        "mastery_score": mastery.score if mastery else 0.0,
-        "state": state,
-    }
+    result = []
+    for competency in competencies:
+        mastery_score = scores.get(competency.id)
+        prerequisites_mastered = all(
+            scores.get(prereq_id, 0.0) >= MASTERY_THRESHOLD
+            for prereq_id in prerequisites[competency.id]
+        )
+        state = compute_competency_state(
+            mastery_score=mastery_score,
+            has_activity=minutes.get(competency.id, 0) > 0,
+            prerequisites_mastered=prerequisites_mastered,
+        )
+        result.append(
+            {
+                "competency": competency,
+                "mastery_score": mastery_score if mastery_score is not None else 0.0,
+                "state": state,
+            }
+        )
+    return result
 
 
 def list_competency_resources(db: Session, competency_id: uuid.UUID) -> list[LearningResource]:
