@@ -81,6 +81,20 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
   return (await response.json()) as T
 }
 
+/**
+ * Fire a request with explicitly supplied credentials, bypassing the stored
+ * tokens and the refresh-on-401 flow. Used by logout, which clears storage
+ * first and must not trigger a refresh with the tokens it is revoking.
+ */
+export async function postWithBearer(path: string, accessToken: string, body: unknown) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) throw new ApiError('unknown_error', `Request failed`, response.status)
+}
+
 export const apiClient = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
   post: <T>(path: string, body?: unknown, skipAuth = false) =>
