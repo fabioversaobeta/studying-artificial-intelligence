@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 13 |
-| P2 — Médio prazo | 21 | 1 |
+| P2 — Médio prazo | 21 | 2 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -72,7 +72,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 | A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | 0a96430 | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
 | A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | 058c848 | Não quebrar o link citado no CLAUDE.md. |
 | A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | 0adefbf | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
-| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | BLOCKED | | — | `backend/pyproject.toml` | | **Aguardando decisão do dono:** (1) instalar `httpx2>=2.13` no venv/dev deps (recomendação do Starlette; existe no PyPI, v2.0–2.13) ou (2) manter `httpx` e filtrar o warning em `filterwarnings`. A instalação foi negada pelo sistema de permissões na sessão S13. |
+| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | DONE | | — | `backend/pyproject.toml` | | **Decidido pelo dono (opção 1): `httpx2`.** Dev dep trocada de `httpx>=0.27` para `httpx2>=2.13`; suíte passa com `-W error::DeprecationWarning`. (Opções eram:) (1) instalar `httpx2>=2.13` no venv/dev deps (recomendação do Starlette; existe no PyPI, v2.0–2.13) ou (2) manter `httpx` e filtrar o warning em `filterwarnings`. A instalação foi negada pelo sistema de permissões na sessão S13. |
 | A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | 03d9596 | |
 
 ## Trilha B — CI/CD
@@ -229,6 +229,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — B1 — CI no GitHub Actions (backend + frontend, Postgres, cache pip/npm); ruff pode ficar vermelho até S1/A3 ser mergeada — 17de298
 - 2026-10-06 — C1 — boot falha em produção com secret_key default/curta (<32) ou debug=True; debug agora default False — 9a1c7ec
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
+- 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
 - 2026-10-06 — wave 3 iniciada: S12 (C3), S13 (A4,B3,F5), S14 (G4,G5,J3), S15 (H2) reivindicadas; Trilha J criada com itens descobertos (J1–J5)
 - 2026-10-06 — wave 2 iniciada: S7 (C2,C4,C6), S8 (D3,D4), S9 (D5), S10 (F2), S11 (G1,G2,G3) reivindicadas em lote pelo coordenador
 - 2026-10-06 — decisões do dono: A1 autorizado; deploy (H1) adiado para o fim; sessões S1–S6 iniciadas (reivindicadas em lote pelo coordenador)
