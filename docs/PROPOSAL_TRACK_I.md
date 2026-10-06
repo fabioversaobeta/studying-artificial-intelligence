@@ -1,6 +1,6 @@
 # Proposta — Trilha I (produto alinhado às entrevistas)
 
-Status: **PROPOSTA — aguardando aprovação do dono.** Nada daqui foi iniciado.
+Status: **APROVADA pelo dono em 2026-10-06 — Fase 1 iniciada (I2 + I1 + J6).** Decisões do dono no §3.1.
 Data: 2026-10-06. Relacionada a `docs/IMPROVEMENT_ROADMAP.md` (itens I1–I5),
 `docs/PRODUCT.md`, `docs/PENDING.md` e ao brief original arquivado em
 `docs/archive/master-prompt-learning-platform.md`.
@@ -48,6 +48,31 @@ produto: *conteúdo é dado*, *XP ≠ mastery*, *transparente > esperto*,
 | D5 | **XP de quiz** | XP só na 1ª aprovação por questão/assessment (mesma regra anti-farm dos challenges); tentativas repetidas contam para mastery, não para XP. |
 | D6 | **Quem escreve as questões** | Eu gero rascunhos por competência em lotes; você revisa antes de entrar nos seeds. Definir meta inicial (ex.: 8–12 questões/competência nas 30 competências). |
 | D7 | **Chave de API** | Fica só em variável de ambiente (nunca no repo); você a fornece na hora de habilitar o provider real. Antes disso tudo roda com o provider fake. |
+
+
+### 3.1 Decisões do dono (2026-10-06)
+
+| # | Decisão final |
+|---|---|
+| D1 | **API do Claude (Anthropic)**. A chave (`ANTHROPIC_API_KEY`) será preenchida pelo dono nas variáveis de ambiente do Railway; nunca vai para o repo. Até lá, tudo roda com o provider *fake*. |
+| D2 | **Sem teto de orçamento no primeiro momento**: o dono vai medir o uso em produção. Mantemos apenas a *medição* (`ai_usage`: tokens, latência, custo estimado) e um teto **opcional e desligado por padrão** (configurável por env) para poder ligar depois sem mudar código. |
+| D3 | **Idioma escolhido pelo usuário, inglês como padrão** (`en`, com `pt-BR` disponível). Vale para o conteúdo (questões, explicações), para o mentor/avaliador de IA e para a simulação de entrevista. A localização das *strings da interface* é um item separado (J7), fora da Fase 1. |
+| D4 | Assessments alimentam o sinal *Practice* do mastery (recomendação aceita; fórmula exata definida pelo I2 e documentada em `DOMAIN.md`). |
+| D5 | **XP: o dono delegou; decisão registrada abaixo.** |
+| D6 | **As questões são escritas pela IA** (Claude), em lote, por matéria, nos dois idiomas, entrando como seeds marcados `source=ai_generated`, com validação automática de estrutura e consistência. |
+
+**Regra de XP adotada (D5)** — projetada para recompensar *atividade genuína* sem
+permitir farm nem premiar chute, mantendo XP separado de mastery:
+1. XP só é concedido ao **finalizar** uma tentativa e somente se a nota for ≥ ao
+   limiar de aprovação do assessment (padrão 70%). Chutar uma questão solta não paga nada.
+2. Numa tentativa aprovada, o XP é a soma do `xp_value` (por dificuldade:
+   fácil/médio/difícil) apenas das questões acertadas **pela primeira vez na vida do usuário**,
+   mais um bônus de conclusão **na primeira aprovação** daquele assessment.
+3. Tentativas repetidas **não** rendem XP de questões já pagas nem novo bônus; elas contam
+   para o **mastery** (que mede conhecimento) e para o streak/quests normalmente.
+4. O total é naturalmente limitado pelo tamanho do banco de questões (não há farm infinito);
+   o ledger registra a fonte `assessment` e o `reference_id` da tentativa.
+5. **Sem estorno** de XP em nenhum caso (mesma decisão do D6/delete).
 
 ## 4. Escopo por item
 

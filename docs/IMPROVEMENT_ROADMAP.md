@@ -42,8 +42,8 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 14 |
-| P2 — Médio prazo | 21 | 11 |
+| P1 — Curto prazo | 17 | 14 |
+| P2 — Médio prazo | 23 | 11 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -146,17 +146,18 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 ## Trilha I — Produto (alinhado ao objetivo de entrevistas)
 
-**Proposta de escopo e ordem em `docs/PROPOSAL_TRACK_I.md` (aguardando aprovação do dono — não iniciar antes).** Itens maiores; cada um merece um plano próprio e entrada em `docs/DECISIONS.md`
+**Proposta de escopo e ordem em `docs/PROPOSAL_TRACK_I.md` — APROVADA em 2026-10-06 (decisões em §3.1).** Itens maiores; cada um merece um plano próprio e entrada em `docs/DECISIONS.md`
 antes de codar. Não iniciar antes das trilhas P0/P1 críticas (C, D, F1) estarem
 estáveis.
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | TODO | | — | `backend/app/services/ai_service.py` (novo), `backend/app/core/config.py` | | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
-| I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | TODO | | — | modelos, migration, services, API, seeds | | Aditivo; nada do schema atual muda. |
+| I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | IN_PROGRESS | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai_service.py` (novo), `backend/app/core/config.py` | | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
+| I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | | Aditivo; nada do schema atual muda. |
 | I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | TODO | | G1, G3 | novo service/endpoint/UI | | |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
+| I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | TODO | | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. |
 
 ---
 
@@ -171,6 +172,8 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | 0714c3f | O D5 manteve o corpo como array; falta consumir o header. |
 | J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
+| J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | IN_PROGRESS | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | | Entregue junto com o I2 (mesma sessão/migration). |
+| J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | TODO | | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
 
@@ -240,6 +243,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — C1 — boot falha em produção com secret_key default/curta (<32) ou debug=True; debug agora default False — 9a1c7ec
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
+- 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
 - 2026-10-06 — wave 4 iniciada: S16 (E2,D6), S17 (C5), S18 (J1,J2) reivindicadas; decisões do dono: sem estorno de XP no D6; C5 deve usar a melhor solução (cookie httpOnly + proxy same-origin)
 - 2026-10-06 — wave 3 iniciada: S12 (C3), S13 (A4,B3,F5), S14 (G4,G5,J3), S15 (H2) reivindicadas; Trilha J criada com itens descobertos (J1–J5)
 - 2026-10-06 — wave 2 iniciada: S7 (C2,C4,C6), S8 (D3,D4), S9 (D5), S10 (F2), S11 (G1,G2,G3) reivindicadas em lote pelo coordenador
