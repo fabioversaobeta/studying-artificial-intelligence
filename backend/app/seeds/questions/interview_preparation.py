@@ -554,9 +554,461 @@ _CODING: tuple[QuestionSeed, ...] = (
     ),
 )
 
-# @@SYSTEM_DESIGN@@
+_SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
+    # ------------------------------------------------------------------
+    # system-design-interviews
+    # ------------------------------------------------------------------
+    QuestionSeed(
+        code="system-design-interviews-q01",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("b",),
+        tags=("requirements", "process"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="The interviewer says: \"Design a ride-sharing service.\" What is the best "
+                "first move?",
+                options=_options(
+                    "Start drawing the database, cache and message queue you plan to use.",
+                    "Ask clarifying questions about what the system must do and at what "
+                    "scale, and agree on the scope.",
+                    "Announce the technology stack you would pick and why.",
+                    "Begin estimating how many petabytes of storage you will need.",
+                ),
+                explanation="System design prompts are deliberately vague, and interviewers "
+                "grade whether you pin down functional and non-functional requirements before "
+                "designing. Drawing components, choosing a stack or running numbers without "
+                "agreed requirements means you are designing for an unknown problem.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="O entrevistador diz: \"Projete um serviço de caronas (ride-sharing).\" "
+                "Qual é o melhor primeiro passo?",
+                options=_options(
+                    "Começar a desenhar o banco de dados, o cache e a fila de mensagens que "
+                    "pretende usar.",
+                    "Fazer perguntas de esclarecimento sobre o que o sistema deve fazer e em "
+                    "que escala, e combinar o escopo.",
+                    "Anunciar a stack de tecnologia que escolheria e por quê.",
+                    "Começar a estimar quantos petabytes de armazenamento serão necessários.",
+                ),
+                explanation="Os enunciados de system design são vagos de propósito, e os "
+                "entrevistadores avaliam se você define os requisitos funcionais e não "
+                "funcionais antes de projetar. Desenhar componentes, escolher uma stack ou "
+                "fazer contas sem requisitos combinados é projetar para um problema "
+                "desconhecido.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q02",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("d",),
+        tags=("estimation",),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="What is the main purpose of back-of-envelope estimation in a system "
+                "design interview?",
+                options=_options(
+                    "To produce exact numbers that the interviewer will verify.",
+                    "To show off your arithmetic speed.",
+                    "To fill time while you think about the architecture.",
+                    "To get order-of-magnitude figures (requests per second, storage, "
+                    "bandwidth) that justify design choices such as caching or sharding.",
+                ),
+                explanation="Estimates matter because they drive decisions: a few hundred "
+                "requests per second may fit on one database, while hundreds of thousands "
+                "probably need caching and partitioning. Round numbers and clearly stated "
+                "assumptions are fine; exactness is not the goal.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Qual é o principal objetivo da estimativa de \"guardanapo\" "
+                "(back-of-envelope) em uma entrevista de system design?",
+                options=_options(
+                    "Produzir números exatos que o entrevistador vai conferir.",
+                    "Mostrar sua rapidez de cálculo.",
+                    "Preencher o tempo enquanto você pensa na arquitetura.",
+                    "Obter ordens de grandeza (requisições por segundo, armazenamento, "
+                    "banda) que justifiquem escolhas como cache ou sharding.",
+                ),
+                explanation="As estimativas importam porque guiam decisões: algumas centenas "
+                "de requisições por segundo podem caber em um único banco, enquanto centenas de "
+                "milhares provavelmente exigem cache e particionamento. Números redondos e "
+                "premissas declaradas com clareza bastam; exatidão não é o objetivo.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q03",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=EASY,
+        correct=("a",),
+        tags=("requirements", "non-functional"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Which of these is a **non-functional** requirement for a social feed?",
+                options=_options(
+                    "The feed loads within 300 ms for 99% of requests.",
+                    "Users can follow and unfollow other users.",
+                    "Users can attach a photo to a post.",
+                    "Moderators can remove a post.",
+                ),
+                explanation="Non-functional requirements describe qualities such as latency, "
+                "availability, consistency and scale. The other three describe things a user "
+                "or moderator can do, which are functional requirements.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Qual destes é um requisito **não funcional** de um feed social?",
+                options=_options(
+                    "O feed carrega em até 300 ms em 99% das requisições.",
+                    "Usuários podem seguir e deixar de seguir outros usuários.",
+                    "Usuários podem anexar uma foto a uma publicação.",
+                    "Moderadores podem remover uma publicação.",
+                ),
+                explanation="Requisitos não funcionais descrevem qualidades como latência, "
+                "disponibilidade, consistência e escala. Os outros três descrevem coisas que "
+                "um usuário ou moderador pode fazer, ou seja, requisitos funcionais.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q04",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("c",),
+        tags=("trade-offs", "communication"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You proposed PostgreSQL for the main data store and the interviewer asks "
+                "\"Why not a NoSQL database?\" Which answer is strongest?",
+                options=_options(
+                    "\"PostgreSQL is the industry standard, so it is the safe choice.\"",
+                    "\"NoSQL does not scale, so I avoid it.\"",
+                    "\"Our data is relational and we need transactions across entities. At "
+                    "the estimated load a single primary with read replicas is enough, and "
+                    "if writes grew far beyond that I would revisit partitioning or a "
+                    "different store.\"",
+                    "\"I have used PostgreSQL for years and know it best.\"",
+                ),
+                explanation="A strong answer ties the choice to the stated requirements "
+                "(data shape, consistency, estimated load), acknowledges the cost, and says "
+                "what would change the decision. 'Industry standard' and 'I know it best' are "
+                "not requirements-based, and 'NoSQL does not scale' is both false and "
+                "dismissive.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você propôs PostgreSQL como armazenamento principal e o entrevistador "
+                "pergunta \"Por que não um banco NoSQL?\". Qual resposta é a mais forte?",
+                options=_options(
+                    "\"PostgreSQL é o padrão da indústria, então é a escolha segura.\"",
+                    "\"NoSQL não escala, então eu evito.\"",
+                    "\"Nossos dados são relacionais e precisamos de transações entre "
+                    "entidades. Na carga estimada, um primário com réplicas de leitura é "
+                    "suficiente, e se as escritas crescessem muito além disso eu revisitaria o "
+                    "particionamento ou outro tipo de armazenamento.\"",
+                    "\"Uso PostgreSQL há anos e é o que melhor conheço.\"",
+                ),
+                explanation="Uma resposta forte liga a escolha aos requisitos declarados "
+                "(formato dos dados, consistência, carga estimada), reconhece o custo e diz o "
+                "que mudaria a decisão. 'Padrão da indústria' e 'é o que melhor conheço' não "
+                "se baseiam em requisitos, e 'NoSQL não escala' é falso e desdenhoso.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q05",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("a",),
+        tags=("estimation", "qps"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="A service has 10 million daily active users, and each user performs "
+                "about 5 writes per day. Which estimate of write load is most reasonable?",
+                options=_options(
+                    "Roughly 580 writes per second on average; plan for peaks a few times "
+                    "higher.",
+                    "Roughly 58 writes per second on average.",
+                    "Roughly 5,800 writes per second on average.",
+                    "Roughly 50 million writes per second.",
+                ),
+                explanation="10M × 5 = 50M writes per day. A day has about 86,400 seconds "
+                "(close to 100,000 for quick math), so the average is about 580 writes per "
+                "second. Real traffic is not flat, so mention a peak factor of two to three "
+                "times. The other values are off by a factor of ten or by the whole day.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Um serviço tem 10 milhões de usuários ativos por dia, e cada usuário "
+                "faz cerca de 5 escritas por dia. Qual estimativa de carga de escrita é a mais "
+                "razoável?",
+                options=_options(
+                    "Cerca de 580 escritas por segundo em média; planejar picos algumas "
+                    "vezes maiores.",
+                    "Cerca de 58 escritas por segundo em média.",
+                    "Cerca de 5.800 escritas por segundo em média.",
+                    "Cerca de 50 milhões de escritas por segundo.",
+                ),
+                explanation="10M × 5 = 50M de escritas por dia. Um dia tem cerca de 86.400 "
+                "segundos (perto de 100.000 para a conta rápida), então a média é de cerca de "
+                "580 escritas por segundo. O tráfego real não é constante, então mencione um "
+                "fator de pico de duas a três vezes. Os outros valores erram por um fator de "
+                "dez ou pelo dia inteiro.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q06",
+        competency_slug="system-design-interviews",
+        type=MS,
+        difficulty=MEDIUM,
+        correct=("a", "b", "d"),
+        tags=("process", "communication"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Which behaviors help in a system design interview? Select all that "
+                "apply.",
+                options=_options(
+                    "Stating your assumptions out loud and confirming them.",
+                    "Asking the interviewer which component they would like to explore in "
+                    "more depth.",
+                    "Working through the estimates silently so you do not make mistakes in "
+                    "front of the interviewer.",
+                    "Naming at least one alternative for key decisions and why you did not "
+                    "pick it.",
+                    "Presenting the architecture of a famous system from memory, even when "
+                    "the requirements differ.",
+                ),
+                explanation="Interviewers evaluate your reasoning, so make it visible: stated "
+                "assumptions can be corrected early, checking in steers the conversation "
+                "toward what matters to them, and alternatives show you understand trade-offs. "
+                "Silent arithmetic hides your process, and a memorized architecture ignores "
+                "the requirements actually agreed in this conversation.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Quais comportamentos ajudam em uma entrevista de system design? "
+                "Selecione todos que se aplicam.",
+                options=_options(
+                    "Declarar suas premissas em voz alta e confirmá-las.",
+                    "Perguntar ao entrevistador qual componente ele gostaria de explorar com "
+                    "mais profundidade.",
+                    "Fazer as estimativas em silêncio para não errar na frente do "
+                    "entrevistador.",
+                    "Citar pelo menos uma alternativa nas decisões-chave e por que não foi "
+                    "escolhida.",
+                    "Apresentar de memória a arquitetura de um sistema famoso, mesmo quando "
+                    "os requisitos são diferentes.",
+                ),
+                explanation="Os entrevistadores avaliam seu raciocínio, então torne-o visível: "
+                "premissas declaradas podem ser corrigidas cedo, perguntar direciona a conversa "
+                "para o que importa a eles, e alternativas mostram que você entende os "
+                "trade-offs. Contas em silêncio escondem seu processo, e uma arquitetura "
+                "decorada ignora os requisitos combinados nesta conversa.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q07",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("d",),
+        tags=("scaling", "trade-offs"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Midway through, the interviewer asks: \"What if traffic grows 10x?\" "
+                "What is the best way to respond?",
+                options=_options(
+                    "Add sharding, a cache and a message queue everywhere, to be safe.",
+                    "Say the design already scales and move on.",
+                    "Start over with a distributed architecture from scratch.",
+                    "Re-run the estimates, identify which component becomes the bottleneck "
+                    "first, scale that one and say what stays unchanged.",
+                ),
+                explanation="Scaling questions test whether you can find the actual "
+                "bottleneck (database writes, a hot key, network bandwidth) from your numbers "
+                "and apply a targeted fix with its trade-offs. Adding everything is "
+                "over-engineering, a bare assertion offers no reasoning, and a restart throws "
+                "away a design that mostly holds.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="No meio da entrevista, o entrevistador pergunta: \"E se o tráfego "
+                "crescer 10 vezes?\" Qual é a melhor forma de responder?",
+                options=_options(
+                    "Adicionar sharding, cache e fila de mensagens em todo lugar, por "
+                    "segurança.",
+                    "Dizer que o design já escala e seguir em frente.",
+                    "Recomeçar com uma arquitetura distribuída do zero.",
+                    "Refazer as estimativas, identificar qual componente vira o gargalo "
+                    "primeiro, escalar esse e dizer o que permanece igual.",
+                ),
+                explanation="Perguntas de escala testam se você consegue achar o gargalo real "
+                "(escritas no banco, uma hot key, banda de rede) a partir dos seus números e "
+                "aplicar uma correção direcionada com seus trade-offs. Adicionar tudo é "
+                "over-engineering, uma afirmação seca não mostra raciocínio, e recomeçar "
+                "descarta um design que em grande parte se mantém.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q08",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=MEDIUM,
+        correct=("b",),
+        tags=("process", "ambiguity"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="Twenty minutes in, you realize you misunderstood a requirement and part "
+                "of your design contradicts it. What should you do?",
+                options=_options(
+                    "Keep going and hope the interviewer does not notice.",
+                    "Say so, confirm the correct requirement, and adjust only the affected "
+                    "parts while explaining the impact.",
+                    "Discard the whole design and restart from the requirements.",
+                    "Argue that your interpretation was also reasonable.",
+                ),
+                explanation="Interviewers expect requirements to be revised during a real "
+                "design discussion; what they evaluate is how you react. Naming the issue and "
+                "repairing the affected components shows honesty and adaptability. Hiding it "
+                "is worse, restarting wastes the time left, and defending a wrong reading "
+                "turns a small slip into a communication problem.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Vinte minutos depois, você percebe que entendeu errado um requisito e "
+                "parte do seu design o contradiz. O que fazer?",
+                options=_options(
+                    "Continuar e torcer para o entrevistador não perceber.",
+                    "Dizer isso, confirmar o requisito correto e ajustar só as partes "
+                    "afetadas, explicando o impacto.",
+                    "Descartar o design inteiro e recomeçar pelos requisitos.",
+                    "Argumentar que sua interpretação também era razoável.",
+                ),
+                explanation="Os entrevistadores esperam que os requisitos sejam revistos "
+                "durante uma discussão de design real; o que avaliam é como você reage. Nomear "
+                "o problema e corrigir os componentes afetados mostra honestidade e "
+                "adaptabilidade. Esconder é pior, recomeçar desperdiça o tempo restante, e "
+                "defender uma leitura errada transforma um deslize pequeno em um problema de "
+                "comunicação.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q09",
+        competency_slug="system-design-interviews",
+        type=MC,
+        difficulty=HARD,
+        correct=("c",),
+        tags=("deep-dive", "prioritization"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You have finished the high-level design of a chat application and have "
+                "about 15 minutes left for deep dives. Which choice is strongest?",
+                options=_options(
+                    "Go deep on the component you know best, so you can answer follow-ups "
+                    "confidently.",
+                    "Spend one minute on each component so that everything is covered.",
+                    "Propose one or two components where the hardest requirement-driven "
+                    "trade-offs live (for example message delivery and ordering, or group "
+                    "fan-out), and confirm the choice with the interviewer.",
+                    "Detail the database schema, including every column and type.",
+                ),
+                explanation="Deep dives are chosen where the interesting trade-offs are, "
+                "which come from the requirements, and the interviewer gets a say in what "
+                "they want to see. Picking only what you know best may dodge the hard part, "
+                "touching everything stays shallow, and exhaustive schema detail rarely "
+                "reveals design judgment.",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você terminou o design de alto nível de um aplicativo de chat e tem "
+                "cerca de 15 minutos para os deep dives. Qual escolha é a mais forte?",
+                options=_options(
+                    "Aprofundar o componente que você conhece melhor, para responder com "
+                    "segurança às perguntas seguintes.",
+                    "Gastar um minuto em cada componente para cobrir tudo.",
+                    "Propor um ou dois componentes onde estão os trade-offs mais difíceis "
+                    "ditados pelos requisitos (por exemplo, entrega e ordenação de mensagens, "
+                    "ou fan-out de grupos) e confirmar a escolha com o entrevistador.",
+                    "Detalhar o schema do banco, com todas as colunas e tipos.",
+                ),
+                explanation="Os deep dives são escolhidos onde estão os trade-offs "
+                "interessantes, que vêm dos requisitos, e o entrevistador opina sobre o que "
+                "quer ver. Escolher só o que você domina pode desviar da parte difícil, tocar "
+                "em tudo fica superficial, e detalhar todo o schema raramente revela "
+                "julgamento de design.",
+            ),
+        },
+    ),
+    QuestionSeed(
+        code="system-design-interviews-q10",
+        competency_slug="system-design-interviews",
+        type=SHORT,
+        difficulty=HARD,
+        correct=None,
+        tags=("time-management", "process"),
+        source=AI,
+        text={
+            Language.EN: QuestionText(
+                prompt="You have 45 minutes for the prompt \"design a rate limiter\". Outline "
+                "how you would split your time, what you would produce in each phase, and how "
+                "you would decide what to cut if time runs short.",
+                model_answer="Roughly: 5-10 minutes on requirements (who is limited, per user "
+                "or per IP, limits and window, hard or soft rejection, latency budget, "
+                "single region or distributed) and a quick estimate of request volume; "
+                "about 15 minutes on a high-level design (where the limiter sits, the "
+                "algorithm choice such as token bucket or sliding window, where counters "
+                "live, how rules are configured); 15 minutes on one or two deep dives chosen "
+                "with the interviewer (for example consistency of counters across nodes, race "
+                "conditions, failure behavior when the counter store is down); the last few "
+                "minutes to summarize trade-offs and next steps. If time runs short, cut "
+                "polish and secondary features first, keep the requirements and the core "
+                "design, and say explicitly what you would add with more time.",
+                explanation="Self-check: did you mention (1) requirements and estimation "
+                "first, (2) a high-level design before deep dives, (3) deep dives chosen "
+                "with the interviewer, and (4) a rule for what to cut that protects the core "
+                "design and says out loud what is left out?",
+            ),
+            Language.PT_BR: QuestionText(
+                prompt="Você tem 45 minutos para o enunciado \"projete um rate limiter\". "
+                "Descreva como dividiria o tempo, o que produziria em cada fase e como "
+                "decidiria o que cortar se o tempo apertar.",
+                model_answer="Aproximadamente: 5 a 10 minutos em requisitos (quem é limitado, "
+                "por usuário ou por IP, limites e janela, rejeição rígida ou branda, "
+                "orçamento de latência, região única ou distribuído) e uma estimativa rápida "
+                "do volume de requisições; cerca de 15 minutos no design de alto nível (onde "
+                "o limiter fica, a escolha do algoritmo, como token bucket ou sliding window, "
+                "onde ficam os contadores, como as regras são configuradas); 15 minutos em um "
+                "ou dois deep dives escolhidos com o entrevistador (por exemplo, consistência "
+                "dos contadores entre nós, condições de corrida, comportamento quando o "
+                "armazenamento dos contadores cai); os últimos minutos para resumir "
+                "trade-offs e próximos passos. Se o tempo apertar, cortar primeiro o polimento "
+                "e as funcionalidades secundárias, manter os requisitos e o design central e "
+                "dizer explicitamente o que acrescentaria com mais tempo.",
+                explanation="Autoavaliação: você mencionou (1) requisitos e estimativa "
+                "primeiro, (2) design de alto nível antes dos deep dives, (3) deep dives "
+                "escolhidos com o entrevistador e (4) uma regra de corte que protege o design "
+                "central e diz em voz alta o que ficou de fora?",
+            ),
+        },
+    ),
+)
+
+# @@BEHAVIORAL@@
 
 QUESTION_SET = SubjectQuestionSet(
     subject_slug="interview-preparation",
-    questions=_CODING,
+    questions=_CODING + _SYSTEM_DESIGN,
 )
