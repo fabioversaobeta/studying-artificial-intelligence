@@ -16,6 +16,8 @@ has the same shape:
 { "error": { "code": "not_found", "message": "Competency not found" } }
 ```
 
+Unhandled exceptions return `500` with `{ "error": { "code": "internal_error", "message": "Internal server error" } }`; the stack trace is only logged server-side. `GET /health/ready` returns `503` with `{ "status": "unavailable" }` when the database is unreachable.
+
 ## Endpoints
 
 | Method & Path | Auth | Purpose |

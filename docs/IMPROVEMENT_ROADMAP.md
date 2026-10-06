@@ -41,7 +41,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 
 | Fase | Itens | Concluídos |
 |---|---|---|
-| P0 — Fazer agora | 9 | 6 |
+| P0 — Fazer agora | 9 | 8 |
 | P1 — Curto prazo | 16 | 0 |
 | P2 — Médio prazo | 16 | 0 |
 
@@ -101,8 +101,8 @@ ou combinar com cuidado** (ver coluna Arquivos).
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| D1 | Tratar `IntegrityError` → 409 (race condition no registro com e-mail duplicado) e adicionar um handler global para exceções não tratadas (500 com corpo padrão `{error:{code,message}}`, sem vazar stack). Teste da corrida. | P0 | S | IN_PROGRESS | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, `backend/app/core/exceptions.py`, `backend/app/services/auth_service.py`, novo teste | | Conflita com C2/C6 em `main.py` — coordenar. |
-| D2 | `/health/ready` deve devolver **503** (não 500) quando o banco falhar, e usar a dependência `get_db` em vez de `SessionLocal` manual. | P0 | S | IN_PROGRESS | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, novo teste | | |
+| D1 | Tratar `IntegrityError` → 409 (race condition no registro com e-mail duplicado) e adicionar um handler global para exceções não tratadas (500 com corpo padrão `{error:{code,message}}`, sem vazar stack). Teste da corrida. | P0 | S | DONE | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, `backend/app/core/exceptions.py`, `backend/app/services/auth_service.py`, novo teste | 0d8c244 | Conflita com C2/C6 em `main.py` — coordenar. |
+| D2 | `/health/ready` deve devolver **503** (não 500) quando o banco falhar, e usar a dependência `get_db` em vez de `SessionLocal` manual. | P0 | S | DONE | S3 (`fix/s3-error-handling-health`) | — | `backend/app/main.py`, novo teste | 0d8c244 | |
 | D3 | Corrigir a recursão `award_xp` ↔ `check_and_award_achievements`: atualizar `earned_codes` dentro do loop / tornar a avaliação iterativa e idempotente. Teste com duas conquistas desbloqueadas na mesma passada. | P1 | M | TODO | | — | `backend/app/services/gamification_service.py`, `backend/tests/` | | Hoje termina por acaso, não por design. |
 | D4 | **Tirar efeito colateral do `GET`** das quests: concluir quests em evento (quando o XP é concedido) e deixar `GET /quests` somente leitura. Atualizar `DECISIONS.md` (a decisão atual diz o contrário). | P1 | M | TODO | | D3 (mesmo serviço) | `backend/app/services/quest_service.py`, `backend/app/services/gamification_service.py`, `backend/app/api/v1/gamification.py`, `docs/DECISIONS.md` | | |
 | D5 | **Paginação** (`limit`/`offset` ou cursor, com teto máximo) nas listagens: study sessions, XP awards, goals, reviews, submissions. Schema de resposta consistente. | P1 | M | TODO | | — | `backend/app/api/v1/*.py`, `backend/app/repositories/*.py`, `backend/app/schemas/*.py`, `docs/API.md` | | Mudança de contrato: avisar o frontend (G1–G3). |
@@ -194,6 +194,8 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — D1 — `IntegrityError` no registro vira 409; handler global devolve 500 padronizado sem stack (FastAPI sem `debug`) — 0d8c244
+- 2026-10-06 — D2 — `/health/ready` usa `get_db` e devolve 503 `{"status":"unavailable"}` quando o banco falha — 0d8c244
 - 2026-10-06 — A5 — ROADMAP.md: linha de lint/type-check corrigida e verificada — 03d9596
 - 2026-10-06 — A3 — ruff check/format zerados; alembic/versions excluído do lint via extend-exclude — 0adefbf
 - 2026-10-06 — A2 — Master Prompt movido para docs/archive/master-prompt-learning-platform.md; CLAUDE.md atualizado — 058c848
