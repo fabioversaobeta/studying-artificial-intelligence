@@ -58,3 +58,17 @@ def get_current_user(db: DbSession, claims: AccessClaims) -> User:
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def get_optional_user(
+    db: DbSession,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
+) -> User | None:
+    """The authenticated user, or None for anonymous requests. A bearer token
+    that is present but invalid still fails with 401."""
+    if credentials is None:
+        return None
+    return get_current_user(db, get_access_claims(credentials))
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]

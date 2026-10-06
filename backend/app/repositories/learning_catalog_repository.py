@@ -13,6 +13,7 @@ from app.models.learning import (
     Competency,
     CompetencyPrerequisite,
     LearningPath,
+    LearningPathItem,
     LearningResource,
     Subject,
 )
@@ -65,7 +66,7 @@ def list_all_prerequisite_edges(db: Session) -> list[tuple[uuid.UUID, uuid.UUID]
 def list_learning_paths(db: Session) -> list[LearningPath]:
     stmt = (
         select(LearningPath)
-        .options(selectinload(LearningPath.items))
+        .options(selectinload(LearningPath.items).joinedload(LearningPathItem.competency))
         .order_by(LearningPath.sort_order, LearningPath.title)
     )
     return list(db.execute(stmt).scalars().all())
@@ -74,7 +75,7 @@ def list_learning_paths(db: Session) -> list[LearningPath]:
 def get_learning_path_by_slug(db: Session, slug: str) -> LearningPath | None:
     stmt = (
         select(LearningPath)
-        .options(selectinload(LearningPath.items))
+        .options(selectinload(LearningPath.items).joinedload(LearningPathItem.competency))
         .where(LearningPath.slug == slug)
     )
     return db.execute(stmt).scalar_one_or_none()
