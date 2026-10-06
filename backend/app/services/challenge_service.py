@@ -59,6 +59,8 @@ def submit_challenge(
             reference_id=submission.id,
             description=f"Challenge passed: {challenge.title}",
         )
+    else:
+        gamification_service.settle_rewards(db, user_id)
 
     db.commit()
     db.refresh(submission)

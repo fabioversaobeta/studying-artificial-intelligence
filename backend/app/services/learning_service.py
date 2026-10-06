@@ -70,6 +70,9 @@ def log_study_session(
             reference_id=session.id,
             description="Study session logged",
         )
+    else:
+        # No XP means award_xp never ran; progress may still have advanced.
+        gamification_service.settle_rewards(db, user_id)
 
     db.commit()
     db.refresh(session)

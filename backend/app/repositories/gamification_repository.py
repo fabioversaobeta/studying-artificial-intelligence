@@ -58,7 +58,7 @@ def add_xp_award(
 
 
 def list_achievements(db: Session) -> list[Achievement]:
-    return list(db.execute(select(Achievement)).scalars().all())
+    return list(db.execute(select(Achievement).order_by(Achievement.code)).scalars().all())
 
 
 def get_earned_achievement_codes(db: Session, user_id: uuid.UUID) -> set[str]:
@@ -115,7 +115,7 @@ def count_mastered_competencies(db: Session, user_id: uuid.UUID, threshold: floa
 
 
 def list_active_quests(db: Session) -> list[Quest]:
-    stmt = select(Quest).where(Quest.is_active.is_(True))
+    stmt = select(Quest).where(Quest.is_active.is_(True)).order_by(Quest.code)
     return list(db.execute(stmt).scalars().all())
 
 

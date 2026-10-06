@@ -1,4 +1,4 @@
-"""quest_service: progress is computed on read and completion pays XP once per period."""
+"""quest_service: progress is computed on read; completion happens on events, never on GET."""
 
 from datetime import UTC, datetime
 
@@ -69,14 +69,51 @@ class TestQuestProgress:
         assert _quests(client, auth_headers)["study_1"]["completed"] is True
 
 
+class TestQuestReadsAreSideEffectFree:
+    def test_get_does_not_complete_or_pay(
+        self, client: TestClient, auth_headers: dict[str, str], db: Session
+    ):
+        from sqlalchemy import func, select
+
+        from app.models.gamification import QuestCompletion, XPAward
+
+        make_quest(db, "study_1", QuestCriterion.STUDY_SESSIONS_COUNT, 1, xp_reward=40)
+        before = _quests(client, auth_headers)["study_1"]
+        assert before["completed"] is False
+        _study(client, auth_headers, minutes=5)
+        # completed by the event itself; repeated reads change nothing
+        snapshots = []
+        for _ in range(3):
+            assert _quests(client, auth_headers)["study_1"]["completed"] is True
+            snapshots.append(
+                (
+                    db.scalar(select(func.count()).select_from(QuestCompletion)),
+                    db.scalar(select(func.count()).select_from(XPAward)),
+                    _xp(client, auth_headers),
+                )
+            )
+        assert snapshots == [(1, 1, 40)] * 3
+
+    def test_quest_reward_can_complete_an_xp_quest(
+        self, client: TestClient, auth_headers: dict[str, str], db: Session
+    ):
+        make_quest(db, "study_1", QuestCriterion.STUDY_SESSIONS_COUNT, 1, xp_reward=50)
+        make_quest(db, "xp_40", QuestCriterion.XP_EARNED, 40, xp_reward=5)
+        _study(client, auth_headers, minutes=5)  # no study XP; quest pays 50, which pays 5 more
+        quests = _quests(client, auth_headers)
+        assert quests["xp_40"]["completed"] is True
+        assert _xp(client, auth_headers) == 55
+
+
 class TestQuestCompletion:
     def test_completion_pays_xp_exactly_once(
         self, client: TestClient, auth_headers: dict[str, str], db: Session
     ):
         make_quest(db, "study_2", QuestCriterion.STUDY_SESSIONS_COUNT, 2, xp_reward=40)
         _study(client, auth_headers, minutes=5)  # study XP 0 (under 10 minutes)
-        _study(client, auth_headers, minutes=5)
         assert _xp(client, auth_headers) == 0
+        _study(client, auth_headers, minutes=5)  # completes the quest on the event
+        assert _xp(client, auth_headers) == 40
 
         first = _quests(client, auth_headers)["study_2"]
         assert first["completed"] is True
