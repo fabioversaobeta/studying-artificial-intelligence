@@ -40,6 +40,9 @@ Target architecture: frontend on **Vercel**, backend + PostgreSQL on
 | `RATE_LIMIT_ENABLED` / `RATE_LIMIT_MAX_REQUESTS` / `RATE_LIMIT_WINDOW_SECONDS` | `true` / `10` / `60` (defaults) | In-memory limit on `/auth/login`, `/register`, `/refresh` (per IP; login also per e-mail); 429 when exceeded. Per process. |
 | `REGISTRATION_ENABLED` | `true` (default) | Set `false` to close signups (403). |
 | `REGISTRATION_INVITE_CODE` | *(unset)* | If set, `/auth/register` requires this code. Recommended for a public deploy. |
+| `LOG_FORMAT` | `json` on Railway (default `text`) | `json` prints one JSON object per line (`timestamp`, `level`, `logger`, `message`, `request_id`) for log aggregators. |
+| `LOG_LEVEL` | `INFO` (default) | Standard logging level. Every request is logged at INFO by the `app.access` logger (method, path, status, duration in ms). |
+| `SENTRY_DSN` | *(unset)* | Optional. Needs the extra: `pip install ".[observability]"`. If set without the package installed the app logs a warning and runs without Sentry. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` (default) | Override only if you want a different session length. |
 | `REFRESH_TOKEN_EXPIRE_MINUTES` | `43200` (default) | |
 

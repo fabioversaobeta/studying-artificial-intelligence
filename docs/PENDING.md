@@ -91,6 +91,12 @@ once this is actually deployed to Railway?
 is enough until there's a deployed environment generating real traffic to
 observe. Revisit once `docs/DEPLOYMENT.md` steps have actually been run
 against a live Railway project.
+**Update (H2)**: implemented per-request `X-Request-ID`, access log,
+`LOG_FORMAT=text|json` / `LOG_LEVEL`, and optional Sentry (`SENTRY_DSN`,
+extra `[observability]`). Still pending, all dependent on a live deploy (H1):
+validating Sentry against a real project, choosing a log aggregator, metrics
+(Prometheus/latency histograms) and distributed tracing — deliberately not
+built yet.
 
 ---
 

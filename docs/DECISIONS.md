@@ -193,3 +193,22 @@ function calls used to be) — costs with no matching benefit here. The
 internal module boundaries are drawn *as if* they could become service
 boundaries later, so the option isn't foreclosed, but nothing is built
 prematurely for a split that may never happen.
+
+---
+
+## Observability: stdlib logging + pure-ASGI request-id middleware, optional Sentry
+
+**Decision**: request ids and access logs come from a pure ASGI middleware
+(`app/core/middleware.py`) that sets a `ContextVar`; a `logging.Filter` copies
+it onto every record, and `LOG_FORMAT=text|json` picks a stdlib formatter
+(`app/core/logging.py`). Sentry is optional: `sentry-sdk[fastapi]` lives in the
+`observability` extra, is imported lazily, and is initialised only if
+`SENTRY_DSN` is set.
+**Why**: no new runtime dependency and no vendor lock-in for a single-owner
+app; pure ASGI (not `BaseHTTPMiddleware`) keeps contextvars intact for
+sync endpoints running in the thread pool. Incoming `X-Request-ID` is only
+trusted if it matches `[A-Za-z0-9._-]{1,64}`, otherwise a UUID is generated
+(prevents log injection). The global 500 handler runs outside user middleware,
+so it reads the id from `request.state` and adds `error.request_id` (additive)
+plus the header itself. Metrics and tracing are deferred until a live deploy
+exists (see `docs/PENDING.md`).
