@@ -5,6 +5,20 @@ populated for Alembic autogeneration and for ``Base.metadata.create_all``
 in tests.
 """
 
+from app.models.assessment import (
+    Assessment,
+    AssessmentAttempt,
+    AssessmentKind,
+    AssessmentQuestion,
+    AttemptStatus,
+    GradingStatus,
+    Question,
+    QuestionDifficulty,
+    QuestionResponse,
+    QuestionSource,
+    QuestionTranslation,
+    QuestionType,
+)
 from app.models.base import Base
 from app.models.gamification import (
     Achievement,
@@ -72,4 +86,16 @@ __all__ = [
     "QuestCriterion",
     "QuestPeriod",
     "QuestCompletion",
+    "Question",
+    "QuestionTranslation",
+    "QuestionType",
+    "QuestionDifficulty",
+    "QuestionSource",
+    "QuestionResponse",
+    "Assessment",
+    "AssessmentKind",
+    "AssessmentQuestion",
+    "AssessmentAttempt",
+    "AttemptStatus",
+    "GradingStatus",
 ]
