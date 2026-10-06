@@ -28,7 +28,7 @@ from tests.factories import (
 def _play(client: TestClient, headers: dict[str, str], assessment, n_correct: int) -> dict:
     attempt = client.post(f"{API}/assessments/{assessment.id}/attempts", headers=headers).json()
     for index, item in enumerate(attempt["questions"]):
-        client.put(
+        client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{item['id']}",
             headers=headers,
             json={"option_ids": ["b"] if index < n_correct else ["a"]},
@@ -96,7 +96,7 @@ class TestMasteryPractice:
         questions = [make_question(db, competency) for _ in range(2)]
         assessment = make_assessment(db, competency, questions)
         attempt = client.post(f"{API}/assessments/{assessment.id}/attempts", headers=headers).json()
-        client.put(
+        client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{questions[0].id}",
             headers=headers,
             json={"option_ids": ["b"]},

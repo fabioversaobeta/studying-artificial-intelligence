@@ -11,6 +11,9 @@ import { GoalsPage } from '@/pages/goals-page'
 import { ReviewsPage } from '@/pages/reviews-page'
 import { AchievementsPage } from '@/pages/achievements-page'
 import { SettingsPage } from '@/pages/settings-page'
+import { QuizzesPage } from '@/pages/quizzes-page'
+import { QuizHistoryPage } from '@/pages/quiz-history-page'
+import { QuizAttemptPage } from '@/pages/quiz-attempt-page'
 import { LearningPathsPage, LearningPathDetailPage } from '@/pages/learning-paths-page'
 
 export const router = createBrowserRouter([
@@ -41,6 +44,9 @@ export const router = createBrowserRouter([
           { path: '/achievements', element: <AchievementsPage /> },
           { path: '/learning-paths', element: <LearningPathsPage /> },
           { path: '/learning-paths/:slug', element: <LearningPathDetailPage /> },
+          { path: '/quizzes', element: <QuizzesPage /> },
+          { path: '/quizzes/history', element: <QuizHistoryPage /> },
+          { path: '/quizzes/attempts/:attemptId', element: <QuizAttemptPage /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },

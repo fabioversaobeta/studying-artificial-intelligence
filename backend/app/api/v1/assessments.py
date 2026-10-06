@@ -123,7 +123,7 @@ def get_attempt(
     return assessment_service.get_attempt(db, current_user, attempt_id, lang=lang)
 
 
-@router.put("/attempts/{attempt_id}/responses/{question_id}", response_model=AnswerResult)
+@router.patch("/attempts/{attempt_id}/responses/{question_id}", response_model=AnswerResult)
 def save_answer(
     attempt_id: uuid.UUID,
     question_id: uuid.UUID,

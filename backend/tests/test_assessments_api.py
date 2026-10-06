@@ -18,7 +18,7 @@ def _start(client: TestClient, headers: dict[str, str], assessment, **params):
 
 
 def _answer(client: TestClient, headers, attempt_id, question_id, option_ids, **extra):
-    return client.put(
+    return client.patch(
         f"{API}/attempts/{attempt_id}/responses/{question_id}",
         headers=headers,
         json={"option_ids": option_ids, **extra},
@@ -316,7 +316,7 @@ class TestAnswering:
         assert _answer(client, auth_headers, aid, single.id, ["zzz"]).status_code == 422
         assert _answer(client, auth_headers, aid, multi.id, ["b", "c"]).status_code == 200
         assert _answer(client, auth_headers, aid, multi.id, ["b", "nope"]).status_code == 422
-        no_text = client.put(
+        no_text = client.patch(
             f"{API}/attempts/{aid}/responses/{short.id}", headers=auth_headers, json={"text": "  "}
         )
         assert no_text.status_code == 422
@@ -558,7 +558,7 @@ class TestShortAnswer:
         attempt = _start(client, auth_headers, assessment).json()
         item = attempt["questions"][0]
         assert item["options"] is None
-        response = client.put(
+        response = client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{short.id}",
             headers=auth_headers,
             json={"text": "my answer"},
@@ -574,7 +574,7 @@ class TestShortAnswer:
     ):
         short, choice, assessment = self._setup(db)
         attempt = _start(client, auth_headers, assessment).json()
-        client.put(
+        client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{short.id}",
             headers=auth_headers,
             json={"text": "my answer"},
@@ -598,7 +598,7 @@ class TestShortAnswer:
     ):
         short, choice, assessment = self._setup(db)
         attempt = _start(client, auth_headers, assessment).json()
-        client.put(
+        client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{short.id}",
             headers=auth_headers,
             json={"text": "my answer"},
@@ -621,7 +621,7 @@ class TestShortAnswer:
         assert grade(short.id, True).status_code == 422  # nothing saved yet
         _answer(client, auth_headers, attempt["id"], choice.id, ["a"])
         assert grade(choice.id, True).status_code == 422  # deterministic questions
-        client.put(
+        client.patch(
             f"{API}/attempts/{attempt['id']}/responses/{short.id}",
             headers=auth_headers,
             json={"text": "x"},
@@ -635,9 +635,9 @@ class TestShortAnswer:
         short, _, assessment = self._setup(db)
         attempt = _start(client, auth_headers, assessment).json()
         base = f"{API}/attempts/{attempt['id']}/responses/{short.id}"
-        client.put(base, headers=auth_headers, json={"text": "v1"})
+        client.patch(base, headers=auth_headers, json={"text": "v1"})
         client.post(f"{base}/self-grade", headers=auth_headers, json={"is_correct": True})
-        again = client.put(base, headers=auth_headers, json={"text": "v2"})
+        again = client.patch(base, headers=auth_headers, json={"text": "v2"})
         assert again.json()["grading_status"] == "pending_review"
 
 
@@ -726,7 +726,7 @@ class TestAuthorization:
             ("post", f"/assessments/{some}/attempts"),
             ("get", "/attempts"),
             ("get", f"/attempts/{some}"),
-            ("put", f"/attempts/{some}/responses/{some}"),
+            ("patch", f"/attempts/{some}/responses/{some}"),
             ("post", f"/attempts/{some}/responses/{some}/self-grade"),
             ("post", f"/attempts/{some}/finish"),
             ("get", "/assessments/stats/by-competency"),

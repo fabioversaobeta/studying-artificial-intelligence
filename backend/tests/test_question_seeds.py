@@ -366,7 +366,7 @@ class TestSeedLoader:
         for item in attempt["questions"]:
             question = by_id[item["id"]]
             if question.type == QuestionType.SHORT_ANSWER:
-                client.put(
+                client.patch(
                     f"{API}/attempts/{attempt['id']}/responses/{item['id']}",
                     headers=headers,
                     json={"text": "my answer"},
@@ -377,7 +377,7 @@ class TestSeedLoader:
                     json={"is_correct": True},
                 )
             else:
-                client.put(
+                client.patch(
                     f"{API}/attempts/{attempt['id']}/responses/{item['id']}",
                     headers=headers,
                     json={"option_ids": question.correct_option_ids},

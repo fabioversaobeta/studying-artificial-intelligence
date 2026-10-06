@@ -10,6 +10,7 @@ const navItems = [
   { to: '/subjects', label: 'Subjects' },
   { to: '/learning-paths', label: 'Paths' },
   { to: '/goals', label: 'Goals' },
+  { to: '/quizzes', label: 'Quizzes' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/achievements', label: 'Achievements' },
   { to: '/settings', label: 'Settings' },
