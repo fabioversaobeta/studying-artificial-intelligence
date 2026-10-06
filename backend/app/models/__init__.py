@@ -38,11 +38,12 @@ from app.models.learning import (
     Subject,
 )
 from app.models.revoked_token import RevokedToken
-from app.models.user import User
+from app.models.user import Language, User
 
 __all__ = [
     "Base",
     "User",
+    "Language",
     "RevokedToken",
     "LearningGoal",
     "GoalStatus",
