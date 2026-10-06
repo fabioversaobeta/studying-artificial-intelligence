@@ -15,6 +15,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.config import Settings, get_settings
+from app.core.rate_limit import limiter
 from app.infrastructure.database.session import get_db
 from app.main import app
 from app.models import Base
@@ -49,11 +51,25 @@ def db(db_engine) -> Generator[Session, None, None]:
 
 
 @pytest.fixture
-def client(db: Session) -> Generator[TestClient, None, None]:
+def test_settings() -> Settings:
+    """Settings seen by request handlers that depend on `get_settings`.
+
+    Rate limiting is off by default so the many tests registering/logging in
+    from the same client IP don't trip it; tests that exercise it flip
+    `test_settings.rate_limit_enabled` (the object is mutable and shared with
+    the app through a dependency override).
+    """
+    return Settings(_env_file=None, rate_limit_enabled=False)
+
+
+@pytest.fixture
+def client(db: Session, test_settings: Settings) -> Generator[TestClient, None, None]:
     def _get_db_override() -> Generator[Session, None, None]:
         yield db
 
+    limiter.reset()
     app.dependency_overrides[get_db] = _get_db_override
+    app.dependency_overrides[get_settings] = lambda: test_settings
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

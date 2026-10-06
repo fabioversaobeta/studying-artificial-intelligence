@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.deps import DbSession
 from app.api.v1.router import api_router
 from app.core.config import get_settings
-from app.core.exceptions import AppError
+from app.core.exceptions import AppError, RateLimitError
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -35,6 +35,15 @@ def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": exc.error_code, "message": exc.message}},
+    )
+
+
+@app.exception_handler(RateLimitError)
+def handle_rate_limit_error(request: Request, exc: RateLimitError) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"code": exc.error_code, "message": exc.message}},
+        headers={"Retry-After": str(exc.retry_after)},
     )
 
 
