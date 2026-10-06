@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, apiClient } from '@/services/api-client'
-import { tokenStorage } from '@/lib/token-storage'
+import { ApiError, apiClient, postLogout, restoreSession } from '@/services/api-client'
+import { session } from '@/lib/session'
 
 const fetchMock = vi.fn<typeof fetch>()
 
@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('apiClient', () => {
   it('sends the Authorization header when an access token exists', async () => {
-    tokenStorage.setTokens('acc', 'ref')
+    session.setAccessToken('acc')
     fetchMock.mockResolvedValueOnce(json({ ok: true }))
 
     await expect(apiClient.get('/api/v1/things')).resolves.toEqual({ ok: true })
@@ -35,7 +35,7 @@ describe('apiClient', () => {
     await apiClient.get('/a')
     expect(headersOf(fetchMock.mock.calls[0])['Authorization']).toBeUndefined()
 
-    tokenStorage.setTokens('acc', 'ref')
+    session.setAccessToken('acc')
     await apiClient.post('/b', { x: 1 }, true)
     expect(headersOf(fetchMock.mock.calls[1])['Authorization']).toBeUndefined()
     expect((fetchMock.mock.calls[1][1] as RequestInit).body).toBe('{"x":1}')
@@ -67,32 +67,37 @@ describe('apiClient', () => {
 
   describe('401 handling', () => {
     it('refreshes the token once and retries the request', async () => {
-      tokenStorage.setTokens('old', 'ref')
+      session.setAccessToken('old')
       fetchMock
         .mockResolvedValueOnce(json({}, 401))
-        .mockResolvedValueOnce(json({ access_token: 'new', refresh_token: 'ref2' }))
+        .mockResolvedValueOnce(json({ access_token: 'new' }))
         .mockResolvedValueOnce(json({ data: 1 }))
 
       await expect(apiClient.get('/x')).resolves.toEqual({ data: 1 })
 
       expect(fetchMock).toHaveBeenCalledTimes(3)
-      expect(String(fetchMock.mock.calls[1][0])).toContain('/api/v1/auth/refresh')
-      expect(JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string)).toEqual({
-        refresh_token: 'ref',
-      })
+      const refreshCall = fetchMock.mock.calls[1]
+      expect(String(refreshCall[0])).toContain('/api/v1/auth/refresh')
+      const refreshInit = refreshCall[1] as RequestInit
+      // The refresh token travels as an HttpOnly cookie: no body, credentials included,
+      // plus the CSRF header the backend requires.
+      expect(refreshInit.body).toBeUndefined()
+      expect(refreshInit.credentials).toBe('include')
+      expect(headersOf(refreshCall)['X-CSRF-Protection']).toBe('1')
       expect(headersOf(fetchMock.mock.calls[2])['Authorization']).toBe('Bearer new')
-      expect(tokenStorage.getRefreshToken()).toBe('ref2')
+      expect(session.getAccessToken()).toBe('new')
+      expect(localStorage.length).toBe(0)
     })
 
     it('deduplicates the refresh across concurrent 401s', async () => {
-      tokenStorage.setTokens('old', 'ref')
+      session.setAccessToken('old')
       let refreshCalls = 0
       fetchMock.mockImplementation(async (input, init) => {
         const url = String(input)
         if (url.includes('/auth/refresh')) {
           refreshCalls += 1
           await new Promise((r) => setTimeout(r, 10))
-          return json({ access_token: 'new', refresh_token: 'ref2' })
+          return json({ access_token: 'new' })
         }
         const auth = (init?.headers as Record<string, string> | undefined)?.['Authorization']
         return auth === 'Bearer new' ? json({ url }) : json({}, 401)
@@ -109,10 +114,10 @@ describe('apiClient', () => {
     })
 
     it('retries only once: a second 401 surfaces as an ApiError', async () => {
-      tokenStorage.setTokens('old', 'ref')
+      session.setAccessToken('old')
       fetchMock
         .mockResolvedValueOnce(json({}, 401))
-        .mockResolvedValueOnce(json({ access_token: 'new', refresh_token: 'ref2' }))
+        .mockResolvedValueOnce(json({ access_token: 'new' }))
         .mockResolvedValueOnce(
           json({ error: { code: 'authentication_error', message: 'Nope' } }, 401),
         )
@@ -121,8 +126,8 @@ describe('apiClient', () => {
       expect(fetchMock).toHaveBeenCalledTimes(3)
     })
 
-    it('clears tokens and throws ApiError when the refresh fails', async () => {
-      tokenStorage.setTokens('old', 'ref')
+    it('clears the access token and throws ApiError when the refresh fails', async () => {
+      session.setAccessToken('old')
       fetchMock
         .mockResolvedValueOnce(
           json({ error: { code: 'authentication_error', message: 'Expired' } }, 401),
@@ -133,8 +138,7 @@ describe('apiClient', () => {
 
       expect(err).toBeInstanceOf(ApiError)
       expect(err).toMatchObject({ code: 'authentication_error', status: 401 })
-      expect(tokenStorage.getAccessToken()).toBeNull()
-      expect(tokenStorage.getRefreshToken()).toBeNull()
+      expect(session.getAccessToken()).toBeNull()
     })
 
     it('does not attempt a refresh when skipAuth is set', async () => {
@@ -147,10 +151,101 @@ describe('apiClient', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
-    it('throws without calling refresh when there is no refresh token', async () => {
-      fetchMock.mockResolvedValueOnce(json({}, 401))
+    it('tries the refresh cookie even with no access token, then surfaces the 401', async () => {
+      // e.g. a logged-out visitor hitting an authenticated endpoint: no cookie, refresh 401s.
+      fetchMock.mockResolvedValueOnce(json({}, 401)).mockResolvedValueOnce(json({}, 401))
       await expect(apiClient.get('/x')).rejects.toBeInstanceOf(ApiError)
-      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(String(fetchMock.mock.calls[1][0])).toContain('/api/v1/auth/refresh')
+    })
+
+    it('keeps the access token when the refresh fails because the network is down', async () => {
+      session.setAccessToken('old')
+      fetchMock.mockResolvedValueOnce(json({}, 401)).mockRejectedValueOnce(new TypeError('offline'))
+      await expect(apiClient.get('/x')).rejects.toBeInstanceOf(ApiError)
+      expect(session.getAccessToken()).toBe('old')
+    })
+  })
+
+  it('sends requests with credentials and a same-origin (relative) URL by default', async () => {
+    fetchMock.mockResolvedValueOnce(json({}))
+    await apiClient.get('/api/v1/things')
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/v1/things')
+    expect((fetchMock.mock.calls[0][1] as RequestInit).credentials).toBe('include')
+  })
+
+  describe('restoreSession', () => {
+    it('gets an access token from the refresh cookie and keeps it only in memory', async () => {
+      fetchMock.mockResolvedValueOnce(json({ access_token: 'restored', token_type: 'bearer' }))
+      await expect(restoreSession()).resolves.toBe(true)
+      expect(session.getAccessToken()).toBe('restored')
+      expect(localStorage.length).toBe(0)
+      expect(sessionStorage.length).toBe(0)
+    })
+
+    it('resolves false when there is no valid session cookie', async () => {
+      fetchMock.mockResolvedValueOnce(json({}, 401))
+      await expect(restoreSession()).resolves.toBe(false)
+      expect(session.hasAccessToken()).toBe(false)
+    })
+
+    it('resolves false (does not throw) when the network fails', async () => {
+      fetchMock.mockRejectedValueOnce(new TypeError('offline'))
+      await expect(restoreSession()).resolves.toBe(false)
+    })
+
+    it('does not call the server when an access token is already in memory', async () => {
+      session.setAccessToken('acc')
+      await expect(restoreSession()).resolves.toBe(true)
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('shares one refresh between concurrent restores and 401 retries', async () => {
+      let refreshCalls = 0
+      fetchMock.mockImplementation(async (input) => {
+        if (String(input).includes('/auth/refresh')) {
+          refreshCalls += 1
+          await new Promise((r) => setTimeout(r, 10))
+          return json({ access_token: 'new' })
+        }
+        return json({})
+      })
+      await Promise.all([restoreSession(), restoreSession()])
+      expect(refreshCalls).toBe(1)
+    })
+
+    it('serialises refreshes across tabs with a Web Lock when available', async () => {
+      const request = vi.fn(async (_name: string, cb: () => Promise<void>) => cb())
+      vi.stubGlobal('navigator', { locks: { request } })
+      fetchMock.mockResolvedValueOnce(json({ access_token: 'locked' }))
+      await expect(restoreSession()).resolves.toBe(true)
+      expect(request).toHaveBeenCalledTimes(1)
+      expect(request.mock.calls[0][0]).toBe('learning_platform.refresh')
+      vi.unstubAllGlobals()
+    })
+  })
+
+  describe('postLogout', () => {
+    it('posts with credentials, the CSRF header and the bearer token when present', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
+      await postLogout('acc')
+      const [url, init] = fetchMock.mock.calls[0]
+      expect(String(url)).toBe('/api/v1/auth/logout')
+      expect((init as RequestInit).credentials).toBe('include')
+      expect((init as RequestInit).body).toBeUndefined()
+      expect(headersOf(fetchMock.mock.calls[0])['X-CSRF-Protection']).toBe('1')
+      expect(headersOf(fetchMock.mock.calls[0])['Authorization']).toBe('Bearer acc')
+    })
+
+    it('omits Authorization without an access token', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
+      await postLogout(null)
+      expect(headersOf(fetchMock.mock.calls[0])['Authorization']).toBeUndefined()
+    })
+
+    it('throws on a failed response', async () => {
+      fetchMock.mockResolvedValueOnce(json({}, 500))
+      await expect(postLogout('acc')).rejects.toBeInstanceOf(ApiError)
     })
   })
 
@@ -178,10 +273,10 @@ describe('apiClient', () => {
     })
 
     it('uses the path untouched with no params and still refreshes on 401', async () => {
-      tokenStorage.setTokens('old', 'ref')
+      session.setAccessToken('old')
       fetchMock
         .mockResolvedValueOnce(json({}, 401))
-        .mockResolvedValueOnce(json({ access_token: 'new', refresh_token: 'ref2' }))
+        .mockResolvedValueOnce(json({ access_token: 'new' }))
         .mockResolvedValueOnce(json([]))
       const page = await apiClient.getPaged('/y')
       expect(page).toEqual({ items: [], total: 0 })

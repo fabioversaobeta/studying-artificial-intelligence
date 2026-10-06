@@ -7,7 +7,7 @@ import { LoginPage } from '@/pages/login-page'
 import { apiError, mockFetch } from '@/test/fetch-mock'
 
 const user = { id: 'u1', email: 'a@b.com', display_name: 'Ada', is_active: true }
-const tokens = { access_token: 'acc', refresh_token: 'ref', token_type: 'bearer' }
+const tokens = { access_token: 'acc', token_type: 'bearer' }
 
 function renderPage() {
   return render(
@@ -78,10 +78,12 @@ describe('LoginPage', () => {
   it('disables the button while submitting', async () => {
     let release!: () => void
     const gate = new Promise<void>((r) => (release = r))
-    const fetchMock = mockFetch({ 'GET /api/v1/auth/me': { body: user } })
-    fetchMock.mockImplementationOnce(async () => {
-      await gate
-      return new Response(JSON.stringify(tokens), { status: 200 })
+    mockFetch({
+      'POST /api/v1/auth/login': async () => {
+        await gate
+        return { body: tokens }
+      },
+      'GET /api/v1/auth/me': { body: user },
     })
     renderPage()
     await fillAndSubmit()
@@ -94,6 +96,6 @@ describe('LoginPage', () => {
     const fetchMock = mockFetch({})
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/auth/login'))).toHaveLength(0)
   })
 })

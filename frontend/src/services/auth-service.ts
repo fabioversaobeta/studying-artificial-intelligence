@@ -1,5 +1,5 @@
-import { apiClient, postWithBearer } from '@/services/api-client'
-import { tokenStorage } from '@/lib/token-storage'
+import { apiClient, postLogout, restoreSession } from '@/services/api-client'
+import { session } from '@/lib/session'
 import type { RegistrationInfo, TokenResponse, User } from '@/types/api'
 
 export const authService = {
@@ -18,7 +18,7 @@ export const authService = {
       { email, password, display_name: displayName, invite_code: inviteCode || undefined },
       true,
     )
-    tokenStorage.setTokens(tokens.access_token, tokens.refresh_token)
+    session.setAccessToken(tokens.access_token)
   },
 
   async login(email: string, password: string): Promise<void> {
@@ -27,22 +27,28 @@ export const authService = {
       { email, password },
       true,
     )
-    tokenStorage.setTokens(tokens.access_token, tokens.refresh_token)
+    session.setAccessToken(tokens.access_token)
   },
 
   /**
-   * Clears the local session immediately, then revokes the tokens server-side
-   * on a best-effort basis: a network or server failure never blocks logout.
+   * Restores the session on page load from the HttpOnly refresh cookie (the
+   * access token is memory-only, so a reload starts without one).
+   */
+  restoreSession,
+
+  /**
+   * Clears the local session immediately, then revokes the cookie's refresh
+   * token (and the access token) server-side on a best-effort basis: a network
+   * or server failure never blocks logout. Always calls the server, even with
+   * no access token in memory, so the refresh cookie is expired.
    */
   async logout(): Promise<void> {
-    const accessToken = tokenStorage.getAccessToken()
-    const refreshToken = tokenStorage.getRefreshToken()
-    tokenStorage.clear()
-    if (!accessToken) return
+    const accessToken = session.getAccessToken()
+    session.clear()
     try {
-      await postWithBearer('/api/v1/auth/logout', accessToken, { refresh_token: refreshToken })
+      await postLogout(accessToken)
     } catch {
-      // Tokens are already gone locally; the server-side revocation is best-effort.
+      // Local state is already gone; the server-side revocation is best-effort.
     }
   },
 
@@ -51,6 +57,6 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return tokenStorage.getAccessToken() !== null
+    return session.hasAccessToken()
   },
 }

@@ -7,7 +7,7 @@ import { RegisterPage } from '@/pages/register-page'
 import { apiError, mockFetch } from '@/test/fetch-mock'
 
 const user = { id: 'u1', email: 'a@b.com', display_name: 'Ada', is_active: true }
-const tokens = { access_token: 'acc', refresh_token: 'ref', token_type: 'bearer' }
+const tokens = { access_token: 'acc', token_type: 'bearer' }
 
 function renderPage() {
   return render(

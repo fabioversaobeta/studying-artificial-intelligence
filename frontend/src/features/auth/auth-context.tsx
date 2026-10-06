@@ -8,7 +8,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const loadUser = useCallback(async () => {
-    if (!authService.isAuthenticated()) {
+    // After a reload there is no access token in memory: try the refresh cookie.
+    if (!authService.isAuthenticated() && !(await authService.restoreSession())) {
       setUser(null)
       setIsLoading(false)
       return
