@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Response, status
 
 from app.api.deps import CurrentUser, DbSession
@@ -33,3 +35,11 @@ def list_study_sessions(
     )
     set_total_count(response, total)
     return items
+
+
+@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_study_session(
+    session_id: uuid.UUID, current_user: CurrentUser, db: DbSession
+) -> Response:
+    learning_service.delete_study_session(db, user_id=current_user.id, session_id=session_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

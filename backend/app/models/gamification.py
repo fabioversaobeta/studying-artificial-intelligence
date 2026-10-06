@@ -14,6 +14,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -93,9 +94,11 @@ class GamificationProfile(UUIDPrimaryKeyMixin, Base):
 
 class XPAward(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "xp_awards"
+    # "XP earned since X" sums and newest-first ledger reads per user.
+    __table_args__ = (Index("ix_xp_awards_user_created_at", "user_id", "created_at"),)
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     source: Mapped[XPSource] = mapped_column(_enum(XPSource, "xp_source"), nullable=False)

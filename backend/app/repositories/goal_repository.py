@@ -46,6 +46,11 @@ def create_goal(
     return goal
 
 
+def delete_goal(db: Session, goal: LearningGoal) -> None:
+    db.delete(goal)
+    db.flush()
+
+
 def update_goal_status(db: Session, goal: LearningGoal, status: GoalStatus) -> LearningGoal:
     goal.status = status
     db.flush()

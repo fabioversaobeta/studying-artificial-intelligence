@@ -37,6 +37,15 @@ def create_study_session(
     return session
 
 
+def get_study_session(db: Session, session_id: uuid.UUID) -> StudySession | None:
+    return db.get(StudySession, session_id)
+
+
+def delete_study_session(db: Session, session: StudySession) -> None:
+    db.delete(session)
+    db.flush()
+
+
 def list_study_sessions(
     db: Session, user_id: uuid.UUID, *, limit: int = 50, offset: int = 0
 ) -> list[StudySession]:

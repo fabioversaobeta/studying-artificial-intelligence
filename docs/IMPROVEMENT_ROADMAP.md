@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 14 |
-| P2 — Médio prazo | 21 | 7 |
+| P2 — Médio prazo | 21 | 9 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -106,7 +106,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | D5 | **Paginação** (`limit`/`offset` ou cursor, com teto máximo) nas listagens: study sessions, XP awards, goals, reviews, submissions. Schema de resposta consistente. | P1 | M | DONE | S9 (`fix/s9-pagination`) | — | `backend/app/api/v1/*.py`, `backend/app/repositories/*.py`, `backend/app/schemas/*.py`, `docs/API.md` | 9f1e08f | Contrato do corpo inalterado (array); total no header `X-Total-Count`. Frontend (G1–G3) pode adotar `limit`/`offset`. |
 | D3 | Corrigir a recursão `award_xp` ↔ `check_and_award_achievements`: atualizar `earned_codes` dentro do loop / tornar a avaliação iterativa e idempotente. Teste com duas conquistas desbloqueadas na mesma passada. | P1 | M | DONE | S8 (`fix/s8-gamification`) | — | `backend/app/services/gamification_service.py`, `backend/tests/` | ba1b72e | **Bug real confirmado pela S5** (teste `xfail(strict=True)` em `tests/test_gamification_service.py::TestAchievements::test_two_achievements_unlock_in_the_same_pass`): o loop usa um snapshot de `earned_codes`; quando a conquista A paga XP, o `award_xp` reentra e concede B; o loop externo chega em B com snapshot velho e viola `uq_user_achievement` (500). Correção: reler `earned_codes` dentro do loop (ou pagar XP após o loop e reavaliar) e adicionar `order_by` em `list_achievements`. Ao corrigir, **remover o marcador xfail**. |
 | D4 | **Tirar efeito colateral do `GET`** das quests: concluir quests em evento (quando o XP é concedido) e deixar `GET /quests` somente leitura. Atualizar `DECISIONS.md` (a decisão atual diz o contrário). | P1 | M | DONE | S8 (`fix/s8-gamification`) | D3 (mesmo serviço) | `backend/app/services/quest_service.py`, `backend/app/services/gamification_service.py`, `backend/app/api/v1/gamification.py`, `docs/DECISIONS.md` | 86e0912 | |
-| D6 | Adicionar `DELETE` para goals e study sessions (e ao `apiClient.delete` no frontend). Decidir se deletar sessão estorna XP/mastery (provavelmente **não** — soft delete ou bloquear). | P2 | M | IN_PROGRESS | S16 (`fix/s16-indexes-delete`) | — | `backend/app/api/v1/goals.py`, `backend/app/api/v1/study_sessions.py`, `backend/app/services/learning_service.py`, `frontend/src/services/api-client.ts` | | Registrar a decisão sobre XP em `DECISIONS.md`. **Decisão do dono (2026-10-06): NÃO há estorno de XP.** Deletar não altera `xp_awards`, `total_xp`, level, streak nem conquistas/quests já obtidas; o mastery (que mede conhecimento, não atividade) é recalculado. |
+| D6 | Adicionar `DELETE` para goals e study sessions (e ao `apiClient.delete` no frontend). Decidir se deletar sessão estorna XP/mastery (provavelmente **não** — soft delete ou bloquear). | P2 | M | DONE | S16 (`fix/s16-indexes-delete`) | — | `backend/app/api/v1/goals.py`, `backend/app/api/v1/study_sessions.py`, `backend/app/services/learning_service.py`, `frontend/src/services/api-client.ts` | d634623 | Registrar a decisão sobre XP em `DECISIONS.md`. **Decisão do dono (2026-10-06): NÃO há estorno de XP.** Deletar não altera `xp_awards`, `total_xp`, level, streak nem conquistas/quests já obtidas; o mastery (que mede conhecimento, não atividade) é recalculado. | Implementado: hard delete, 204/404; `apiClient.delete` no frontend fica para o coordenador (S17 mexe no api-client).
 | D7 | Separar migração/seed do boot do servidor (`railway.toml` roda `alembic upgrade head` + seeds a cada start). Usar um release/pre-deploy command ou um passo único para evitar corrida com múltiplas réplicas. | P2 | S | TODO | | H1 | `backend/railway.toml`, `docs/DEPLOYMENT.md` | | Só vale mexer depois do deploy real. |
 
 ## Trilha E — Performance
@@ -114,7 +114,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | E1 | **Eliminar N+1** em `learning_service`: `_competency_with_state` (3–4 queries por competência + loop de pré-requisitos) e `list_subjects` (1 query por subject). Carregar mastery, minutos e pré-requisitos em lote (`IN`), por subject/usuário. Manter o contrato da API; adicionar teste que conta queries. | P1 | M | DONE | S6 (`fix/s6-n-plus-one`) | — | `backend/app/services/learning_service.py`, `backend/app/repositories/{learning_catalog,mastery,study}_repository.py`, `backend/tests/` | de8d0b9 | Hoje funciona (30 competências), mas não escala. Verificar também `dashboard_service`. |
-| E2 | Índices: revisar queries mais frequentes (por `user_id` + data/competência) e adicionar índices ausentes via migration. | P2 | S | IN_PROGRESS | S16 (`fix/s16-indexes-delete`) | E1 | nova migration, `backend/app/models/*.py` | | Medir com `EXPLAIN` antes. |
+| E2 | Índices: revisar queries mais frequentes (por `user_id` + data/competência) e adicionar índices ausentes via migration. | P2 | S | DONE | S16 (`fix/s16-indexes-delete`) | E1 | nova migration, `backend/app/models/*.py` | b148285 | Medir com `EXPLAIN` antes. | Evidência e índices em DECISIONS.md (migration b7e1c4a9d3f5).
 
 ## Trilha F — Testes
 
@@ -206,6 +206,8 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — D6 — DELETE /goals/{id} e /study-sessions/{id} (204/404, hard delete, sem estorno de XP, mastery recalculado) — d634623
+- 2026-10-06 — E2 — índices compostos (study_sessions, xp_awards, challenge_submissions) com evidência EXPLAIN; migration b7e1c4a9d3f5 — b148285
 - 2026-10-06 — C3 — rotação de refresh token com detecção de reuso, denylist `revoked_tokens` (Postgres), `POST /auth/logout`, access token de 60 min, frontend chama logout — ad66c67, 9ef89f7, 0b218e0
 - 2026-10-06 — J3 — `apiClient.getPaged()` (lê `X-Total-Count`), hook `usePagedList` e "Carregar mais" em goals e reviews; `listStudySessions` paginado no service (sem listagem na UI) — `0714c3f`
 - 2026-10-06 — G5 — a11y: skip link, landmarks, foco visível, contraste (botão primário, bordas de inputs), aria-expanded/progressbar; pendências em PENDING.md — `122b081`

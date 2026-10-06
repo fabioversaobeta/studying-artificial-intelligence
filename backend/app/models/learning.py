@@ -16,10 +16,12 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy import (
     Enum as SAEnum,
@@ -225,10 +227,16 @@ class LearningResource(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 class StudySession(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "study_sessions"
-    __table_args__ = (CheckConstraint("duration_minutes > 0", name="ck_duration_positive"),)
+    __table_args__ = (
+        CheckConstraint("duration_minutes > 0", name="ck_duration_positive"),
+        # Recent-first listing and "sessions since" counts / (user, competency) minutes
+        # sums; the leading user_id column also serves plain per-user lookups.
+        Index("ix_study_sessions_user_occurred_at", "user_id", text("occurred_at DESC")),
+        Index("ix_study_sessions_user_competency", "user_id", "competency_id"),
+    )
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     competency_id: Mapped[uuid.UUID | None] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("competencies.id", ondelete="SET NULL"), nullable=True
@@ -269,9 +277,13 @@ class Challenge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 class ChallengeSubmission(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "challenge_submissions"
+    __table_args__ = (
+        Index("ix_challenge_submissions_user_challenge", "user_id", "challenge_id"),
+        Index("ix_challenge_submissions_user_submitted_at", "user_id", "submitted_at"),
+    )
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     challenge_id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True),

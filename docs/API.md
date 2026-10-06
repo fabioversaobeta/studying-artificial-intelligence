@@ -53,8 +53,10 @@ dependency when they are introduced.
 | `GET /learning-paths/{slug}` | — | Learning path detail |
 | `POST /study-sessions` | ✓ | Log a study session (awards XP, recomputes mastery, schedules review) |
 | `GET /study-sessions` | ✓ | Recent study sessions |
+| `DELETE /study-sessions/{id}` | ✓ | Delete one of your sessions (204; 404 if missing or not yours). XP is **not** refunded; mastery of the session's competency is recomputed |
 | `POST /goals` | ✓ | Create a learning goal |
 | `GET /goals` | ✓ | List the current user's goals |
+| `DELETE /goals/{id}` | ✓ | Delete one of your goals (204; 404 if missing or not yours) |
 | `PATCH /goals/{id}/status` | ✓ | Update goal status (active/achieved/archived) |
 | `GET /competencies/{id}/challenges` | ✓ | Challenges for a competency |
 | `POST /challenges/{id}/submissions` | ✓ | Submit a self-assessed pass/fail (awards XP once, on first pass) |
