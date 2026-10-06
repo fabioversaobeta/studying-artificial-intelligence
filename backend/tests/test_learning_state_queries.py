@@ -167,7 +167,6 @@ def _add_subject(db: Session, index: int) -> Subject:
     return subject
 
 
-@pytest.mark.xfail(reason="N+1 not fixed yet", strict=True)
 @pytest.mark.parametrize("path", ["detail", "list"])
 def test_query_count_does_not_grow_with_competencies(
     client: TestClient, auth_headers: dict[str, str], db: Session, path: str
@@ -179,6 +178,9 @@ def test_query_count_does_not_grow_with_competencies(
     db.commit()
     url = f"/api/v1/subjects/{first.id}" if path == "detail" else "/api/v1/subjects"
 
+    # Warm-up request: commits in the test expire identity-map objects (user,
+    # subject), which would add one-off refresh queries to the measured request.
+    client.get(url, headers=auth_headers)
     with _QueryCounter(db) as small:
         assert client.get(url, headers=auth_headers).status_code == 200
 
@@ -188,6 +190,7 @@ def test_query_count_does_not_grow_with_competencies(
         _add_chain(db, user_id, _add_subject(db, s), 0, 10, 85.0)
     db.commit()
 
+    client.get(url, headers=auth_headers)
     with _QueryCounter(db) as large:
         assert client.get(url, headers=auth_headers).status_code == 200
 
