@@ -4,10 +4,10 @@ from fastapi.testclient import TestClient
 
 from app.core.config import Settings
 from app.core.rate_limit import RateLimiter, client_ip
+from tests.auth_cookies import refresh
 
 REGISTER = "/api/v1/auth/register"
 LOGIN = "/api/v1/auth/login"
-REFRESH = "/api/v1/auth/refresh"
 
 
 def payload(email: str = "p@example.com", **extra):
@@ -53,8 +53,8 @@ class TestRateLimit:
     def test_register_and_refresh_are_limited(self, client: TestClient, test_settings: Settings):
         enable_rate_limit(test_settings, max_requests=2)
         for _ in range(2):
-            assert client.post(REFRESH, json={"refresh_token": "bad"}).status_code == 401
-        assert client.post(REFRESH, json={"refresh_token": "bad"}).status_code == 429
+            assert refresh(client, "bad").status_code == 401
+        assert refresh(client, "bad").status_code == 429
         # Buckets are per endpoint: register is unaffected by the refresh hits.
         assert client.post(REGISTER, json=payload("r1@example.com")).status_code == 201
         assert client.post(REGISTER, json=payload("r2@example.com")).status_code == 201
@@ -108,6 +108,20 @@ class TestLimiterUnit:
         trusted = Settings(_env_file=None, trust_proxy_headers=True)
         assert client_ip(Req(), untrusted) == "127.0.0.1"  # type: ignore[arg-type]
         assert client_ip(Req(), trusted) == "9.9.9.9"  # type: ignore[arg-type]
+
+    def test_client_ip_skips_trusted_proxy_hops(self):
+        """Vercel rewrite in front of Railway: the real client is 2nd from the end."""
+
+        class Req:
+            headers = {"x-forwarded-for": "1.2.3.4, 6.6.6.6, 9.9.9.9"}
+
+            class client:  # noqa: N801
+                host = "127.0.0.1"
+
+        two = Settings(_env_file=None, trust_proxy_headers=True, trusted_proxy_hops=2)
+        assert client_ip(Req(), two) == "6.6.6.6"  # type: ignore[arg-type]
+        too_many = Settings(_env_file=None, trust_proxy_headers=True, trusted_proxy_hops=4)
+        assert client_ip(Req(), too_many) == "127.0.0.1"  # type: ignore[arg-type]
 
 
 class TestRegistrationPolicy:

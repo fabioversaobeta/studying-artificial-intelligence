@@ -66,8 +66,16 @@ class Settings(BaseSettings):
         default_factory=lambda: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     )
     cors_allow_headers: list[str] = Field(
-        default_factory=lambda: ["Authorization", "Content-Type", "Accept"]
+        default_factory=lambda: ["Authorization", "Content-Type", "Accept", "X-CSRF-Protection"]
     )
+
+    # Refresh-token cookie (see docs/DECISIONS.md, "Refresh token in an HttpOnly
+    # cookie"). The cookie is scoped to /api/v1/auth, so the `__Host-` prefix
+    # (which requires Path=/) is not usable; `__Secure-` is used whenever the
+    # cookie is Secure.
+    cookie_secure: bool = False  # forced to True when ENVIRONMENT=production
+    cookie_samesite: Literal["lax", "strict", "none"] = "strict"
+    cookie_domain: str | None = None  # leave unset: host-only cookie is the tightest
 
     @field_validator("cors_allow_origins", mode="before")
     @classmethod
@@ -87,6 +95,9 @@ class Settings(BaseSettings):
     # Only enable behind a trusted reverse proxy (e.g. Railway) that sets
     # X-Forwarded-For; otherwise clients could spoof their IP.
     trust_proxy_headers: bool = False
+    # Proxies between the client and the app that each append to X-Forwarded-For
+    # (1 = Railway only; 2 = Vercel rewrite in front of Railway).
+    trusted_proxy_hops: int = Field(default=1, ge=1)
 
     # Registration policy.
     registration_enabled: bool = True
@@ -98,6 +109,14 @@ class Settings(BaseSettings):
     log_format: Literal["text", "json"] = "text"
     # Optional; requires the `observability` extra (sentry-sdk).
     sentry_dsn: str | None = None
+
+    @model_validator(mode="after")
+    def _harden_cookie_config(self) -> "Settings":
+        if self.is_production:
+            self.cookie_secure = True
+        if self.cookie_samesite == "none" and not self.cookie_secure:
+            raise ValueError("COOKIE_SAMESITE=none requires COOKIE_SECURE=true")
+        return self
 
     @model_validator(mode="after")
     def _forbid_insecure_production_config(self) -> "Settings":
@@ -116,6 +135,10 @@ class Settings(BaseSettings):
         if problems:
             raise ValueError("Insecure production configuration: " + "; ".join(problems))
         return self
+
+    @property
+    def refresh_cookie_name(self) -> str:
+        return "__Secure-refresh_token" if self.cookie_secure else "refresh_token"
 
     @property
     def is_production(self) -> bool:

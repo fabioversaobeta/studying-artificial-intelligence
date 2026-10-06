@@ -49,6 +49,21 @@ def get_access_claims(
 AccessClaims = Annotated[TokenClaims, Depends(get_access_claims)]
 
 
+def get_optional_access_claims(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
+) -> TokenClaims | None:
+    """Claims of a valid access token, or None (used by logout, which never fails)."""
+    if credentials is None:
+        return None
+    try:
+        return decode_token_claims(credentials.credentials, TokenType.ACCESS)
+    except InvalidTokenError:
+        return None
+
+
+OptionalAccessClaims = Annotated[TokenClaims | None, Depends(get_optional_access_claims)]
+
+
 def get_current_user(db: DbSession, claims: AccessClaims) -> User:
     user = user_repository.get_by_id(db, claims.user_id)
     if user is None or not user.is_active:

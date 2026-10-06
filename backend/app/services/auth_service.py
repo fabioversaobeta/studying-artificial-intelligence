@@ -1,4 +1,5 @@
 import secrets
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy.exc import IntegrityError
@@ -18,7 +19,6 @@ from app.core.security import (
 )
 from app.models.user import User
 from app.repositories import gamification_repository, revoked_token_repository, user_repository
-from app.schemas.user import TokenResponse
 
 
 def ensure_registration_allowed(settings: Settings, invite_code: str | None) -> None:
@@ -62,8 +62,16 @@ def authenticate_user(db: Session, *, email: str, password: str) -> User:
     return user
 
 
-def issue_tokens(user: User) -> TokenResponse:
-    return TokenResponse(
+@dataclass(frozen=True)
+class IssuedTokens:
+    """A freshly minted pair. The API layer puts the refresh token in a cookie."""
+
+    access_token: str
+    refresh_token: str
+
+
+def issue_tokens(user: User) -> IssuedTokens:
+    return IssuedTokens(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
     )
@@ -78,7 +86,7 @@ def ensure_not_revoked(db: Session, claims: TokenClaims, user: User) -> None:
         raise AuthenticationError("Token has been revoked")
 
 
-def refresh_access_token(db: Session, *, refresh_token: str) -> TokenResponse:
+def refresh_access_token(db: Session, *, refresh_token: str) -> IssuedTokens:
     """Rotate a refresh token: burn the presented one and issue a new pair.
 
     Presenting an already-used refresh token is treated as theft: every
@@ -116,30 +124,36 @@ def refresh_access_token(db: Session, *, refresh_token: str) -> TokenResponse:
     return tokens
 
 
-def logout(
-    db: Session, *, user: User, access_claims: TokenClaims, refresh_token: str | None
-) -> None:
-    """Revoke the current access token and (if valid and the user's) the refresh token."""
-    revoked_token_repository.revoke(
-        db,
-        jti=access_claims.jti,
-        user_id=user.id,
-        token_type=TokenType.ACCESS.value,
-        expires_at=access_claims.expires_at,
-    )
+def logout(db: Session, *, access_claims: TokenClaims | None, refresh_token: str | None) -> None:
+    """Revoke the access token and the refresh token (each only if valid).
+
+    Both are optional so logout always succeeds: a client whose access token
+    expired can still burn its refresh cookie, and one that lost the cookie can
+    still revoke the access token. A refresh token that belongs to a different
+    user than the access token is ignored.
+    """
+    refresh_claims: TokenClaims | None = None
     if refresh_token:
         try:
             refresh_claims = decode_token_claims(refresh_token, TokenType.REFRESH)
         except InvalidTokenError:
             refresh_claims = None
-        if refresh_claims is not None and refresh_claims.user_id == user.id:
-            revoked_token_repository.revoke(
-                db,
-                jti=refresh_claims.jti,
-                user_id=user.id,
-                token_type=TokenType.REFRESH.value,
-                expires_at=refresh_claims.expires_at,
-            )
+    if access_claims and refresh_claims and access_claims.user_id != refresh_claims.user_id:
+        refresh_claims = None
+
+    for claims, token_type in (
+        (access_claims, TokenType.ACCESS),
+        (refresh_claims, TokenType.REFRESH),
+    ):
+        if claims is None or user_repository.get_by_id(db, claims.user_id) is None:
+            continue
+        revoked_token_repository.revoke(
+            db,
+            jti=claims.jti,
+            user_id=claims.user_id,
+            token_type=token_type.value,
+            expires_at=claims.expires_at,
+        )
     db.commit()
 
 
