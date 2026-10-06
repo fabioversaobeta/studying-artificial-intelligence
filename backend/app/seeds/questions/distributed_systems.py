@@ -1308,7 +1308,413 @@ _SHARD: tuple[QuestionSeed, ...] = (
 )
 
 
-_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP, *_REPL, *_SHARD)
+_MAJORITY_CODE = """```python
+def majority(n):
+    return n // 2 + 1
+
+
+# (cluster size, majority, failures tolerated)
+print([(n, majority(n), n - majority(n)) for n in (3, 4, 5, 6)])
+```"""
+
+
+_CONSENSUS: tuple[QuestionSeed, ...] = (
+    _q(
+        "consensus-algorithms-q01",
+        "consensus-algorithms",
+        MC,
+        EASY,
+        ("b",),
+        ("consensus", "replicated-log", "paxos", "raft"),
+        _text(
+            "What problem do consensus algorithms such as Paxos and Raft solve?",
+            "Consensus lets a group of nodes agree on a single value, and in practice on a "
+            "single ordered sequence of values (a replicated log), even when some nodes crash "
+            "or messages are lost, as long as a majority can communicate. That is what makes "
+            "replicated state machines possible. A is conflict merging after the fact, C is "
+            "impossible, and D is partitioning.",
+            "Letting any node accept writes and merging conflicting values afterwards using "
+            "timestamps.",
+            "Getting nodes to agree on one ordered sequence of values despite crashes and "
+            "message loss, while a majority stays up.",
+            "Guaranteeing that no node in the cluster ever crashes.",
+            "Distributing keys evenly across the nodes of a cluster.",
+        ),
+        _text(
+            "Que problema algoritmos de consenso como Paxos e Raft resolvem?",
+            "O consenso permite que um grupo de nós concorde com um único valor e, na prática, "
+            "com uma única sequência ordenada de valores (um log replicado), mesmo que alguns "
+            "nós falhem ou mensagens se percam, desde que uma maioria consiga se comunicar. É o "
+            "que torna possíveis as máquinas de estado replicadas. A é mesclagem de conflitos "
+            "depois do fato, C é impossível e D é particionamento.",
+            "Permitir que qualquer nó aceite escritas e mesclar depois os valores conflitantes "
+            "usando timestamps.",
+            "Fazer os nós concordarem sobre uma sequência ordenada de valores apesar de falhas "
+            "e perda de mensagens, enquanto uma maioria continua ativa.",
+            "Garantir que nenhum nó do cluster jamais falhe.",
+            "Distribuir as chaves uniformemente entre os nós de um cluster.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q02",
+        "consensus-algorithms",
+        MC,
+        EASY,
+        ("a",),
+        ("raft", "leader-election", "terms"),
+        _text(
+            "In Raft, a follower does not hear from a leader before its election timeout "
+            "expires. What does it do?",
+            "It assumes the leader is gone, increments its term, becomes a candidate, votes for "
+            "itself and requests votes from the other nodes; it becomes leader only if a "
+            "majority grants them. It does not declare itself leader outright (B), and it "
+            "neither shuts down (C) nor waits indefinitely for the old leader (D).",
+            "It increments its term, becomes a candidate and requests votes from the other nodes.",
+            "It declares itself the leader of the current term immediately.",
+            "It shuts down until an operator restarts it.",
+            "It keeps waiting for the old leader, since only the leader may start an election.",
+        ),
+        _text(
+            "No Raft, um seguidor não ouve o líder antes de seu election timeout expirar. "
+            "O que ele faz?",
+            "Ele presume que o líder sumiu, incrementa seu term, vira candidato, vota em si "
+            "mesmo e pede votos aos outros nós; só vira líder se uma maioria os conceder. Não se "
+            "declara líder diretamente (B), não se desliga (C) nem espera indefinidamente pelo "
+            "líder antigo (D).",
+            "Incrementa seu term, vira candidato e pede votos aos outros nós.",
+            "Declara-se imediatamente líder do term atual.",
+            "Desliga-se até que um operador o reinicie.",
+            "Continua esperando o líder antigo, pois só o líder pode iniciar uma eleição.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q03",
+        "consensus-algorithms",
+        MC,
+        EASY,
+        ("c",),
+        ("consensus", "quorum", "majority"),
+        _text(
+            "Why do consensus protocols require a **majority** (rather than just any "
+            "particular set of nodes) to commit a decision?",
+            "Any two majorities of the same cluster share at least one node. So a decision "
+            "stored by one majority is known to at least one member of every later majority, "
+            "which is what stops a later leader or decision from ignoring it. Majorities are not "
+            "required for speed (A), do not pick the fastest node (B), and the argument does "
+            "not depend on odd cluster sizes (D).",
+            "A majority is the smallest group that can answer quickly enough.",
+            "The majority always includes the fastest node, which then becomes leader.",
+            "Any two majorities overlap in at least one node, so a committed decision cannot be "
+            "missed by a later majority.",
+            "Clusters must have an odd number of nodes for any vote to work.",
+        ),
+        _text(
+            "Por que protocolos de consenso exigem uma **maioria** (e não um conjunto "
+            "qualquer de nós) para confirmar uma decisão?",
+            "Quaisquer duas maiorias do mesmo cluster compartilham ao menos um nó. Assim, uma "
+            "decisão guardada por uma maioria é conhecida por ao menos um membro de toda "
+            "maioria posterior, o que impede que um líder ou decisão posterior a ignore. A "
+            "maioria não é exigida por velocidade (A), não escolhe o nó mais rápido (B) e o "
+            "argumento não depende de o cluster ter tamanho ímpar (D).",
+            "A maioria é o menor grupo capaz de responder rápido o bastante.",
+            "A maioria sempre inclui o nó mais rápido, que então vira líder.",
+            "Quaisquer duas maiorias se sobrepõem em ao menos um nó, então uma decisão "
+            "confirmada não pode ser ignorada por uma maioria posterior.",
+            "Os clusters precisam ter um número ímpar de nós para qualquer votação funcionar.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q04",
+        "consensus-algorithms",
+        MC,
+        MEDIUM,
+        ("b",),
+        ("raft", "availability", "quorum"),
+        _text(
+            "In a 5-node Raft cluster, 3 nodes crash and stay down. What is the state of the "
+            "cluster?",
+            "Electing a leader and committing entries both need a majority, which is 3 of 5 "
+            "nodes. With only 2 alive, the cluster cannot make progress, but entries "
+            "committed earlier are on a majority and so survive on the disk of nodes that "
+            "come back. The 2 survivors are not a majority of the cluster (A), letting them "
+            "write anyway (C) would risk diverging history, and nothing committed is lost (D).",
+            "It continues normally, since the 2 survivors are a majority of the nodes still "
+            "running.",
+            "It cannot elect a leader or commit new entries until enough nodes return, but "
+            "committed data is not lost.",
+            "The 2 survivors elect a leader and accept writes, to be reconciled once the other "
+            "nodes return.",
+            "All data committed so far is lost, because most nodes are gone.",
+        ),
+        _text(
+            "Em um cluster Raft de 5 nós, 3 nós caem e continuam fora. Qual é o estado do cluster?",
+            "Eleger um líder e confirmar entradas exigem uma maioria, que é 3 de 5 nós. Com "
+            "apenas 2 ativos, o cluster não consegue progredir, mas as entradas confirmadas "
+            "antes estão em uma maioria e, portanto, sobrevivem no disco dos nós que "
+            "voltarem. Os 2 sobreviventes não são uma maioria do cluster (A), deixá-los "
+            "escrever mesmo assim (C) arriscaria divergir o histórico, e nada que foi "
+            "confirmado se perde (D).",
+            "Continua normalmente, pois os 2 sobreviventes são uma maioria dos nós que ainda "
+            "estão rodando.",
+            "Não consegue eleger líder nem confirmar novas entradas até que nós suficientes "
+            "voltem, mas os dados confirmados não se perdem.",
+            "Os 2 sobreviventes elegem um líder e aceitam escritas, a serem reconciliadas "
+            "quando os outros nós voltarem.",
+            "Todos os dados confirmados até agora se perdem, pois a maioria dos nós sumiu.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q05",
+        "consensus-algorithms",
+        CODE,
+        MEDIUM,
+        ("c",),
+        ("quorum", "cluster-size", "fault-tolerance"),
+        _text(
+            "What does this code print, and what does it suggest about choosing the size of a "
+            "consensus cluster?\n\n" + _MAJORITY_CODE,
+            "It prints `[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`. A 4-node cluster needs "
+            "3 nodes for a majority, so it still tolerates only 1 failure, the same as 3 nodes; "
+            "likewise 6 tolerates 2, the same as 5. Even sizes add cost without adding fault "
+            "tolerance, so odd sizes are preferred. Option A shows the wrong output, B claims "
+            "every extra node helps, and D confuses a majority with half of the nodes.",
+            "`[(3, 2, 1), (4, 2, 2), (5, 3, 2), (6, 3, 3)]`: even-sized clusters tolerate more "
+            "failures.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: every extra node always increases "
+            "the number of failures tolerated.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: a 4-node cluster tolerates no more "
+            "failures than a 3-node one, so odd sizes are preferred.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: a majority is just half of the nodes.",
+        ),
+        _text(
+            "O que este código imprime, e o que sugere sobre escolher o tamanho de um cluster "
+            "de consenso?\n\n" + _MAJORITY_CODE,
+            "Imprime `[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`. Um cluster de 4 nós precisa "
+            "de 3 nós para a maioria, então ainda tolera só 1 falha, o mesmo que 3 nós; do mesmo "
+            "modo, 6 tolera 2, o mesmo que 5. Tamanhos pares acrescentam custo sem acrescentar "
+            "tolerância a falhas, por isso se preferem tamanhos ímpares. A opção A mostra a "
+            "saída errada, B afirma que mais nós sempre ajudam, e D confunde maioria com "
+            "metade.",
+            "`[(3, 2, 1), (4, 2, 2), (5, 3, 2), (6, 3, 3)]`: clusters de tamanho par toleram "
+            "mais falhas.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: todo nó extra sempre aumenta o "
+            "número de falhas toleradas.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: um cluster de 4 nós não tolera mais "
+            "falhas que um de 3, por isso se preferem tamanhos ímpares.",
+            "`[(3, 2, 1), (4, 3, 1), (5, 3, 2), (6, 4, 2)]`: uma maioria é apenas metade dos nós.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q06",
+        "consensus-algorithms",
+        MC,
+        MEDIUM,
+        ("b",),
+        ("raft", "election-timeout", "split-votes"),
+        _text(
+            "Why does Raft randomize each node's election timeout?",
+            "If all followers used the same timeout they would all become candidates at the "
+            "same moment and split the votes, again and again. Randomization makes it likely "
+            "that one node times out first and wins before the others even start. It does not "
+            "guarantee that the most up-to-date node goes first (A); log freshness is enforced "
+            "by the voting rule instead. Security (C) and read distribution (D) are not goals "
+            "of this mechanism.",
+            "To guarantee that the node with the most complete log always times out first.",
+            "So one node usually times out first and wins the election, avoiding repeated "
+            "split votes.",
+            "To make the leader's heartbeats unpredictable to attackers.",
+            "To spread read traffic evenly across the followers.",
+        ),
+        _text(
+            "Por que o Raft randomiza o election timeout de cada nó?",
+            "Se todos os seguidores usassem o mesmo timeout, todos virariam candidatos no mesmo "
+            "instante e dividiriam os votos, repetidamente. A randomização faz com que um nó "
+            "provavelmente expire primeiro e vença antes de os demais sequer começarem. Ela "
+            "não garante que o nó mais atualizado saia primeiro (A); o frescor do log é "
+            "garantido pela regra de votação. Segurança contra atacantes (C) e distribuição de "
+            "leituras (D) não são objetivos desse mecanismo.",
+            "Para garantir que o nó com o log mais completo sempre expire primeiro.",
+            "Para que um nó em geral expire primeiro e vença a eleição, evitando votos "
+            "divididos repetidos.",
+            "Para tornar os heartbeats do líder imprevisíveis para atacantes.",
+            "Para distribuir uniformemente o tráfego de leitura entre os seguidores.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q07",
+        "consensus-algorithms",
+        MC,
+        MEDIUM,
+        ("d",),
+        ("raft", "partitions", "leader-election"),
+        _text(
+            "A 5-node Raft cluster is partitioned into a group of 3 and a group of 2, and the "
+            "old leader is in the group of 2. What happens?",
+            "The group of 3 has a majority, so it elects a new leader in a higher term and keeps "
+            "committing. The old leader cannot get a majority to acknowledge anything, so "
+            "nothing it accepts is committed; once the partition heals, it sees the higher "
+            "term, steps down and discards its uncommitted entries. A is impossible because the "
+            "group of 2 cannot commit, B would let uncommitted data become visible as committed, "
+            "and C is too pessimistic because the majority side stays available.",
+            "Both groups keep committing writes and reconcile them when the partition heals.",
+            "The old leader keeps committing writes in its group of 2 and the other group "
+            "copies them later.",
+            "The whole cluster halts until the partition heals.",
+            "The group of 3 elects a new leader and continues; the old leader cannot commit "
+            "anything and steps down after the partition heals.",
+        ),
+        _text(
+            "Um cluster Raft de 5 nós é particionado em um grupo de 3 e um grupo de 2, e o "
+            "líder antigo está no grupo de 2. O que acontece?",
+            "O grupo de 3 tem maioria, então elege um novo líder em um term maior e continua "
+            "confirmando. O líder antigo não consegue que uma maioria reconheça nada, então "
+            "nada que ele aceita é confirmado; quando a partição se resolve, ele vê o term "
+            "maior, renuncia e descarta suas entradas não confirmadas. A é impossível porque o "
+            "grupo de 2 não consegue confirmar, B tornaria dados não confirmados visíveis "
+            "como confirmados, e C é pessimista demais, pois o lado majoritário continua "
+            "disponível.",
+            "Os dois grupos continuam confirmando escritas e as reconciliam quando a partição "
+            "se resolve.",
+            "O líder antigo continua confirmando escritas em seu grupo de 2 e o outro grupo as "
+            "copia depois.",
+            "O cluster inteiro para até a partição se resolver.",
+            "O grupo de 3 elege um novo líder e continua; o líder antigo não consegue "
+            "confirmar nada e renuncia depois que a partição se resolve.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q08",
+        "consensus-algorithms",
+        MS,
+        MEDIUM,
+        ("a", "c", "d"),
+        ("raft", "commit", "voting"),
+        _text(
+            "Which statements about Raft are **correct**? Select all that apply.",
+            "A, C and D are correct. An entry is committed once a majority has durably stored "
+            "it, a node votes for at most one candidate per term, and it only votes for "
+            "candidates whose log is at least as up to date as its own. B is wrong: waiting "
+            "for every follower would let one slow node block progress. E is wrong: the "
+            "voting rule means a new leader already has every committed entry, so it never "
+            "overwrites committed data.",
+            "A leader treats an entry as committed once a majority of nodes, including "
+            "itself, have durably stored it.",
+            "A leader must wait until every follower has stored an entry before committing it.",
+            "A node grants at most one vote in any given term.",
+            "A node only votes for a candidate whose log is at least as up to date as its own.",
+            "A newly elected leader may overwrite committed entries if its term is higher.",
+        ),
+        _text(
+            "Quais afirmações sobre o Raft estão **corretas**? Selecione todas que se aplicam.",
+            "A, C e D estão corretas. Uma entrada é confirmada quando uma maioria a guardou de "
+            "forma durável, um nó vota em no máximo um candidato por term e só vota em "
+            "candidatos cujo log esteja pelo menos tão atualizado quanto o seu. B está errada: "
+            "esperar todos os seguidores deixaria um nó lento bloquear o progresso. E está "
+            "errada: pela regra de votação, um novo líder já tem todas as entradas "
+            "confirmadas, então nunca sobrescreve dados confirmados.",
+            "Um líder considera uma entrada confirmada quando uma maioria dos nós, incluindo "
+            "ele mesmo, a guardou de forma durável.",
+            "Um líder precisa esperar todos os seguidores guardarem uma entrada antes de "
+            "confirmá-la.",
+            "Um nó concede no máximo um voto em um dado term.",
+            "Um nó só vota em um candidato cujo log esteja pelo menos tão atualizado quanto o seu.",
+            "Um líder recém-eleito pode sobrescrever entradas confirmadas se seu term for maior.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q09",
+        "consensus-algorithms",
+        MC,
+        HARD,
+        ("c",),
+        ("raft", "safety", "election-restriction"),
+        _text(
+            "In Raft, a node refuses to vote for a candidate whose log is less up to date than "
+            "its own. What does this rule guarantee, and why?",
+            "A committed entry is stored on a majority, and a candidate needs votes from a "
+            "majority, so at least one voter holds every committed entry and would refuse a "
+            "candidate that lacks it. Hence every elected leader already has all committed "
+            "entries. It does not choose the fastest node (A), cannot prevent split votes (B; "
+            "randomized timeouts address those), and uncommitted entries can still be lost (D).",
+            "It guarantees the leader is the node with the lowest network latency.",
+            "It guarantees that split votes can never happen.",
+            "It guarantees that every elected leader already holds all committed entries, "
+            "because the voting majority overlaps the majority that stored each one.",
+            "It guarantees that no entry, even an uncommitted one, is ever lost.",
+        ),
+        _text(
+            "No Raft, um nó se recusa a votar em um candidato cujo log esteja menos atualizado "
+            "que o seu. O que essa regra garante, e por quê?",
+            "Uma entrada confirmada está guardada em uma maioria, e um candidato precisa de "
+            "votos de uma maioria; logo, ao menos um votante tem todas as entradas confirmadas "
+            "e recusaria um candidato que não as tenha. Assim, todo líder eleito já possui "
+            "todas as entradas confirmadas. A regra não escolhe o nó mais rápido (A), não "
+            "impede votos divididos (B; os timeouts randomizados cuidam disso) e entradas "
+            "não confirmadas ainda podem ser perdidas (D).",
+            "Garante que o líder é o nó com a menor latência de rede.",
+            "Garante que votos divididos nunca aconteçam.",
+            "Garante que todo líder eleito já possua todas as entradas confirmadas, pois a "
+            "maioria votante se sobrepõe à maioria que guardou cada uma delas.",
+            "Garante que nenhuma entrada, mesmo não confirmada, jamais seja perdida.",
+        ),
+    ),
+    _q(
+        "consensus-algorithms-q10",
+        "consensus-algorithms",
+        SHORT,
+        HARD,
+        None,
+        ("consensus", "distributed-lock", "leader-election", "fencing", "interview"),
+        _text(
+            "Your team needs exactly one instance of a scheduler to be active across five "
+            "machines. A colleague proposes a row in the shared database with an owner and a "
+            "timestamp that instances check every few seconds. Why is this fragile, what would "
+            "you use instead, and what problem remains even then?",
+            "Self-check: did you mention (1) races and clock/failure problems of the naive "
+            "check, (2) a consensus-backed store (etcd, ZooKeeper, Consul) with leases or "
+            "ephemeral nodes, and (3) the paused-holder problem and fencing tokens?",
+            model_answer="A check-then-act on a row is fragile: two instances can read the row "
+            "as free at nearly the same time, expiry based on timestamps and local clocks can "
+            "misfire, and if the database itself is replicated with failover or partitioned, "
+            "it has no principled guarantee that only one owner exists. I would use a "
+            "consensus-backed coordination service such as etcd, ZooKeeper or Consul: a "
+            "lease, ephemeral node or session acquired with an atomic compare-and-set on a "
+            "linearizable store, which expires if the holder stops renewing it and which "
+            "keeps working correctly through crashes and partitions as long as a majority is "
+            "up. What remains is the paused-holder problem: a holder that stalls (for example "
+            "a long GC pause) can wake up after its lease expired and still act as the "
+            "leader. So the protected resource should also check a fencing token, a "
+            "monotonically increasing number issued with each lease, and reject writes from "
+            "older tokens; making the work idempotent adds more safety.",
+        ),
+        _text(
+            "Sua equipe precisa que exatamente uma instância de um scheduler esteja ativa entre "
+            "cinco máquinas. Um colega propõe uma linha no banco compartilhado com um dono e um "
+            "timestamp que as instâncias verificam a cada poucos segundos. Por que isso é "
+            "frágil, o que você usaria no lugar e que problema ainda permanece?",
+            "Autoavaliação: você mencionou (1) as condições de corrida e os problemas de "
+            "relógio/falha da verificação ingênua, (2) um armazenamento com consenso (etcd, "
+            "ZooKeeper, Consul) com leases ou nós efêmeros e (3) o problema do detentor pausado "
+            "e os fencing tokens?",
+            model_answer="Um check-then-act em uma linha é frágil: duas instâncias podem ler a "
+            "linha como livre quase ao mesmo tempo, a expiração baseada em timestamps e "
+            "relógios locais pode falhar e, se o próprio banco tem replicação com failover ou "
+            "sofre uma partição, não há garantia de princípio de que exista um único dono. "
+            "Eu usaria um serviço de coordenação baseado em consenso, como etcd, ZooKeeper ou "
+            "Consul: um lease, nó efêmero ou sessão obtido com um compare-and-set atômico em um "
+            "armazenamento linearizável, que expira se o detentor parar de renová-lo e que "
+            "continua correto diante de falhas e partições enquanto uma maioria estiver ativa. "
+            "O que resta é o problema do detentor pausado: quem trava (por exemplo, numa longa "
+            "pausa de GC) pode acordar depois que o lease expirou e ainda agir como líder. Por "
+            "isso o recurso protegido também deve verificar um fencing token, um número "
+            "monotonicamente crescente emitido a cada lease, e rejeitar escritas de tokens "
+            "mais antigos; tornar o trabalho idempotente acrescenta mais segurança.",
+        ),
+    ),
+)
+
+
+_QUESTIONS: tuple[QuestionSeed, ...] = (*_CAP, *_REPL, *_SHARD, *_CONSENSUS)
 
 _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     AssessmentSeed(
@@ -1354,6 +1760,47 @@ _ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "secundários e consistent hashing.",
             }
         },
+    ),
+    AssessmentSeed(
+        code="distributed-systems-consensus-algorithms-quiz",
+        title="Consensus Algorithms Quiz",
+        description="Majorities, Raft elections and log replication, safety and where "
+        "consensus is used.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="consensus-algorithms",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Algoritmos de Consenso",
+                "description": "Maiorias, eleições e replicação de log no Raft, segurança e "
+                "onde o consenso é usado.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="distributed-systems-checkpoint",
+        title="Distributed Systems Checkpoint",
+        description="A mixed check across CAP, replication, sharding and consensus.",
+        kind=AssessmentKind.MIXED,
+        question_codes=(
+            "cap-theorem-q03",
+            "cap-theorem-q07",
+            "cap-theorem-q09",
+            "replication-q04",
+            "replication-q06",
+            "replication-q08",
+            "partitioning-sharding-q06",
+            "partitioning-sharding-q09",
+            "consensus-algorithms-q07",
+            "consensus-algorithms-q09",
+        ),
+        translations={
+            "pt-BR": {
+                "title": "Checkpoint de Sistemas Distribuídos",
+                "description": "Uma verificação mista entre CAP, replicação, sharding e consenso.",
+            }
+        },
+        pass_threshold=75,
+        completion_bonus_xp=40,
     ),
 )
 
