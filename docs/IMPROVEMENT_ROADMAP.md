@@ -72,7 +72,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 | A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | 0a96430 | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
 | A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | 058c848 | Não quebrar o link citado no CLAUDE.md. |
 | A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | 0adefbf | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
-| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | — | `backend/pyproject.toml` | | Verificar se `httpx2` já é a recomendação estável antes de trocar. |
+| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | BLOCKED | | — | `backend/pyproject.toml` | | **Aguardando decisão do dono:** (1) instalar `httpx2>=2.13` no venv/dev deps (recomendação do Starlette; existe no PyPI, v2.0–2.13) ou (2) manter `httpx` e filtrar o warning em `filterwarnings`. A instalação foi negada pelo sistema de permissões na sessão S13. |
 | A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | 03d9596 | |
 
 ## Trilha B — CI/CD
@@ -81,7 +81,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 |---|---|---|---|---|---|---|---|---|---|
 | B1 | Criar GitHub Actions (`.github/workflows/ci.yml`) com dois jobs. **Backend:** serviço Postgres, `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` em banco limpo, `pytest`. **Frontend:** `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`. Rodar em PR e push na `master`. | P0 | M | DONE | S2 (`fix/s2-secret-guard-and-ci`) | A3 (para o CI já nascer verde) | `.github/workflows/ci.yml` | | Os testes usam `TEST_DATABASE_URL` (ver `tests/conftest.py`). Cachear pip/npm. |
 | B2 | Ativar proteção de branch na `master` exigindo CI verde. | P1 | S | TODO | | B1 | (config do GitHub) | | Ação manual do dono no GitHub; a sessão apenas documenta o passo. |
-| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | B1 | `.github/workflows/ci.yml` | | |
+| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | IN_PROGRESS | S13b (`fix/s13b-ci-migrations-coverage`) | B1 | `.github/workflows/ci.yml` | | |
 
 ## Trilha C — Segurança e autenticação
 
@@ -124,7 +124,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | DONE | S10 (`fix/s10-frontend-page-tests`) | F1 | `frontend/src/pages/*.test.tsx` | | 12984e4 |
 | F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | `444d509`..`b0d5919` | Só adiciona arquivos novos → baixo risco de conflito. Achado: bug de conquistas duplicadas (ver xfail em `test_gamification_service.py`); novo helper `tests/factories.py`. |
 | F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | `88f54a8` | |
-| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
+| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | IN_PROGRESS | S13b (`fix/s13b-ci-migrations-coverage`) | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
 
 ## Trilha G — Funcionalidades de frontend (backend já pronto)
 
