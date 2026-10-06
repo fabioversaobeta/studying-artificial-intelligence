@@ -46,6 +46,12 @@ describe('apiClient', () => {
     await expect(apiClient.patch('/x', {})).resolves.toBeUndefined()
   })
 
+  it('sends DELETE and resolves to undefined on 204', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }))
+    await expect(apiClient.delete('/api/v1/goals/1')).resolves.toBeUndefined()
+    expect((fetchMock.mock.calls[0][1] as RequestInit).method).toBe('DELETE')
+  })
+
   it('parses the {error:{code,message}} body into an ApiError', async () => {
     fetchMock.mockResolvedValueOnce(
       json({ error: { code: 'validation_error', message: 'Bad input' } }, 422),

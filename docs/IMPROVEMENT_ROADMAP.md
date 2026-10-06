@@ -244,6 +244,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — C1 — boot falha em produção com secret_key default/curta (<32) ou debug=True; debug agora default False — 9a1c7ec
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
+- 2026-10-06 — D6 (frontend) — `apiClient.delete` adicionado pelo coordenador após o merge do C5 (api-client.ts era da S17)
 - 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
 - 2026-10-06 — wave 4 iniciada: S16 (E2,D6), S17 (C5), S18 (J1,J2) reivindicadas; decisões do dono: sem estorno de XP no D6; C5 deve usar a melhor solução (cookie httpOnly + proxy same-origin)
 - 2026-10-06 — wave 3 iniciada: S12 (C3), S13 (A4,B3,F5), S14 (G4,G5,J3), S15 (H2) reivindicadas; Trilha J criada com itens descobertos (J1–J5)
