@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 13 |
-| P2 — Médio prazo | 16 | 0 |
+| P2 — Médio prazo | 21 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -72,7 +72,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 | A1 | Remover `start-here.txt` (25 kB, prompt pessoal), `second-here.txt` e `third-here.txt` (vazios) da raiz e do histórico futuro. Se o conteúdo for útil, mover para fora do repo. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `start-here.txt`, `second-here.txt`, `third-here.txt` | 0a96430 | **Apagar autorizado pelo dono (2026-10-06)** — não precisa confirmar de novo. Apenas `git rm` dos 3 arquivos; não reescrever o histórico. |
 | A2 | Mover o "Master Prompt" da raiz para `docs/archive/` com nome sem espaços/travessão e **atualizar a referência no `CLAUDE.md`** (seção "What this project is") e no `README.md`, se houver. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `Claude Code — Master Prompt…md`, `CLAUDE.md`, `README.md` | 058c848 | Não quebrar o link citado no CLAUDE.md. |
 | A3 | Zerar o ruff: excluir `alembic/versions/` do lint (`extend-exclude` no `pyproject.toml`) **ou** rodar `--fix`; rodar `ruff format` nos 3 arquivos pendentes (incl. `alembic/env.py`). | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | — | `backend/pyproject.toml`, `backend/alembic/**` | 0adefbf | Recomendado: excluir migrations autogeradas do E501, e aplicar `--fix` no que for seguro. |
-| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | TODO | | — | `backend/pyproject.toml` | | Verificar se `httpx2` já é a recomendação estável antes de trocar. |
+| A4 | Resolver o warning do `TestClient`/`httpx` (StarletteDeprecationWarning) conforme a recomendação do Starlette. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | — | `backend/pyproject.toml` | | Verificar se `httpx2` já é a recomendação estável antes de trocar. |
 | A5 | Corrigir `docs/ROADMAP.md`: a linha "Backend lint/type-check clean (ruff + mypy)" estava incorreta. Só marcar como correta depois de A3. | P0 | S | DONE | S1 (`fix/s1-hygiene-lint`) | A3 | `docs/ROADMAP.md` | 03d9596 | |
 
 ## Trilha B — CI/CD
@@ -81,7 +81,7 @@ Sem dependências entre si, exceto onde indicado. Ótima trilha para uma sessão
 |---|---|---|---|---|---|---|---|---|---|
 | B1 | Criar GitHub Actions (`.github/workflows/ci.yml`) com dois jobs. **Backend:** serviço Postgres, `ruff check`, `ruff format --check`, `mypy app`, `alembic upgrade head` em banco limpo, `pytest`. **Frontend:** `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`. Rodar em PR e push na `master`. | P0 | M | DONE | S2 (`fix/s2-secret-guard-and-ci`) | A3 (para o CI já nascer verde) | `.github/workflows/ci.yml` | | Os testes usam `TEST_DATABASE_URL` (ver `tests/conftest.py`). Cachear pip/npm. |
 | B2 | Ativar proteção de branch na `master` exigindo CI verde. | P1 | S | TODO | | B1 | (config do GitHub) | | Ação manual do dono no GitHub; a sessão apenas documenta o passo. |
-| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | TODO | | B1 | `.github/workflows/ci.yml` | | |
+| B3 | Adicionar teste de smoke de migração: `alembic upgrade head` + `alembic downgrade base` + `upgrade head` no CI. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | B1 | `.github/workflows/ci.yml` | | |
 
 ## Trilha C — Segurança e autenticação
 
@@ -92,7 +92,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 |---|---|---|---|---|---|---|---|---|---|
 | C1 | **Falhar o boot em produção** se `secret_key` for o valor default (ou curto demais) ou se `debug=True`. Default de `debug` deve ser seguro. Atualizar `.env.example` e `docs/DEPLOYMENT.md`. Cobrir com testes. | P0 | S | DONE | S2 (`fix/s2-secret-guard-and-ci`) | — | `backend/app/core/config.py`, `backend/.env.example`, `docs/DEPLOYMENT.md`, novo teste | | Risco atual: sem a env var, qualquer um forja JWT. |
 | C2 | **Rate limiting** em `/auth/login`, `/auth/register` e `/auth/refresh` (ex.: `slowapi`, por IP e/ou por e-mail). Limites configuráveis via env. Retornar 429 no formato de erro padrão. | P1 | M | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/api/v1/auth.py`, `backend/pyproject.toml`, `backend/app/core/config.py` | 60f5eb7 | Atrás de proxy (Railway), usar o IP correto (`X-Forwarded-For`). |
-| C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | TODO | | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
+| C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | IN_PROGRESS | S12 (`fix/s12-token-rotation`) | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
 | C4 | **Política de cadastro**: flag `REGISTRATION_ENABLED` e/ou código de convite, para o deploy público não aceitar signups arbitrários. | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/core/config.py`, `backend/app/services/auth_service.py`, `backend/app/api/v1/auth.py`, `frontend/src/pages/register-page.tsx` | 60f5eb7, 77feace | Conflita com C2/C3 em `auth.py` — combinar ordem. |
 | C5 | **Decisão sobre armazenamento de tokens no frontend** (localStorage vs cookie httpOnly + CSRF). Se mantiver localStorage, documentar o risco e adicionar CSP/headers de segurança (Vercel `headers`). | P2 | M | TODO | | C3 | `frontend/vercel.json`, `frontend/src/lib/token-storage.ts`, `docs/DECISIONS.md` | | Hoje não há `dangerouslySetInnerHTML`/`rehype-raw` (verificado), então o risco é baixo, mas o refresh dura 30 dias. |
 | C6 | Revisar CORS para produção (origens explícitas via env; `allow_methods`/`allow_headers` restritos em vez de `*`). | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/core/config.py` | 0d81d42 | Conflita com C2 em `main.py`. |
@@ -124,7 +124,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | DONE | S10 (`fix/s10-frontend-page-tests`) | F1 | `frontend/src/pages/*.test.tsx` | | 12984e4 |
 | F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | `444d509`..`b0d5919` | Só adiciona arquivos novos → baixo risco de conflito. Achado: bug de conquistas duplicadas (ver xfail em `test_gamification_service.py`); novo helper `tests/factories.py`. |
 | F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | `88f54a8` | |
-| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | TODO | | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
+| F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | IN_PROGRESS | S13 (`fix/s13-tooling-ci`) | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
 
 ## Trilha G — Funcionalidades de frontend (backend já pronto)
 
@@ -133,15 +133,15 @@ ou combinar com cuidado** (ver coluna Arquivos).
 | G1 | **UI de revisão espaçada**: página com a fila de `GET /reviews/due` e envio de recall (`quality` 0–5) em `POST /reviews/{id}/recall`; estado vazio; atalho no dashboard. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/reviews-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d0842bd | É o diferencial de retenção do produto. |
 | G2 | **UI de conquistas e quests** (`/gamification/achievements`, `/gamification/quests`): progresso, desbloqueadas vs bloqueadas. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | D4 (idealmente) | `frontend/src/pages/achievements-page.tsx` (novo), `frontend/src/services/gamification-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | d3f0755 | Pode começar antes de D4; o contrato não muda. |
 | G3 | **UI de learning paths** (`/learning-paths`): listagem e detalhe, com progresso por etapa. | P1 | M | DONE | S11 (`fix/s11-frontend-screens`) | — | `frontend/src/pages/learning-paths-page.tsx` (novo), `frontend/src/services/learning-service.ts`, `frontend/src/types/api.ts`, `frontend/src/routes/router.tsx`, `frontend/src/layouts/app-layout.tsx` | e77c3ea | Sem "progresso por etapa" (maestria por competência exigiria N chamadas); links levam à matéria. G1/G2/G3 colidem em `router.tsx`, `app-layout.tsx` e `types/api.ts` — são edições pequenas, mas **faça rebase frequente**. |
-| G4 | Tratamento global de erros no frontend: Error Boundary, toasts de erro de API, estados de loading/erro consistentes (`use-async`). | P2 | M | TODO | | — | `frontend/src/app/app.tsx`, `frontend/src/hooks/use-async.ts`, `frontend/src/components/ui/*` | | |
-| G5 | Revisão de acessibilidade (WCAG AA): foco, contraste do tema escuro, labels, navegação por teclado. | P2 | M | TODO | | — | `frontend/src/**` | | Usar a skill `design:accessibility-review`. |
+| G4 | Tratamento global de erros no frontend: Error Boundary, toasts de erro de API, estados de loading/erro consistentes (`use-async`). | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/app/app.tsx`, `frontend/src/hooks/use-async.ts`, `frontend/src/components/ui/*` | | |
+| G5 | Revisão de acessibilidade (WCAG AA): foco, contraste do tema escuro, labels, navegação por teclado. | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/**` | | Usar a skill `design:accessibility-review`. |
 
 ## Trilha H — Deploy e observabilidade
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
 | H1 | **Deploy real (ADIADO até o fim do roadmap)** em Railway (backend + Postgres) e Vercel (frontend), seguindo `docs/DEPLOYMENT.md`; verificar o fluxo completo em produção; corrigir o doc com o que for diferente da prática. | P1 | L | TODO | | C1, C6, D2 | `docs/DEPLOYMENT.md`, configs de deploy | | **Decisão do dono (2026-10-06): o deploy só acontece quando todo o resto deste roadmap estiver concluído.** Não iniciar antes. Requer ações do dono (contas/segredos); a sessão guia e verifica, sem inserir credenciais. |
-| H2 | Observabilidade mínima: `request_id` nos logs (middleware), logging estruturado e Sentry (opcional, via DSN em env). | P2 | M | TODO | | H1 | `backend/app/main.py`, `backend/app/core/`, `backend/pyproject.toml` | | Conflita com outros itens em `main.py`. |
+| H2 | Observabilidade mínima: `request_id` nos logs (middleware), logging estruturado e Sentry (opcional, via DSN em env). | P2 | M | IN_PROGRESS | S15 (`fix/s15-observability`) | H1 | `backend/app/main.py`, `backend/app/core/`, `backend/pyproject.toml` | | Conflita com outros itens em `main.py`. |
 | H3 | Backup/restore do Postgres de produção documentado (Railway) e teste de restauração. | P2 | S | TODO | | H1 | `docs/DEPLOYMENT.md` | | |
 
 ## Trilha I — Produto (alinhado ao objetivo de entrevistas)
@@ -159,6 +159,18 @@ estáveis.
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
 
 ---
+
+## Trilha J — Itens descobertos durante a execução
+
+Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilhas acima.
+
+| ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
+|---|---|---|---|---|---|---|---|---|---|
+| J1 | Incluir nome da competência e da matéria no payload de `GET /reviews/due` e remover o `competency-index.ts` do frontend (hoje faz N+1 chamadas a `/subjects` e `/subjects/{id}`). | P2 | S | TODO | | — | `backend/app/schemas/learning.py`, `backend/app/services/review_service.py`, `backend/app/repositories/review_repository.py`, `frontend/src/features/learning/competency-index.ts`, `frontend/src/pages/reviews-page.tsx` | | Achado da S11. Mudança aditiva no contrato. |
+| J2 | Progresso por etapa nas learning paths: expor a maestria do usuário por etapa em `GET /learning-paths/{slug}` e mostrar na UI (o G3 entregou sem progresso). | P2 | M | TODO | | — | `backend/app/api/v1/learning_paths.py`, `backend/app/schemas/learning.py`, `backend/app/services/learning_service.py`, `frontend/src/pages/learning-path-detail-page.tsx` | | Achado da S11. Reaproveitar o carregamento em lote do E1. |
+| J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | IN_PROGRESS | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | | O D5 manteve o corpo como array; falta consumir o header. |
+| J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
+| J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
 
@@ -216,5 +228,6 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — B1 — CI no GitHub Actions (backend + frontend, Postgres, cache pip/npm); ruff pode ficar vermelho até S1/A3 ser mergeada — 17de298
 - 2026-10-06 — C1 — boot falha em produção com secret_key default/curta (<32) ou debug=True; debug agora default False — 9a1c7ec
 - 2026-10-06 — (roadmap criado a partir da análise técnica; nenhum item executado ainda)
+- 2026-10-06 — wave 3 iniciada: S12 (C3), S13 (A4,B3,F5), S14 (G4,G5,J3), S15 (H2) reivindicadas; Trilha J criada com itens descobertos (J1–J5)
 - 2026-10-06 — wave 2 iniciada: S7 (C2,C4,C6), S8 (D3,D4), S9 (D5), S10 (F2), S11 (G1,G2,G3) reivindicadas em lote pelo coordenador
 - 2026-10-06 — decisões do dono: A1 autorizado; deploy (H1) adiado para o fim; sessões S1–S6 iniciadas (reivindicadas em lote pelo coordenador)
