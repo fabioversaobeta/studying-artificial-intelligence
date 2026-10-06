@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAsync } from '@/hooks/use-async'
 import { learningService } from '@/services/learning-service'
-import type { LearningPath } from '@/types/api'
+import type { CompetencyState, LearningPath } from '@/types/api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PageSpinner } from '@/components/ui/spinner'
@@ -9,6 +9,36 @@ import { ErrorAlert } from '@/components/ui/alert'
 
 const sortedItems = (path: LearningPath) =>
   [...path.items].sort((a, b) => a.sort_order - b.sort_order)
+
+const stateTone: Record<CompetencyState, 'neutral' | 'accent' | 'success' | 'warning'> = {
+  locked: 'neutral',
+  available: 'accent',
+  learning: 'warning',
+  mastered: 'success',
+}
+
+const stateLabel: Record<CompetencyState, string> = {
+  locked: 'Locked',
+  available: 'Available',
+  learning: 'Learning',
+  mastered: 'Mastered',
+}
+
+function ProgressBar({ label, value }: { label: string; value: number }) {
+  const pct = Math.round(Math.min(100, Math.max(0, value)))
+  return (
+    <div
+      role="progressbar"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={pct}
+      className="h-1.5 w-full overflow-hidden rounded-full bg-surface-raised"
+    >
+      <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
+    </div>
+  )
+}
 
 export function LearningPathsPage() {
   const { data, error, isLoading, refetch } = useAsync(() => learningService.listLearningPaths(), [])
@@ -43,7 +73,16 @@ export function LearningPathsPage() {
                   )}
                   <p className="mt-3 text-xs text-fg-muted">
                     {path.items.length} step{path.items.length === 1 ? '' : 's'}
+                    {path.progress && ` · ${path.progress.mastered_steps} mastered`}
                   </p>
+                  {path.progress && (
+                    <div className="mt-2">
+                      <ProgressBar
+                        label={`${path.title} progress`}
+                        value={path.progress.average_mastery}
+                      />
+                    </div>
+                  )}
                 </Card>
               </Link>
             </li>
@@ -74,6 +113,19 @@ export function LearningPathDetailPage() {
         {data.description && <p className="mt-1 text-sm text-fg-muted">{data.description}</p>}
       </div>
 
+      {data.progress && (
+        <Card>
+          <p className="text-sm text-fg">
+            {data.progress.mastered_steps} of {data.progress.total_steps} steps mastered
+            {' · '}
+            {Math.round(data.progress.average_mastery)}% average mastery
+          </p>
+          <div className="mt-2">
+            <ProgressBar label="Path progress" value={data.progress.average_mastery} />
+          </div>
+        </Card>
+      )}
+
       {items.length === 0 ? (
         <p className="text-sm text-fg-muted">This path has no steps yet.</p>
       ) : (
@@ -95,9 +147,20 @@ export function LearningPathDetailPage() {
                         {item.competency.name}
                       </h2>
                       <Badge>{item.competency.difficulty}</Badge>
+                      {item.state && (
+                        <Badge tone={stateTone[item.state]}>{stateLabel[item.state]}</Badge>
+                      )}
                     </div>
                     {item.competency.description && (
                       <p className="mt-1 text-sm text-fg-muted">{item.competency.description}</p>
+                    )}
+                    {item.mastery_score != null && (
+                      <div className="mt-2">
+                        <ProgressBar
+                          label={`${item.competency.name} mastery`}
+                          value={item.mastery_score}
+                        />
+                      </div>
                     )}
                     <Link
                       to={`/subjects/${item.competency.subject_id}`}
