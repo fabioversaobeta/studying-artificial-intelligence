@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 16 | 14 |
-| P2 — Médio prazo | 21 | 7 |
+| P2 — Médio prazo | 21 | 9 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -166,8 +166,8 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 
 | ID | Item | Prio | Esf. | Status | Responsável | Depende de | Arquivos | Commit/PR | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| J1 | Incluir nome da competência e da matéria no payload de `GET /reviews/due` e remover o `competency-index.ts` do frontend (hoje faz N+1 chamadas a `/subjects` e `/subjects/{id}`). | P2 | S | IN_PROGRESS | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/schemas/learning.py`, `backend/app/services/review_service.py`, `backend/app/repositories/review_repository.py`, `frontend/src/features/learning/competency-index.ts`, `frontend/src/pages/reviews-page.tsx` | | Achado da S11. Mudança aditiva no contrato. |
-| J2 | Progresso por etapa nas learning paths: expor a maestria do usuário por etapa em `GET /learning-paths/{slug}` e mostrar na UI (o G3 entregou sem progresso). | P2 | M | IN_PROGRESS | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/api/v1/learning_paths.py`, `backend/app/schemas/learning.py`, `backend/app/services/learning_service.py`, `frontend/src/pages/learning-path-detail-page.tsx` | | Achado da S11. Reaproveitar o carregamento em lote do E1. |
+| J1 | Incluir nome da competência e da matéria no payload de `GET /reviews/due` e remover o `competency-index.ts` do frontend (hoje faz N+1 chamadas a `/subjects` e `/subjects/{id}`). | P2 | S | DONE | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/schemas/learning.py`, `backend/app/services/review_service.py`, `backend/app/repositories/review_repository.py`, `frontend/src/features/learning/competency-index.ts`, `frontend/src/pages/reviews-page.tsx` | 368440a, d24a045 | Achado da S11. Mudança aditiva no contrato. |
+| J2 | Progresso por etapa nas learning paths: expor a maestria do usuário por etapa em `GET /learning-paths/{slug}` e mostrar na UI (o G3 entregou sem progresso). | P2 | M | DONE | S18 (`fix/s18-reviews-paths-data`) | — | `backend/app/api/v1/learning_paths.py`, `backend/app/schemas/learning.py`, `backend/app/services/learning_service.py`, `frontend/src/pages/learning-path-detail-page.tsx` | 3f30c13, 36d6921 | Achado da S11. Reaproveitar o carregamento em lote do E1. |
 | J3 | Usar a paginação (`limit`/`offset`, `X-Total-Count`) no frontend: "carregar mais" em goals, sessões de estudo e revisões. | P2 | M | DONE | S14 (`fix/s14-frontend-quality`) | — | `frontend/src/services/*.ts`, `frontend/src/pages/goals-page.tsx`, `frontend/src/pages/reviews-page.tsx` | 0714c3f | O D5 manteve o corpo como array; falta consumir o header. |
 | J4 | **Decisão do dono**: sessões de estudo < 10 min dão 0 XP e não contam no streak (ver `docs/PENDING.md`). Implementar a opção escolhida. | P2 | S | BLOCKED | | decisão do dono | `backend/app/services/learning_service.py`, `backend/app/services/gamification_service.py` | | Bloqueado até o dono escolher (a/b/c em PENDING.md). |
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
@@ -206,6 +206,8 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — J2 — `GET /learning-paths[/{slug}]` com `mastery_score`/`state` por etapa e `progress` agregado (auth opcional, constante em queries); UI mostra barras, estado e resumo — `3f30c13`, `36d6921`
+- 2026-10-06 — J1 — `GET /reviews/due` devolve `competency_name`, `subject_id`, `subject_name` (um join); `competency-index.ts` removido — `368440a`, `d24a045`
 - 2026-10-06 — C3 — rotação de refresh token com detecção de reuso, denylist `revoked_tokens` (Postgres), `POST /auth/logout`, access token de 60 min, frontend chama logout — ad66c67, 9ef89f7, 0b218e0
 - 2026-10-06 — J3 — `apiClient.getPaged()` (lê `X-Total-Count`), hook `usePagedList` e "Carregar mais" em goals e reviews; `listStudySessions` paginado no service (sem listagem na UI) — `0714c3f`
 - 2026-10-06 — G5 — a11y: skip link, landmarks, foco visível, contraste (botão primário, bordas de inputs), aria-expanded/progressbar; pendências em PENDING.md — `122b081`

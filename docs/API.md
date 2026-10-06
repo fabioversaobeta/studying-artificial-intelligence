@@ -49,8 +49,8 @@ dependency when they are introduced.
 | `GET /auth/me` | ✓ | Current user |
 | `GET /subjects` | ✓ | List subjects with competency count + average mastery |
 | `GET /subjects/{id}` | ✓ | Subject detail: competencies with computed skill-tree state |
-| `GET /learning-paths` | — | List learning paths with their competency sequence |
-| `GET /learning-paths/{slug}` | — | Learning path detail |
+| `GET /learning-paths` | optional | List learning paths with their competency sequence. With a valid bearer token each path has `progress` (`total_steps`, `mastered_steps`, `average_mastery` 0-100) and each item `mastery_score` + `state` (`locked`/`available`/`learning`/`mastered`); all `null` when anonymous. An invalid token returns 401 |
+| `GET /learning-paths/{slug}` | optional | Learning path detail, with the same per-step and aggregate progress fields as the list |
 | `POST /study-sessions` | ✓ | Log a study session (awards XP, recomputes mastery, schedules review) |
 | `GET /study-sessions` | ✓ | Recent study sessions |
 | `POST /goals` | ✓ | Create a learning goal |
@@ -58,7 +58,7 @@ dependency when they are introduced.
 | `PATCH /goals/{id}/status` | ✓ | Update goal status (active/achieved/archived) |
 | `GET /competencies/{id}/challenges` | ✓ | Challenges for a competency |
 | `POST /challenges/{id}/submissions` | ✓ | Submit a self-assessed pass/fail (awards XP once, on first pass) |
-| `GET /reviews/due` | ✓ | Spaced-repetition reviews currently due |
+| `GET /reviews/due` | ✓ | Spaced-repetition reviews currently due. Each item also carries `competency_name`, `subject_id` and `subject_name` (single joined query) |
 | `POST /reviews/{competency_id}/recall` | ✓ | Submit a recall quality (0-5), advances the SM-2 schedule |
 | `GET /gamification/profile` | ✓ | XP, level, streaks |
 | `GET /gamification/achievements` | ✓ | All achievements with earned/unearned status |
