@@ -1001,16 +1001,482 @@ PATTERNS_ASSESSMENT = AssessmentSeed(
     },
 )
 
+# ----------------------------------------------------------------------
+# clean-architecture
+# ----------------------------------------------------------------------
+
+_LEAKY_USE_CASE_CODE = """```python
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from domain.order import Order
+
+
+class PlaceOrder:
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def execute(self, order_id: str) -> None:
+        order = self.session.get(Order, order_id)
+        if order is None:
+            raise HTTPException(status_code=404, detail="order not found")
+        order.confirm()
+        self.session.commit()
+```"""
+
+_CLEAN = "clean-architecture"
+
+CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        _CLEAN,
+        1,
+        MC,
+        EASY,
+        "b",
+        ("dependency-rule",),
+        _t(
+            "What does the Dependency Rule of Clean Architecture state?",
+            "Source-code dependencies may only point inward, toward higher-level policy "
+            "(entities and use cases); inner layers must know nothing about outer ones such "
+            "as frameworks, databases or the UI. A is wrong because runtime calls may cross "
+            "layers in both directions through interfaces, C describes strict layering that "
+            "is not required, and D would break the rule for the innermost layer.",
+            (
+                "Outer layers must never call inner layers at runtime.",
+                "Source-code dependencies must point inward, toward the higher-level "
+                "business policy.",
+                "Every layer must depend on the layer directly below it and no other.",
+                "Entities may depend on frameworks as long as use cases do not.",
+            ),
+        ),
+        _t(
+            "O que a Regra de Dependência da Clean Architecture afirma?",
+            "As dependências de código-fonte só podem apontar para dentro, em direção à "
+            "política de mais alto nível (entidades e casos de uso); camadas internas não "
+            "devem saber nada sobre as externas, como frameworks, banco de dados ou a UI. "
+            "A está errada porque chamadas em tempo de execução podem cruzar camadas nos "
+            "dois sentidos via interfaces, C descreve uma divisão estrita em camadas que "
+            "não é exigida e D quebraria a regra para a camada mais interna.",
+            (
+                "Camadas externas nunca devem chamar camadas internas em tempo de execução.",
+                "As dependências de código-fonte devem apontar para dentro, em direção à "
+                "política de negócio de mais alto nível.",
+                "Toda camada deve depender da camada imediatamente abaixo e de nenhuma outra.",
+                "Entidades podem depender de frameworks, desde que os casos de uso não dependam.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        2,
+        MC,
+        EASY,
+        "a",
+        ("layers", "business-rules"),
+        _t(
+            'The rule "an order cannot be shipped until it is paid" is a core business '
+            "rule. Where does it belong?",
+            "Core business rules live in the innermost layers (entities or use cases), "
+            "where they are independent of delivery mechanisms and storage, so they stay "
+            "valid and testable whichever UI or database is used. Putting them in a "
+            "controller (B), a database trigger (C) or a UI component (D) ties them to a "
+            "detail and duplicates them whenever another entry point appears.",
+            (
+                "In the domain layer (the order entity or a use case), independent of frameworks.",
+                "In the HTTP controller that handles the shipping request.",
+                "In a database trigger that rejects the update.",
+                'In a front-end component that disables the "Ship" button.',
+            ),
+        ),
+        _t(
+            'A regra "um pedido não pode ser enviado até ser pago" é uma regra de negócio '
+            "central. Onde ela deve ficar?",
+            "As regras de negócio centrais ficam nas camadas mais internas (entidades ou "
+            "casos de uso), onde são independentes de mecanismos de entrega e de "
+            "armazenamento, e continuam válidas e testáveis seja qual for a UI ou o banco. "
+            "Colocá-las em um controller (B), em um trigger de banco (C) ou em um "
+            "componente de interface (D) as prende a um detalhe e as duplica sempre que "
+            "surge outro ponto de entrada.",
+            (
+                "Na camada de domínio (na entidade pedido ou em um caso de uso), "
+                "independente de frameworks.",
+                "No controller HTTP que trata a requisição de envio.",
+                "Em um trigger de banco de dados que rejeita a atualização.",
+                'Em um componente de front-end que desabilita o botão "Enviar".',
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        3,
+        MC,
+        EASY,
+        "c",
+        ("ports-and-adapters",),
+        _t(
+            "In Ports & Adapters (hexagonal) terminology, what are a port and an adapter?",
+            "A port is an interface that belongs to the application core and states what it "
+            "needs (an outbound port such as `PaymentGateway`) or what it offers (an inbound "
+            "port such as a use case). An adapter is the technology-specific code that "
+            "plugs into a port, for example a Stripe client implementing `PaymentGateway`. "
+            "The other options swap or blur the roles.",
+            (
+                "A port is a network port number, and an adapter is a database driver.",
+                "A port is a concrete class in the infrastructure layer, and an adapter is an "
+                "interface in the domain.",
+                "A port is an interface owned by the application core, and an adapter is "
+                "technology-specific code that implements or calls it.",
+                "A port and an adapter are two names for the same class.",
+            ),
+        ),
+        _t(
+            "Na terminologia de Ports & Adapters (hexagonal), o que são uma port e um adapter?",
+            "Uma port é uma interface que pertence ao núcleo da aplicação e declara o que "
+            "ele precisa (uma port de saída, como `PaymentGateway`) ou o que ele oferece "
+            "(uma port de entrada, como um caso de uso). Um adapter é o código específico "
+            "de tecnologia que se conecta a uma port, por exemplo um cliente Stripe "
+            "implementando `PaymentGateway`. As outras opções trocam ou confundem os "
+            "papéis.",
+            (
+                "Uma port é um número de porta de rede e um adapter é um driver de banco de dados.",
+                "Uma port é uma classe concreta da camada de infraestrutura e um adapter é "
+                "uma interface do domínio.",
+                "Uma port é uma interface pertencente ao núcleo da aplicação e um adapter é "
+                "código específico de tecnologia que a implementa ou a chama.",
+                "Port e adapter são dois nomes para a mesma classe.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        4,
+        CODE,
+        MEDIUM,
+        "d",
+        ("dependency-rule", "frameworks"),
+        _t(
+            "This use case sits in the application layer. Which imports break the "
+            "Dependency Rule?\n\n" + _LEAKY_USE_CASE_CODE,
+            "Both `fastapi` and `sqlalchemy` are outer-layer details (web framework and "
+            "persistence). The use case raises an HTTP-specific exception and manipulates "
+            "an ORM session directly, so it cannot run or be tested without them and must "
+            "change when either framework does. The import of `domain.order` points "
+            "inward, which is allowed. The fix is a repository port and a domain-level "
+            "error that the web layer translates into a 404.",
+            (
+                "Only `fastapi`; the ORM session is acceptable in a use case.",
+                "Only `sqlalchemy`; raising HTTP exceptions is acceptable in a use case.",
+                "Only `domain.order`, because use cases must not know about entities.",
+                "Both `fastapi` and `sqlalchemy`; the use case depends on outer-layer frameworks.",
+            ),
+        ),
+        _t(
+            "Este caso de uso está na camada de aplicação. Quais imports quebram a Regra "
+            "de Dependência?\n\n" + _LEAKY_USE_CASE_CODE,
+            "Tanto `fastapi` quanto `sqlalchemy` são detalhes de camadas externas "
+            "(framework web e persistência). O caso de uso lança uma exceção específica "
+            "de HTTP e manipula uma sessão do ORM diretamente, então não roda nem é "
+            "testável sem eles e precisa mudar quando qualquer um dos frameworks mudar. O "
+            "import de `domain.order` aponta para dentro, o que é permitido. A correção é "
+            "uma port de repositório e um erro de domínio que a camada web traduz em 404.",
+            (
+                "Somente `fastapi`; a sessão do ORM é aceitável em um caso de uso.",
+                "Somente `sqlalchemy`; lançar exceções HTTP é aceitável em um caso de uso.",
+                "Somente `domain.order`, pois casos de uso não devem conhecer entidades.",
+                "Tanto `fastapi` quanto `sqlalchemy`; o caso de uso depende de frameworks "
+                "de camadas externas.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        5,
+        MC,
+        MEDIUM,
+        "b",
+        ("ports-and-adapters", "dip"),
+        _t(
+            "Where should the `OrderRepository` interface used by the `PlaceOrder` use case "
+            "be defined?",
+            "The interface expresses what the use case needs, so it belongs with the "
+            "inner layer (domain or application) that owns that need; the Postgres "
+            "implementation lives in infrastructure and depends on it. Defining it next to "
+            "the Postgres code (A) keeps the use case dependent on infrastructure, and "
+            "putting it in the web layer (C) or in a shared package everyone imports (D) "
+            "couples unrelated layers.",
+            (
+                "Next to the Postgres implementation in the infrastructure layer.",
+                "In the domain or application layer, with the Postgres class implementing it "
+                "from the infrastructure layer.",
+                "In the web layer, next to the controllers that call the use case.",
+                "In a shared `common` package imported by every layer.",
+            ),
+        ),
+        _t(
+            "Onde deve ser definida a interface `OrderRepository` usada pelo caso de uso "
+            "`PlaceOrder`?",
+            "A interface expressa o que o caso de uso precisa, então pertence à camada "
+            "interna (domínio ou aplicação) dona dessa necessidade; a implementação "
+            "Postgres fica na infraestrutura e depende dela. Defini-la junto do código "
+            "Postgres (A) mantém o caso de uso dependente da infraestrutura, e colocá-la na "
+            "camada web (C) ou em um pacote compartilhado que todos importam (D) acopla "
+            "camadas que não têm relação.",
+            (
+                "Ao lado da implementação Postgres, na camada de infraestrutura.",
+                "Na camada de domínio ou de aplicação, com a classe Postgres da camada de "
+                "infraestrutura implementando-a.",
+                "Na camada web, ao lado dos controllers que chamam o caso de uso.",
+                "Em um pacote compartilhado `common` importado por todas as camadas.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        6,
+        MC,
+        MEDIUM,
+        "c",
+        ("boundaries", "dto"),
+        _t(
+            "A use case returns ORM model instances directly, and the HTTP layer serializes "
+            "them. Why is this a problem for the architecture?",
+            "The ORM model is a persistence detail. Returning it across the boundary couples "
+            "the API contract to the database schema, so a column rename leaks into clients, "
+            "and lazy-loaded relations may hit the database from the outer layer. Passing "
+            "simple output data structures keeps both sides free to change. The ORM does not "
+            "forbid serialization (A), and speed (B) is not the concern here.",
+            (
+                "ORM models cannot be serialized to JSON.",
+                "It is slower than returning dictionaries in every case.",
+                "It couples the API contract to the persistence schema and lets the outer "
+                "layer trigger database access.",
+                "It violates the rule that use cases must return primitive integers.",
+            ),
+        ),
+        _t(
+            "Um caso de uso retorna instâncias de modelos do ORM diretamente, e a camada "
+            "HTTP as serializa. Por que isso é um problema para a arquitetura?",
+            "O modelo do ORM é um detalhe de persistência. Retorná-lo através da fronteira "
+            "acopla o contrato da API ao esquema do banco, então renomear uma coluna vaza "
+            "para os clientes, e relações com lazy loading podem acessar o banco a partir "
+            "da camada externa. Passar estruturas de dados simples de saída deixa os dois "
+            "lados livres para mudar. O ORM não impede a serialização (A) e velocidade (B) "
+            "não é a preocupação aqui.",
+            (
+                "Modelos do ORM não podem ser serializados para JSON.",
+                "É mais lento que retornar dicionários em todos os casos.",
+                "Acopla o contrato da API ao esquema de persistência e permite que a camada "
+                "externa dispare acesso ao banco.",
+                "Viola a regra de que casos de uso devem retornar inteiros primitivos.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        7,
+        MS,
+        MEDIUM,
+        "ac",
+        ("benefits", "testability"),
+        _t(
+            "Which TWO benefits does a well-applied Clean Architecture provide?",
+            "Because business rules depend on abstractions, they can be tested without a "
+            "database or web server, and a persistence technology can be replaced with "
+            "changes confined to an adapter. The price is extra mapping between layers "
+            "(B), it does not promise better performance (D), and it usually adds files "
+            "rather than reducing them (E).",
+            (
+                "Business rules can be unit-tested without a database or a web server.",
+                "No mapping between layers is needed, since all layers share the same models.",
+                "Swapping the persistence technology mostly affects the outer adapter code.",
+                "Applications always run faster than a plain CRUD design.",
+                "The codebase always ends up with fewer files and classes.",
+            ),
+        ),
+        _t(
+            "Quais DOIS benefícios uma Clean Architecture bem aplicada oferece?",
+            "Como as regras de negócio dependem de abstrações, elas podem ser testadas sem "
+            "banco de dados ou servidor web, e uma tecnologia de persistência pode ser "
+            "trocada com mudanças restritas a um adapter. O preço é o mapeamento extra "
+            "entre camadas (B), ela não promete melhor desempenho (D) e normalmente "
+            "adiciona arquivos em vez de reduzi-los (E).",
+            (
+                "As regras de negócio podem ser testadas unitariamente sem banco de dados "
+                "nem servidor web.",
+                "Não é preciso mapear entre camadas, pois todas compartilham os mesmos modelos.",
+                "Trocar a tecnologia de persistência afeta principalmente o código do "
+                "adapter externo.",
+                "As aplicações sempre rodam mais rápido que um design CRUD simples.",
+                "A base de código sempre termina com menos arquivos e classes.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        8,
+        MC,
+        MEDIUM,
+        "d",
+        ("composition-root", "dependency-injection"),
+        _t(
+            "Where should the concrete adapters (for example `PostgresOrderRepository`) be "
+            "instantiated and connected to the use cases?",
+            "Wiring is itself a detail, so it belongs in a composition root at the "
+            "outermost edge (main or bootstrap code), which is allowed to know every "
+            "layer. Instantiating the adapter inside the use case (A) or an entity (B) "
+            "reintroduces a dependency on a concrete class, and doing it inside the domain "
+            "package (C) makes the innermost layer depend on infrastructure.",
+            (
+                "Inside the use case's constructor, with `PostgresOrderRepository()`.",
+                "Inside the entities, so each entity can load its own data.",
+                "In the domain package's `__init__` module, so it is ready everywhere.",
+                "In a composition root at the application's entry point, outside the core.",
+            ),
+        ),
+        _t(
+            "Onde os adapters concretos (por exemplo, `PostgresOrderRepository`) devem ser "
+            "instanciados e ligados aos casos de uso?",
+            "A montagem em si é um detalhe, então pertence a uma composition root na borda "
+            "mais externa (main ou código de bootstrap), que pode conhecer todas as "
+            "camadas. Instanciar o adapter dentro do caso de uso (A) ou de uma entidade "
+            "(B) reintroduz a dependência de uma classe concreta, e fazê-lo no pacote de "
+            "domínio (C) faz a camada mais interna depender da infraestrutura.",
+            (
+                "Dentro do construtor do caso de uso, com `PostgresOrderRepository()`.",
+                "Dentro das entidades, para que cada uma carregue seus próprios dados.",
+                "No módulo `__init__` do pacote de domínio, para estar pronto em todo lugar.",
+                "Em uma composition root no ponto de entrada da aplicação, fora do núcleo.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        9,
+        MC,
+        HARD,
+        "b",
+        ("tradeoffs", "pragmatism"),
+        _t(
+            "A team is building an internal admin screen that only lists and edits rows of a "
+            "few tables, with no business rules. A new engineer insists on entities, "
+            "use-case classes, ports and mappers for every table. What is the best "
+            "judgement?",
+            "Architectural layering has a cost (indirection, mapping, files) that pays off "
+            "when there are rich business rules, several delivery mechanisms, or a long "
+            "lifetime with likely technology changes. For plain CRUD with no rules, a thin "
+            "design is usually enough, and the team can introduce boundaries later where "
+            "complexity appears. Mandating the full structure everywhere (A, C) or letting "
+            "the framework decide everything (D) ignores the trade-off.",
+            (
+                "Agree: Clean Architecture must be applied in full to every feature to be valid.",
+                "Use a thin, simple design for this CRUD, and add boundaries where real "
+                "business complexity appears; layering cost should match the problem.",
+                "Agree, because mappers remove the need for tests.",
+                "Reject any architecture and let the web framework's defaults define the "
+                "structure of the whole product, including future complex modules.",
+            ),
+        ),
+        _t(
+            "Uma equipe está construindo uma tela administrativa interna que apenas lista e "
+            "edita linhas de poucas tabelas, sem regras de negócio. Um novo engenheiro "
+            "insiste em entidades, classes de casos de uso, ports e mappers para cada "
+            "tabela. Qual é o melhor julgamento?",
+            "A divisão em camadas tem um custo (indireção, mapeamento, arquivos) que se "
+            "justifica quando há regras de negócio ricas, vários mecanismos de entrega ou "
+            "vida longa com mudanças de tecnologia prováveis. Para um CRUD simples sem "
+            "regras, um design enxuto normalmente basta, e a equipe pode introduzir "
+            "fronteiras depois, onde surgir complexidade. Exigir a estrutura completa em "
+            "todo lugar (A, C) ou deixar o framework decidir tudo (D) ignora o trade-off.",
+            (
+                "Concordar: a Clean Architecture precisa ser aplicada por inteiro em toda "
+                "funcionalidade para ser válida.",
+                "Usar um design enxuto e simples para este CRUD e adicionar fronteiras onde "
+                "surgir complexidade de negócio real; o custo das camadas deve corresponder "
+                "ao problema.",
+                "Concordar, porque mappers eliminam a necessidade de testes.",
+                "Rejeitar qualquer arquitetura e deixar os padrões do framework web "
+                "definirem a estrutura de todo o produto, inclusive módulos complexos "
+                "futuros.",
+            ),
+        ),
+    ),
+    _q(
+        _CLEAN,
+        10,
+        SHORT,
+        HARD,
+        None,
+        ("use-cases", "ports", "testing"),
+        _t(
+            "A `CheckoutOrder` use case must charge a credit card and then send a "
+            "confirmation email. Describe how you would structure it following Clean "
+            "Architecture: where the interfaces and implementations live, how the use case "
+            "gets them, and how you would unit-test it.",
+            "Self-check: did you mention (1) outbound ports owned by the application layer, "
+            "(2) adapters in infrastructure implementing them, (3) injection from a "
+            "composition root, and (4) testing with fakes or mocks and no real network?",
+            None,
+            "Define two outbound ports in the application layer, for example "
+            "`PaymentGateway` and `EmailSender`, expressed in the domain's language "
+            "(`charge(order)`, `send_confirmation(order)`), not in the vendor's. "
+            "`CheckoutOrder` depends only on those interfaces and receives them through its "
+            "constructor. Adapters such as `StripePaymentGateway` and `SmtpEmailSender` live "
+            "in infrastructure and implement the ports; a composition root at the app's "
+            "entry point wires them together. To unit-test the use case, inject fakes or "
+            "stubs for both ports and assert on the outcome (order marked paid, email "
+            "requested, behavior on payment failure) with no network or framework. The "
+            "adapters get their own integration tests.",
+        ),
+        _t(
+            "Um caso de uso `CheckoutOrder` precisa cobrar um cartão de crédito e depois "
+            "enviar um e-mail de confirmação. Descreva como você o estruturaria seguindo a "
+            "Clean Architecture: onde ficam as interfaces e as implementações, como o caso "
+            "de uso as obtém e como você o testaria unitariamente.",
+            "Autoavaliação: você mencionou (1) ports de saída pertencentes à camada de "
+            "aplicação, (2) adapters na infraestrutura que as implementam, (3) injeção a "
+            "partir de uma composition root e (4) testes com fakes ou mocks, sem rede real?",
+            None,
+            "Defina duas ports de saída na camada de aplicação, por exemplo "
+            "`PaymentGateway` e `EmailSender`, expressas na linguagem do domínio "
+            "(`charge(order)`, `send_confirmation(order)`) e não na do fornecedor. O "
+            "`CheckoutOrder` depende apenas dessas interfaces e as recebe pelo construtor. "
+            "Adapters como `StripePaymentGateway` e `SmtpEmailSender` ficam na "
+            "infraestrutura e implementam as ports; uma composition root no ponto de "
+            "entrada da aplicação os conecta. Para testar o caso de uso unitariamente, "
+            "injete fakes ou stubs das duas ports e verifique o resultado (pedido marcado "
+            "como pago, e-mail solicitado, comportamento em caso de falha no pagamento) "
+            "sem rede nem framework. Os adapters recebem seus próprios testes de "
+            "integração.",
+        ),
+    ),
+)
+
+CLEAN_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-clean-architecture-quiz",
+    title="Clean Architecture Quiz",
+    description="The Dependency Rule, layers, ports and adapters, and when to apply them.",
+    kind=AssessmentKind.COMPETENCY,
+    competency_slug="clean-architecture",
+    translations={
+        "pt-BR": {
+            "title": "Quiz de Clean Architecture",
+            "description": "A Regra de Dependência, camadas, ports e adapters e quando aplicá-los.",
+        }
+    },
+)
+
 # @@NEXT@@
 
 QUESTIONS: tuple[QuestionSeed, ...] = (
     *SOLID_QUESTIONS,
     *PATTERNS_QUESTIONS,
+    *CLEAN_QUESTIONS,
 )
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     SOLID_ASSESSMENT,
     PATTERNS_ASSESSMENT,
+    CLEAN_ASSESSMENT,
 )
 
 QUESTION_SET = SubjectQuestionSet(
