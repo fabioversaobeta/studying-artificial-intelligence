@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 1 |
+| P1 — Curto prazo | 16 | 3 |
 | P2 — Médio prazo | 16 | 0 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -122,8 +122,8 @@ ou combinar com cuidado** (ver coluna Arquivos).
 |---|---|---|---|---|---|---|---|---|---|
 | F1 | **Infra de testes do frontend**: Vitest + Testing Library + jsdom; script `npm test`; integrar ao CI (B1). Primeiros testes: `api-client` (refresh dedup em 401 concorrentes, retry único, limpeza de tokens), `protected-route`, `token-storage`. | P0 | M | DONE | S4 (`fix/s4-frontend-tests`) | — | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/**/*.test.ts(x)` | `6a1358b`..`42dfaab` (branch `fix/s4-frontend-tests`) | Maior risco de regressão hoje. |
 | F2 | Testes de frontend das páginas principais (login/registro, dashboard, goals) com a API mockada (MSW ou fetch mock). | P1 | M | TODO | | F1 | `frontend/src/pages/*.test.tsx` | | |
-| F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | | Só adiciona arquivos novos → baixo risco de conflito. |
-| F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | IN_PROGRESS | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | | |
+| F3 | Backend: testes dedicados para `challenge_service` (XP só na 1ª aprovação), `quest_service`, `review_service` (SM-2 via API), `dashboard_service`, `gamification_service` (streak em virada de dia, conquistas). | P1 | M | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/**` | `444d509`..`b0d5919` | Só adiciona arquivos novos → baixo risco de conflito. Achado: bug de conquistas duplicadas (ver xfail em `test_gamification_service.py`); novo helper `tests/factories.py`. |
+| F4 | Testes de autorização: um usuário não acessa/altera dados de outro (goals, sessions, submissions, reviews). | P1 | S | DONE | S5 (`fix/s5-backend-tests`) | — | `backend/tests/test_authorization.py` | `88f54a8` | |
 | F5 | Medir cobertura (`pytest-cov`) e definir um piso mínimo no CI. | P2 | S | TODO | | B1, F3 | `backend/pyproject.toml`, `.github/workflows/ci.yml` | | |
 
 ## Trilha G — Funcionalidades de frontend (backend já pronto)
@@ -194,6 +194,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — F3 + F4 — testes dedicados de challenge/quest/review/dashboard/gamification e `test_authorization.py` (+130 testes, 1 xfail estrito documentando bug de conquistas duplicadas) — `444d509`..`88f54a8`
 - 2026-10-06 — F1 — Vitest + Testing Library + jsdom; testes de api-client, token-storage e protected-route (20 testes); corrigido crash do api-client com corpo de erro sem `error` — `6a1358b`..`42dfaab`
 - 2026-10-06 — E1 — N+1 eliminado em learning_service (queries em lote; detalhe 62→5, lista 10→4 em 15 competências); testes de caracterização e contagem de queries — de8d0b9
 - 2026-10-06 — D1 — `IntegrityError` no registro vira 409; handler global devolve 500 padronizado sem stack (FastAPI sem `debug`) — 0d8c244
