@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 
 from app.domain.mastery import MasteryInputs, compute_mastery_score
 from app.models.learning import Mastery
-from app.repositories import mastery_repository, review_repository, study_repository
+from app.repositories import (
+    assessment_repository,
+    mastery_repository,
+    review_repository,
+    study_repository,
+)
 
 
 def recompute_mastery(db: Session, *, user_id: uuid.UUID, competency_id: uuid.UUID) -> Mastery:
@@ -16,6 +21,12 @@ def recompute_mastery(db: Session, *, user_id: uuid.UUID, competency_id: uuid.UU
     challenges_passed = study_repository.count_challenges_passed_for_competency(
         db, user_id, competency_id
     )
+    questions_total = assessment_repository.count_active_questions_for_competency(db, competency_id)
+    questions_correct = (
+        assessment_repository.count_correct_latest_for_competency(db, user_id, competency_id)
+        if questions_total > 0
+        else 0
+    )
     review = review_repository.get_review(db, user_id, competency_id)
 
     score = compute_mastery_score(
@@ -24,6 +35,8 @@ def recompute_mastery(db: Session, *, user_id: uuid.UUID, competency_id: uuid.UU
             challenges_total=challenges_total,
             challenges_passed=challenges_passed,
             last_recall_quality=review.last_recall_quality if review else None,
+            questions_total=questions_total,
+            questions_correct=questions_correct,
         )
     )
 

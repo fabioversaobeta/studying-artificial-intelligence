@@ -107,6 +107,18 @@ def count_passed_challenges(db: Session, user_id: uuid.UUID) -> int:
     return len(set(db.execute(stmt).scalars().all()))
 
 
+def count_passed_assessments(db: Session, user_id: uuid.UUID) -> int:
+    """Distinct assessments the user has passed at least once."""
+    from app.models.assessment import AssessmentAttempt, AttemptStatus
+
+    stmt = select(AssessmentAttempt.assessment_id).where(
+        AssessmentAttempt.user_id == user_id,
+        AssessmentAttempt.status == AttemptStatus.COMPLETED,
+        AssessmentAttempt.passed.is_(True),
+    )
+    return len(set(db.execute(stmt).scalars().all()))
+
+
 def count_mastered_competencies(db: Session, user_id: uuid.UUID, threshold: float = 80.0) -> int:
     from app.models.learning import Mastery
 

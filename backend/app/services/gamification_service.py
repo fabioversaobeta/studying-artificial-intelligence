@@ -90,6 +90,19 @@ def award_xp(
     return profile
 
 
+def record_activity(db: Session, user_id: uuid.UUID) -> None:
+    """Count today as an active day (streak) WITHOUT awarding XP, then settle
+    rewards. For activity that is real but pays no XP, e.g. repeating a quiz
+    whose questions were already paid: it still keeps the streak alive."""
+    profile = gamification_repository.get_profile_for_update(db, user_id)
+    if profile is None:
+        profile = gamification_repository.create_profile(db, user_id)
+    _update_streak(profile, datetime.now(UTC).date())
+    profile.updated_at = datetime.now(UTC)
+    db.flush()
+    settle_rewards(db, user_id)
+
+
 def settle_rewards(db: Session, user_id: uuid.UUID) -> list[str]:
     """Event-driven reward evaluation: unlock every achievement and complete
     every quest whose criteria are now met, pay their XP rewards, and repeat
@@ -178,6 +191,8 @@ def _achievement_criteria_met(
             return gamification_repository.count_mastered_competencies(db, user_id) >= (value or 0)
         case AchievementCriterion.CHALLENGES_PASSED_COUNT:
             return gamification_repository.count_passed_challenges(db, user_id) >= (value or 0)
+        case AchievementCriterion.ASSESSMENTS_PASSED_COUNT:
+            return gamification_repository.count_passed_assessments(db, user_id) >= (value or 0)
         case AchievementCriterion.XP_MILESTONE:
             profile = gamification_repository.get_profile(db, user_id)
             return profile is not None and profile.total_xp >= (value or 0)

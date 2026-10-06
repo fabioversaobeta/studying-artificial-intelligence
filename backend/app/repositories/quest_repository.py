@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.models.assessment import AssessmentAttempt, AttemptStatus
 from app.models.gamification import XPAward
 from app.models.learning import ChallengeSubmission, ChallengeSubmissionStatus, Review, StudySession
 
@@ -25,6 +26,22 @@ def count_challenges_passed_since(db: Session, user_id: uuid.UUID, since: dateti
             ChallengeSubmission.user_id == user_id,
             ChallengeSubmission.status == ChallengeSubmissionStatus.PASSED,
             ChallengeSubmission.submitted_at >= since,
+        )
+    )
+    return int(db.execute(stmt).scalar_one())
+
+
+def count_assessments_passed_since(db: Session, user_id: uuid.UUID, since: datetime) -> int:
+    """Passed attempts finished since `since` (repeating a quiz does not make
+    the quest easier to farm: the quest completes once per period regardless)."""
+    stmt = (
+        select(func.count())
+        .select_from(AssessmentAttempt)
+        .where(
+            AssessmentAttempt.user_id == user_id,
+            AssessmentAttempt.status == AttemptStatus.COMPLETED,
+            AssessmentAttempt.passed.is_(True),
+            AssessmentAttempt.completed_at >= since,
         )
     )
     return int(db.execute(stmt).scalar_one())

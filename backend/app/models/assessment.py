@@ -269,7 +269,9 @@ class QuestionResponse(UUIDPrimaryKeyMixin, Base):
     )
 
     attempt_id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("assessment_attempts.id", ondelete="CASCADE"), nullable=False
+        PGUUID(as_uuid=True),
+        ForeignKey("assessment_attempts.id", ondelete="CASCADE"),
+        nullable=False,
     )
     question_id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("questions.id", ondelete="CASCADE"), nullable=False
@@ -291,9 +293,7 @@ class QuestionResponse(UUIDPrimaryKeyMixin, Base):
     is_first_correct: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=text("false"), nullable=False
     )
-    xp_awarded: Mapped[int] = mapped_column(
-        Integer, default=0, server_default="0", nullable=False
-    )
+    xp_awarded: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     time_spent_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     answered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
