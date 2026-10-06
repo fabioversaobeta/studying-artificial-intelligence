@@ -12,6 +12,7 @@ from app.services.ai.base import (
     AIResponse,
     AIUsageInfo,
 )
+from app.services.ai.claude_provider import ClaudeProvider
 from app.services.ai.errors import (
     AIError,
     AIInvalidOutput,
@@ -21,8 +22,16 @@ from app.services.ai.errors import (
     AIUsageLimitExceeded,
 )
 from app.services.ai.fake_provider import FakeProvider
+from app.services.ai.prompts import build_user_message, delimit
+from app.services.ai.service import AIResult, AIService, get_ai_service
 
 __all__ = [
+    "AIResult",
+    "AIService",
+    "ClaudeProvider",
+    "build_user_message",
+    "delimit",
+    "get_ai_service",
     "AIError",
     "AIInvalidOutput",
     "AIMessage",
