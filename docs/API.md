@@ -44,7 +44,8 @@ dependency when they are introduced.
 | `GET /auth/registration-info` | — | `{enabled, invite_required}` signup policy |
 | `POST /auth/register` | — | Create account, returns tokens. Optional `invite_code`; 403 if closed or bad code; 429 when rate limited |
 | `POST /auth/login` | — | Returns tokens |
-| `POST /auth/refresh` | — | Exchange refresh token for a new access token |
+| `POST /auth/refresh` | — | Rotate: exchange a refresh token for a new access+refresh pair; the presented token is invalidated. Reusing it returns 401 and revokes all the user's sessions |
+| `POST /auth/logout` | Bearer | Body `{refresh_token?}`. Revokes the current access token and the given refresh token. 204 |
 | `GET /auth/me` | ✓ | Current user |
 | `GET /subjects` | ✓ | List subjects with competency count + average mastery |
 | `GET /subjects/{id}` | ✓ | Subject detail: competencies with computed skill-tree state |

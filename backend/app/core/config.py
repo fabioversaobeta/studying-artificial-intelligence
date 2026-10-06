@@ -50,7 +50,7 @@ class Settings(BaseSettings):
 
     secret_key: str = Field(default=INSECURE_DEFAULT_SECRET_KEY)
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24  # 24h access token
+    access_token_expire_minutes: int = 60  # 1h access token (the client refreshes on 401)
     refresh_token_expire_minutes: int = 60 * 24 * 30  # 30 days refresh token
 
     # Accepts a JSON array or a comma-separated list in the env var

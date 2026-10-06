@@ -84,7 +84,31 @@ describe('AuthProvider', () => {
 
   it('logs out: clears tokens and user', async () => {
     tokenStorage.setTokens('acc', 'ref')
-    mockFetch({ 'GET /api/v1/auth/me': { body: user } })
+    const fetchMock = mockFetch({
+      'GET /api/v1/auth/me': { body: user },
+      'POST /api/v1/auth/logout': { status: 204 },
+    })
+    renderProbe()
+    await screen.findByText('user:Ada')
+    await userEvent.click(screen.getByText('do-logout'))
+    expect(screen.getByText('anonymous')).toBeInTheDocument()
+    expect(tokenStorage.getAccessToken()).toBeNull()
+    expect(tokenStorage.getRefreshToken()).toBeNull()
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/auth/logout'))
+      expect(call).toBeDefined()
+      const init = call![1] as RequestInit
+      expect(init.body).toBe(JSON.stringify({ refresh_token: 'ref' }))
+      expect((init.headers as Record<string, string>)['Authorization']).toBe('Bearer acc')
+    })
+  })
+
+  it('still logs out locally when the revoke call fails', async () => {
+    tokenStorage.setTokens('acc', 'ref')
+    mockFetch({
+      'GET /api/v1/auth/me': { body: user },
+      'POST /api/v1/auth/logout': apiError(500, 'internal_error', 'boom'),
+    })
     renderProbe()
     await screen.findByText('user:Ada')
     await userEvent.click(screen.getByText('do-logout'))

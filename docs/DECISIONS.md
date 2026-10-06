@@ -212,3 +212,37 @@ trusted if it matches `[A-Za-z0-9._-]{1,64}`, otherwise a UUID is generated
 so it reads the id from `request.state` and adds `error.request_id` (additive)
 plus the header itself. Metrics and tracing are deferred until a live deploy
 exists (see `docs/PENDING.md`).
+
+## Refresh-token rotation and revocation (Postgres denylist)
+
+**Decision**:
+- Every JWT has a `jti` (uuid4). Revocation is a Postgres denylist table
+  `revoked_tokens` (`jti` unique, `user_id`, `token_type`, `expires_at`,
+  `revoked_at`) -- no Redis. Tokens are only listed once revoked, so the
+  table stays small; `auth_service.purge_expired_revocations()` deletes rows
+  whose tokens have expired anyway (no scheduler; call it from a cron/CLI
+  when wanted).
+- `/auth/refresh` rotates: the presented refresh token is denylisted
+  (INSERT ... ON CONFLICT DO NOTHING on the unique `jti`, so concurrent
+  rotations of one token cannot both win) and a new access+refresh pair is
+  issued.
+- **Reuse detection**: presenting an already-used refresh token returns 401
+  and sets `users.tokens_valid_after` to now (floored to the second); every
+  token with `iat <=` that cutoff is rejected afterwards, which kills all
+  sessions of that user (thief and victim) and forces a new login. A
+  per-token "family" table was rejected as more machinery than a
+  single-user-scale app needs; the cost is that a legitimate user with
+  several devices is logged out everywhere on a suspected theft. Because JWT
+  `iat` has one-second resolution, a login within the same second as the
+  detection also gets rejected -- harmless, retry.
+- `POST /auth/logout` (authenticated) denylists the access token's `jti` and
+  the refresh token from the body (optional; ignored if invalid or owned by
+  another user). `get_current_user` rejects denylisted access tokens and
+  tokens issued before `tokens_valid_after`.
+- Access-token lifetime reduced from 24h to 60 minutes
+  (`ACCESS_TOKEN_EXPIRE_MINUTES`); the frontend already refreshes on 401, so
+  this is invisible to users. Refresh tokens stay at 30 days.
+- Tokens issued before this change have no `jti` and are rejected (users log
+  in again once).
+**Why**: closes the "stolen token is valid for 24h" gap documented in
+`docs/PENDING.md` using only the existing database.

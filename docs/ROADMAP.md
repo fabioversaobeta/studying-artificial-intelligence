@@ -56,7 +56,7 @@ because they're blocked.
 | Interview simulation (guided sessions, scoring) | NOT_STARTED | `InterviewSession` not yet modeled |
 | Project tracking (`Project` entity) | NOT_STARTED | |
 | Career readiness scoring against a job description | NOT_STARTED | |
-| Token revocation / logout denylist | NOT_STARTED | docs/PENDING.md |
+| Token revocation / logout denylist | DONE | docs/DECISIONS.md (C3) |
 | Deeper observability (tracing/metrics) beyond health checks | NOT_STARTED | Revisit once actually deployed |
 
 ## Next up (in priority order)

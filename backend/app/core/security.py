@@ -8,6 +8,8 @@ JWTs are used for stateless session handling. Access tokens are short-lived;
 refresh tokens are longer-lived and only ever used to mint new access tokens.
 """
 
+import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
@@ -44,6 +46,7 @@ def _create_token(subject: UUID, token_type: TokenType, expires_delta: timedelta
     payload: dict[str, Any] = {
         "sub": str(subject),
         "type": token_type.value,
+        "jti": str(uuid.uuid4()),
         "iat": now,
         "exp": now + expires_delta,
     }
@@ -68,10 +71,23 @@ class InvalidTokenError(Exception):
     pass
 
 
-def decode_token(token: str, expected_type: TokenType) -> UUID:
+@dataclass(frozen=True)
+class TokenClaims:
+    user_id: UUID
+    jti: UUID
+    issued_at: datetime
+    expires_at: datetime
+
+
+def decode_token_claims(token: str, expected_type: TokenType) -> TokenClaims:
     settings = get_settings()
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=[settings.jwt_algorithm],
+            options={"require": ["exp", "iat", "sub", "jti"]},
+        )
     except jwt.PyJWTError as exc:
         raise InvalidTokenError("Token is invalid or expired") from exc
 
@@ -79,6 +95,15 @@ def decode_token(token: str, expected_type: TokenType) -> UUID:
         raise InvalidTokenError(f"Expected a {expected_type.value} token")
 
     try:
-        return UUID(payload["sub"])
-    except (KeyError, ValueError) as exc:
-        raise InvalidTokenError("Token subject is missing or malformed") from exc
+        return TokenClaims(
+            user_id=UUID(payload["sub"]),
+            jti=UUID(payload["jti"]),
+            issued_at=datetime.fromtimestamp(payload["iat"], UTC),
+            expires_at=datetime.fromtimestamp(payload["exp"], UTC),
+        )
+    except (KeyError, ValueError, TypeError) as exc:
+        raise InvalidTokenError("Token claims are missing or malformed") from exc
+
+
+def decode_token(token: str, expected_type: TokenType) -> UUID:
+    return decode_token_claims(token, expected_type).user_id

@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 16 | 13 |
+| P1 — Curto prazo | 16 | 14 |
 | P2 — Médio prazo | 21 | 7 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -92,7 +92,7 @@ ou combinar com cuidado** (ver coluna Arquivos).
 |---|---|---|---|---|---|---|---|---|---|
 | C1 | **Falhar o boot em produção** se `secret_key` for o valor default (ou curto demais) ou se `debug=True`. Default de `debug` deve ser seguro. Atualizar `.env.example` e `docs/DEPLOYMENT.md`. Cobrir com testes. | P0 | S | DONE | S2 (`fix/s2-secret-guard-and-ci`) | — | `backend/app/core/config.py`, `backend/.env.example`, `docs/DEPLOYMENT.md`, novo teste | | Risco atual: sem a env var, qualquer um forja JWT. |
 | C2 | **Rate limiting** em `/auth/login`, `/auth/register` e `/auth/refresh` (ex.: `slowapi`, por IP e/ou por e-mail). Limites configuráveis via env. Retornar 429 no formato de erro padrão. | P1 | M | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/api/v1/auth.py`, `backend/pyproject.toml`, `backend/app/core/config.py` | 60f5eb7 | Atrás de proxy (Railway), usar o IP correto (`X-Forwarded-For`). |
-| C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | IN_PROGRESS | S12 (`fix/s12-token-rotation`) | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
+| C3 | **Rotação de refresh token + revogação**: adicionar claim `jti`; refresh usado fica inválido; endpoint `POST /auth/logout` revoga o par; denylist/tabela em Postgres (sem Redis). Nova migration. Atualizar o frontend para chamar o logout. | P1 | L | DONE | S12 (`fix/s12-token-rotation`) | C1 | `backend/app/core/security.py`, `backend/app/services/auth_service.py`, `backend/app/api/deps.py`, `backend/app/api/v1/auth.py`, `backend/app/models/user.py`, nova migration, `frontend/src/services/auth-service.ts`, `frontend/src/features/auth/*` | ad66c67, 9ef89f7, 0b218e0 | Resolve também o item de `docs/PENDING.md` "Token revocation". Registrar a decisão em `DECISIONS.md`. Considerar reduzir o access token de 24h para ~15–60 min. |
 | C4 | **Política de cadastro**: flag `REGISTRATION_ENABLED` e/ou código de convite, para o deploy público não aceitar signups arbitrários. | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/core/config.py`, `backend/app/services/auth_service.py`, `backend/app/api/v1/auth.py`, `frontend/src/pages/register-page.tsx` | 60f5eb7, 77feace | Conflita com C2/C3 em `auth.py` — combinar ordem. |
 | C5 | **Decisão sobre armazenamento de tokens no frontend** (localStorage vs cookie httpOnly + CSRF). Se mantiver localStorage, documentar o risco e adicionar CSP/headers de segurança (Vercel `headers`). | P2 | M | TODO | | C3 | `frontend/vercel.json`, `frontend/src/lib/token-storage.ts`, `docs/DECISIONS.md` | | Hoje não há `dangerouslySetInnerHTML`/`rehype-raw` (verificado), então o risco é baixo, mas o refresh dura 30 dias. |
 | C6 | Revisar CORS para produção (origens explícitas via env; `allow_methods`/`allow_headers` restritos em vez de `*`). | P1 | S | DONE | S7 (`fix/s7-auth-hardening`) | — | `backend/app/main.py`, `backend/app/core/config.py` | 0d81d42 | Conflita com C2 em `main.py`. |
@@ -206,6 +206,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-06 — C3 — rotação de refresh token com detecção de reuso, denylist `revoked_tokens` (Postgres), `POST /auth/logout`, access token de 60 min, frontend chama logout — ad66c67, 9ef89f7, 0b218e0
 - 2026-10-06 — J3 — `apiClient.getPaged()` (lê `X-Total-Count`), hook `usePagedList` e "Carregar mais" em goals e reviews; `listStudySessions` paginado no service (sem listagem na UI) — `0714c3f`
 - 2026-10-06 — G5 — a11y: skip link, landmarks, foco visível, contraste (botão primário, bordas de inputs), aria-expanded/progressbar; pendências em PENDING.md — `122b081`
 - 2026-10-06 — G4 — ErrorBoundary na raiz, ToastProvider (`useToast`), `ErrorAlert` com `role="alert"` e retry nas páginas — `87e5ef0`
