@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ReviewsPage } from '@/pages/reviews-page'
 import { learningService } from '@/services/learning-service'
+import { paged } from '@/test/paged'
 import { ApiError } from '@/services/api-client'
 import type { Review } from '@/types/api'
 
@@ -44,7 +45,7 @@ beforeEach(() => {
 
 describe('ReviewsPage', () => {
   it('shows the empty state when nothing is due', async () => {
-    svc.listDueReviews.mockResolvedValue([])
+    svc.listDueReviews.mockResolvedValue(paged([]))
     renderPage()
     expect(await screen.findByText(/Nothing to review right now/)).toBeInTheDocument()
   })
@@ -56,7 +57,7 @@ describe('ReviewsPage', () => {
   })
 
   it('submits a recall and shows the next interval', async () => {
-    svc.listDueReviews.mockResolvedValue([review])
+    svc.listDueReviews.mockResolvedValue(paged([review]))
     svc.submitRecall.mockResolvedValue({ ...review, interval_days: 6, repetitions: 1 })
     renderPage()
 
@@ -69,12 +70,26 @@ describe('ReviewsPage', () => {
   })
 
   it('shows an inline error when submitting fails and keeps the buttons', async () => {
-    svc.listDueReviews.mockResolvedValue([review])
+    svc.listDueReviews.mockResolvedValue(paged([review]))
     svc.submitRecall.mockRejectedValue(new ApiError('server_error', 'Nope', 500))
     renderPage()
 
     await userEvent.click(await screen.findByRole('button', { name: '2 · Almost' }))
     await waitFor(() => expect(screen.getByText('Nope')).toBeInTheDocument())
     expect(screen.getByRole('button', { name: '2 · Almost' })).toBeEnabled()
+  })
+
+  it('loads more reviews with the next offset and hides the button at the end', async () => {
+    const r2: Review = { ...review, id: 'r2', competency_id: 'c2' }
+    svc.listDueReviews.mockResolvedValueOnce(paged([review], 2))
+    svc.listDueReviews.mockResolvedValueOnce(paged([r2], 2))
+    renderPage()
+
+    expect(await screen.findByText('Showing 1 of 2')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Load more' }))
+
+    expect(await screen.findByText('Showing 2 of 2')).toBeInTheDocument()
+    expect(svc.listDueReviews).toHaveBeenLastCalledWith({ limit: 20, offset: 1 })
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
   })
 })

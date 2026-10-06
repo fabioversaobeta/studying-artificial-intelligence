@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAsync } from '@/hooks/use-async'
+import { usePagedList } from '@/hooks/use-paged-list'
 import { learningService } from '@/services/learning-service'
 import { ApiError } from '@/services/api-client'
 import { loadCompetencyIndex, type CompetencyRef } from '@/features/learning/competency-index'
@@ -8,6 +9,7 @@ import type { Review } from '@/types/api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
 
@@ -103,15 +105,16 @@ function ReviewCard({
 }
 
 export function ReviewsPage() {
-  const { data, error, isLoading, refetch } = useAsync(() => learningService.listDueReviews(), [])
+  const list = usePagedList((page) => learningService.listDueReviews(page))
+  const { items: data, error, isLoading, reload: refetch } = list
   const { data: index } = useAsync(() => loadCompetencyIndex().catch(() => ({} as Record<string, CompetencyRef>)), [])
   const [results, setResults] = useState<Record<string, Review>>({})
 
   if (isLoading) return <PageSpinner />
   if (error) return <ErrorAlert message={error} onRetry={refetch} />
-  if (!data) return null
 
-  const remaining = data.filter((r) => !results[r.id]).length
+  const reviewedCount = data.filter((r) => results[r.id]).length
+  const remaining = Math.max(0, list.total - reviewedCount)
 
   return (
     <div className="space-y-6">
@@ -146,6 +149,14 @@ export function ReviewsPage() {
               />
             ))}
           </div>
+          <LoadMore
+            shown={data.length}
+            total={list.total}
+            hasMore={list.hasMore}
+            isLoading={list.isLoadingMore}
+            error={list.loadMoreError}
+            onLoadMore={list.loadMore}
+          />
         </>
       )}
     </div>

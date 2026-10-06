@@ -153,4 +153,44 @@ describe('apiClient', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('getPaged', () => {
+    it('reads the total from X-Total-Count and sends limit/offset', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify([{ id: 1 }, { id: 2 }]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'X-Total-Count': '57' },
+        }),
+      )
+      const page = await apiClient.getPaged<{ id: number }>('/api/v1/goals', {
+        limit: 2,
+        offset: 4,
+      })
+      expect(page).toEqual({ items: [{ id: 1 }, { id: 2 }], total: 57 })
+      expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/api\/v1\/goals\?limit=2&offset=4$/)
+    })
+
+    it('falls back to items.length without the header and appends to existing queries', async () => {
+      fetchMock.mockResolvedValueOnce(json([1, 2, 3]))
+      const page = await apiClient.getPaged<number>('/x?status=active', { limit: 10 })
+      expect(page).toEqual({ items: [1, 2, 3], total: 3 })
+      expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/x\?status=active&limit=10$/)
+    })
+
+    it('uses the path untouched with no params and still refreshes on 401', async () => {
+      tokenStorage.setTokens('old', 'ref')
+      fetchMock
+        .mockResolvedValueOnce(json({}, 401))
+        .mockResolvedValueOnce(json({ access_token: 'new', refresh_token: 'ref2' }))
+        .mockResolvedValueOnce(json([]))
+      const page = await apiClient.getPaged('/y')
+      expect(page).toEqual({ items: [], total: 0 })
+      expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/y$/)
+    })
+
+    it('throws ApiError on failure', async () => {
+      fetchMock.mockResolvedValueOnce(json({ error: { code: 'validation_error', message: 'Bad' } }, 422))
+      await expect(apiClient.getPaged('/y', { limit: 0 })).rejects.toBeInstanceOf(ApiError)
+    })
+  })
 })

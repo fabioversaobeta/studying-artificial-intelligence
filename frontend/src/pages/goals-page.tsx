@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useAsync } from '@/hooks/use-async'
+import { usePagedList } from '@/hooks/use-paged-list'
 import { learningService } from '@/services/learning-service'
 import { ApiError } from '@/services/api-client'
 import { useToast } from '@/features/feedback/toast-context'
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/input'
 import { ErrorAlert } from '@/components/ui/alert'
+import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { GoalStatus } from '@/types/api'
 
@@ -18,7 +19,8 @@ const statusTone: Record<GoalStatus, 'accent' | 'success' | 'neutral'> = {
 }
 
 export function GoalsPage() {
-  const { data: goals, error, isLoading, refetch } = useAsync(() => learningService.listGoals(), [])
+  const list = usePagedList((page) => learningService.listGoals(page))
+  const { items: goals, error, isLoading, reload: refetch } = list
   const toast = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -91,10 +93,10 @@ export function GoalsPage() {
       {isLoading ? (
         <PageSpinner />
       ) : error ? (
-        <ErrorAlert message={error} />
+        <ErrorAlert message={error} onRetry={refetch} />
       ) : (
         <div className="space-y-3">
-          {goals?.map((goal) => (
+          {goals.map((goal) => (
             <Card key={goal.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -119,9 +121,17 @@ export function GoalsPage() {
               </div>
             </Card>
           ))}
-          {goals?.length === 0 && (
+          {goals.length === 0 && (
             <p className="text-sm text-fg-muted">No goals yet — add your first one above.</p>
           )}
+          <LoadMore
+            shown={goals.length}
+            total={list.total}
+            hasMore={list.hasMore}
+            isLoading={list.isLoadingMore}
+            error={list.loadMoreError}
+            onLoadMore={list.loadMore}
+          />
         </div>
       )}
     </div>

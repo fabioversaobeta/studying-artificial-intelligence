@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api-client'
+import { apiClient, type PageParams } from '@/services/api-client'
 import type {
   Challenge,
   ChallengeSubmission,
@@ -30,9 +30,10 @@ export const learningService = {
     duration_minutes: number
     notes?: string
   }) => apiClient.post<StudySession>('/api/v1/study-sessions', input),
-  listStudySessions: () => apiClient.get<StudySession[]>('/api/v1/study-sessions'),
+  listStudySessions: (params?: PageParams) =>
+    apiClient.getPaged<StudySession>('/api/v1/study-sessions', params),
 
-  listGoals: () => apiClient.get<LearningGoal[]>('/api/v1/goals'),
+  listGoals: (params?: PageParams) => apiClient.getPaged<LearningGoal>('/api/v1/goals', params),
   createGoal: (input: { title: string; description?: string; target_date?: string }) =>
     apiClient.post<LearningGoal>('/api/v1/goals', input),
   updateGoalStatus: (goalId: string, status: GoalStatus) =>
@@ -49,7 +50,8 @@ export const learningService = {
       notes,
     }),
 
-  listDueReviews: () => apiClient.get<Review[]>('/api/v1/reviews/due'),
+  listDueReviews: (params?: PageParams) =>
+    apiClient.getPaged<Review>('/api/v1/reviews/due', params),
   submitRecall: (competencyId: string, quality: number) =>
     apiClient.post<Review>(`/api/v1/reviews/${competencyId}/recall`, { quality }),
 }

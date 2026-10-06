@@ -42,7 +42,27 @@ interface RequestOptions {
   skipAuth?: boolean
 }
 
-async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
+export interface Paged<T> {
+  items: T[]
+  /** Total matching rows (`X-Total-Count`); falls back to `items.length` when absent. */
+  total: number
+}
+
+export interface PageParams {
+  limit?: number
+  offset?: number
+}
+
+interface RawResult<T> {
+  data: T
+  headers: Headers
+}
+
+async function send<T>(
+  path: string,
+  options: RequestOptions = {},
+  isRetry = false,
+): Promise<RawResult<T>> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
   if (!options.skipAuth) {
@@ -62,7 +82,7 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
     })
     try {
       await refreshPromise
-      return request<T>(path, options, true)
+      return send<T>(path, options, true)
     } catch {
       // fall through to normal error handling below
     }
@@ -77,12 +97,31 @@ async function request<T>(path: string, options: RequestOptions = {}, isRetry = 
     )
   }
 
-  if (response.status === 204) return undefined as T
-  return (await response.json()) as T
+  if (response.status === 204) return { data: undefined as T, headers: response.headers }
+  return { data: (await response.json()) as T, headers: response.headers }
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await send<T>(path, options)).data
+}
+
+function withPageParams(path: string, params: PageParams): string {
+  const query = new URLSearchParams()
+  if (params.limit !== undefined) query.set('limit', String(params.limit))
+  if (params.offset !== undefined) query.set('offset', String(params.offset))
+  const qs = query.toString()
+  if (!qs) return path
+  return `${path}${path.includes('?') ? '&' : '?'}${qs}`
 }
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
+  /** GET a paginated list: body is an array, total comes from `X-Total-Count`. */
+  getPaged: async <T>(path: string, params: PageParams = {}): Promise<Paged<T>> => {
+    const { data, headers } = await send<T[]>(withPageParams(path, params), { method: 'GET' })
+    const header = Number.parseInt(headers.get('X-Total-Count') ?? '', 10)
+    return { items: data, total: Number.isFinite(header) ? header : data.length }
+  },
   post: <T>(path: string, body?: unknown, skipAuth = false) =>
     request<T>(path, { method: 'POST', body, skipAuth }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
