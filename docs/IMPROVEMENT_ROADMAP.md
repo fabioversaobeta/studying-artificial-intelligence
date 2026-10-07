@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 15 |
-| P2 — Médio prazo | 24 | 17 |
+| P2 — Médio prazo | 25 | 17 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -175,6 +175,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | DONE | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | 88ebed6, 24590f9 | Entregue junto com o I2 (mesma migration). |
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | TODO | | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
 | J8 | Validador de questões: checar distribuição da posição da resposta correta e viés de tamanho (a correta ser sempre a mais longa) e avisar. | P2 | S | TODO | | — | `backend/app/seeds/questions/validate.py`, testes | | Sugestão da S27 (system-design-interviews q04/q09 têm esse viés). |
+| J9 | Teste instável no frontend: `quiz-attempt-page.test.tsx` > "shows one question at a time with progress and an accessible question list" falhou 1 vez em 3 execuções completas da suíte (passa isolado 3/3). Investigar a causa (timing/`waitFor`/foco) em vez de só aumentar timeouts. | P2 | S | TODO | | — | `frontend/src/pages/quiz-attempt-page.test.tsx` | | Detectado pelo coordenador após o merge da S28; mensagem de erro completa não capturada — reproduzir em loop. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
 
@@ -251,6 +252,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
 - 2026-10-06 — D6 (frontend) — `apiClient.delete` adicionado pelo coordenador após o merge do C5 (api-client.ts era da S17)
 - 2026-10-06 — Fase 1 concluída e mergeada (I1, I2, J6). Fase 2 iniciada: S21–S27 (I6: questões por matéria) e S28 (I3: recomendação)
+- 2026-10-07 — I3 — recomendação do dia mergeada (S28); J9 criado (teste instável do quiz)
 - 2026-10-07 — I6 — 300 questões nas 7 matérias (en+pt-BR) mergeadas; revisão do dono em docs/QUESTION_REVIEW.md; J8 criado
 - 2026-10-06 — J4 — sessões < 10 min mantêm o streak sem XP (`gamification_service.record_activity`); decisão do dono (opção a)
 - 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
