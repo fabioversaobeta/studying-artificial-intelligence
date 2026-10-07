@@ -1375,7 +1375,439 @@ _LB: tuple[QuestionSeed, ...] = (
         ),
     ),
 )
-_DB: tuple[QuestionSeed, ...] = ()
+# ----------------------------------------------------------------------
+# database-scaling
+# ----------------------------------------------------------------------
+_POOL_CODE = """```python
+from sqlalchemy import create_engine
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,
+    max_overflow=5,
+)
+```"""
+
+_DB: tuple[QuestionSeed, ...] = (
+    _q(
+        "database-scaling-q01",
+        "database-scaling",
+        MC,
+        EASY,
+        ("c",),
+        ("read-replicas",),
+        _t(
+            "A single PostgreSQL primary is overloaded, and about 95% of its queries are "
+            "reads. Which problem do read replicas solve here?",
+            "Replicas receive the primary's changes and can serve read queries, spreading the "
+            "read load without changing the data model. They do nothing for write throughput, "
+            "since every write still goes through the primary (A), do not split the dataset "
+            "(B: each replica holds a full copy), and are not protection against mistakes (D), "
+            "because bad writes replicate too.",
+            (
+                "Write throughput on the primary.",
+                "A dataset that no longer fits on one machine's disk.",
+                "Too many read queries hitting the primary.",
+                "Accidental `DELETE` statements.",
+            ),
+        ),
+        _t(
+            "Um primário PostgreSQL único está sobrecarregado, e cerca de 95% das consultas são "
+            "leituras. Qual problema as réplicas de leitura resolvem aqui?",
+            "As réplicas recebem as mudanças do primário e podem atender consultas de leitura, "
+            "distribuindo a carga de leitura sem mudar o modelo de dados. Elas não ajudam na "
+            "vazão de escrita, já que toda escrita ainda passa pelo primário (A), não dividem o "
+            "conjunto de dados (B: cada réplica guarda uma cópia completa) e não protegem contra "
+            "erros (D), porque escritas ruins também se replicam.",
+            (
+                "A vazão de escrita no primário.",
+                "Um conjunto de dados que não cabe mais no disco de uma máquina.",
+                "Leituras em excesso chegando ao primário.",
+                "Comandos `DELETE` acidentais.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q02",
+        "database-scaling",
+        MC,
+        EASY,
+        ("a",),
+        ("replication-lag", "read-your-writes"),
+        _t(
+            "A user saves a profile change. The page reloads showing the old value, but a "
+            "refresh a moment later shows the new one. What is the most likely cause?",
+            "With asynchronous replication, the read after the write was routed to a replica "
+            "that had not yet applied the change; a moment later it caught up. This is the "
+            "read-your-writes problem. A rolled-back write (B) would never show the new value "
+            "later, and a closed connection (C) or a duplicated write (D) would not produce "
+            "this old-then-new pattern.",
+            (
+                "The read was served by an asynchronous replica that had not applied the write "
+                "yet.",
+                "The primary rolled back the write and then applied it again.",
+                "The connection pool returned a closed connection.",
+                "The write was applied twice.",
+            ),
+        ),
+        _t(
+            "Um usuário salva uma alteração no perfil. A página recarrega mostrando o valor "
+            "antigo, mas um refresh instantes depois mostra o novo. Qual é a causa mais "
+            "provável?",
+            "Com replicação assíncrona, a leitura após a escrita foi direcionada a uma réplica "
+            "que ainda não tinha aplicado a mudança; instantes depois ela a alcançou. É o "
+            "problema de read-your-writes. Uma escrita revertida (B) nunca mostraria o valor "
+            "novo depois, e uma conexão fechada (C) ou uma escrita duplicada (D) não produziria "
+            "esse padrão de antigo e depois novo.",
+            (
+                "A leitura foi atendida por uma réplica assíncrona que ainda não tinha aplicado "
+                "a escrita.",
+                "O primário reverteu a escrita e depois a aplicou de novo.",
+                "O pool de conexões devolveu uma conexão fechada.",
+                "A escrita foi aplicada duas vezes.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q03",
+        "database-scaling",
+        MC,
+        EASY,
+        ("d",),
+        ("replication", "backups"),
+        _t(
+            "Why is a read replica not a substitute for backups?",
+            "Replication copies every change, including mistakes: a `DELETE` without a `WHERE` "
+            "clause reaches every replica within moments. Only a point-in-time backup lets "
+            "you restore the state from before the error. Replicas can be read-only (A) and "
+            "that does not matter, and they hold the same data as the primary (B, C are "
+            "false).",
+            (
+                "Replicas are read-only, so they cannot be restored.",
+                "Replicas can only store a fraction of the primary's data.",
+                "Replicas copy only the table schema, not the rows.",
+                "Replication propagates mistaken writes, such as a bad `DELETE`, to every "
+                "replica almost immediately.",
+            ),
+        ),
+        _t(
+            "Por que uma réplica de leitura não substitui backups?",
+            "A replicação copia todas as mudanças, inclusive os erros: um `DELETE` sem `WHERE` "
+            "chega a todas as réplicas em instantes. Só um backup point-in-time permite "
+            "restaurar o estado anterior ao erro. Ser somente leitura (A) não é o ponto, e as "
+            "réplicas guardam os mesmos dados do primário (B e C são falsas).",
+            (
+                "As réplicas são somente leitura, então não podem ser restauradas.",
+                "As réplicas só conseguem guardar uma fração dos dados do primário.",
+                "As réplicas copiam só o esquema das tabelas, não as linhas.",
+                "A replicação propaga escritas erradas, como um `DELETE` ruim, para todas as "
+                "réplicas quase imediatamente.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q04",
+        "database-scaling",
+        MC,
+        MEDIUM,
+        ("b",),
+        ("replication-lag", "read-your-writes"),
+        _t(
+            "Users complain that their own edits seem to vanish right after saving, caused by "
+            "replica lag. What is the simplest targeted fix?",
+            "Only the read of what a user just wrote needs fresh data, so route that user's "
+            "reads to the primary for a short window after a write (or wait until the replica "
+            "reaches the write's log position); other reads can stay on replicas. Making all "
+            "replication synchronous (A) makes every write wait for the replicas and hurts "
+            "write latency and availability. More replicas (C) do not remove lag, and browser "
+            "caching (D) would serve stale data longer.",
+            (
+                "Make replication synchronous for every replica so every write waits for all "
+                "of them.",
+                "Route that user's reads to the primary for a few seconds after a write, or "
+                "wait for the replica to reach the write's log position.",
+                "Add more replicas so that lag shrinks.",
+                "Let browsers cache profile reads for five minutes.",
+            ),
+        ),
+        _t(
+            "Usuários reclamam que as próprias edições parecem sumir logo após salvar, por "
+            "causa do lag das réplicas. Qual é a correção direcionada mais simples?",
+            "Só a leitura do que o usuário acabou de gravar precisa de dados atuais, então "
+            "direcione as leituras desse usuário ao primário por uma janela curta após a "
+            "escrita (ou espere a réplica alcançar a posição de log da escrita); as demais "
+            "leituras podem continuar nas réplicas. Tornar toda a replicação síncrona (A) faz "
+            "cada escrita esperar pelas réplicas e prejudica latência e disponibilidade de "
+            "escrita. Mais réplicas (C) não eliminam o lag, e cache no navegador (D) serviria "
+            "dados defasados por mais tempo.",
+            (
+                "Tornar a replicação síncrona em todas as réplicas, para que cada escrita "
+                "espere por todas.",
+                "Direcionar as leituras desse usuário ao primário por alguns segundos após a "
+                "escrita, ou esperar a réplica alcançar a posição de log da escrita.",
+                "Adicionar mais réplicas para que o lag diminua.",
+                "Deixar os navegadores fazerem cache das leituras de perfil por cinco minutos.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q05",
+        "database-scaling",
+        CODE,
+        MEDIUM,
+        ("d",),
+        ("connection-pooling", "estimation"),
+        _t(
+            "The application below runs on 20 instances, each creating this engine, against "
+            "a PostgreSQL server with `max_connections = 100`. How many connections can the "
+            "fleet try to open at peak?\n\n" + _POOL_CODE,
+            "In SQLAlchemy's default pool each engine keeps up to `pool_size` persistent "
+            "connections and may open `max_overflow` extra ones under load, so up to 10 + 5 = "
+            "15 per instance. Across 20 instances that is 20 x 15 = 300 potential connections, "
+            "three times the server's limit. Per-instance pools multiply with the fleet size, "
+            "which is why an external pooler or smaller pools are needed.",
+            (
+                "10, because the pool is shared by the whole fleet.",
+                "100, capped by the database's `max_connections`.",
+                "200, which is 20 instances x `pool_size`.",
+                "300, which is 20 instances x (`pool_size` + `max_overflow`).",
+            ),
+        ),
+        _t(
+            "A aplicação abaixo roda em 20 instâncias, cada uma criando este engine, contra um "
+            "servidor PostgreSQL com `max_connections = 100`. Quantas conexões a frota pode "
+            "tentar abrir no pico?\n\n" + _POOL_CODE,
+            "No pool padrão do SQLAlchemy cada engine mantém até `pool_size` conexões "
+            "persistentes e pode abrir `max_overflow` extras sob carga, ou seja, até 10 + 5 = 15 "
+            "por instância. Em 20 instâncias são 20 x 15 = 300 conexões potenciais, o triplo do "
+            "limite do servidor. Os pools por instância se multiplicam com o tamanho da frota, "
+            "por isso são necessários um pooler externo ou pools menores.",
+            (
+                "10, porque o pool é compartilhado por toda a frota.",
+                "100, limitado pelo `max_connections` do banco.",
+                "200, que é 20 instâncias x `pool_size`.",
+                "300, que é 20 instâncias x (`pool_size` + `max_overflow`).",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q06",
+        "database-scaling",
+        MC,
+        MEDIUM,
+        ("c",),
+        ("pgbouncer", "connection-pooling"),
+        _t(
+            "An external pooler such as PgBouncer runs in transaction mode between the "
+            "application and PostgreSQL. Which application behavior is most likely to break?",
+            "In transaction mode a server connection is only yours for the length of one "
+            "transaction and may be handed to another client afterwards. A session-level "
+            "setting (`SET`, a temporary table, a prepared statement) made in one transaction "
+            "may therefore not exist in the next one. Multi-statement transactions, replica "
+            "reads and parameterized queries all work normally.",
+            (
+                "Wrapping several statements in one `BEGIN ... COMMIT` block.",
+                "Sending read-only queries to a replica.",
+                "Relying on a session-level `SET` from one transaction still being in effect in "
+                "the next one.",
+                "Using parameterized queries.",
+            ),
+        ),
+        _t(
+            "Um pooler externo como o PgBouncer roda em modo transaction entre a aplicação e o "
+            "PostgreSQL. Qual comportamento da aplicação tem mais chance de quebrar?",
+            "No modo transaction uma conexão com o servidor é sua só durante uma transação e "
+            "pode ser entregue a outro cliente depois. Uma configuração de sessão (`SET`, uma "
+            "tabela temporária, um prepared statement) feita em uma transação pode, portanto, "
+            "não existir na seguinte. Transações com vários comandos, leituras em réplicas e "
+            "consultas parametrizadas funcionam normalmente.",
+            (
+                "Envolver vários comandos em um bloco `BEGIN ... COMMIT`.",
+                "Enviar consultas somente leitura a uma réplica.",
+                "Depender de um `SET` de sessão feito em uma transação continuar valendo na "
+                "seguinte.",
+                "Usar consultas parametrizadas.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q07",
+        "database-scaling",
+        MS,
+        MEDIUM,
+        ("a", "c", "d"),
+        ("sharding", "shard-key"),
+        _t(
+            "Which are properties of a good shard key? Select all that apply.",
+            "A good key has high cardinality and an even distribution (no hot shard), matches "
+            "the dominant query so most queries hit a single shard, and does not change over a "
+            "row's life (changing it means moving the row between shards). A low-cardinality, "
+            "skewed key such as a country when most users live in one country concentrates "
+            "load, and sharding by creation-time ranges sends every new write to the newest "
+            "shard.",
+            (
+                "High cardinality with values spread evenly across rows.",
+                "A country code, even if 80% of users are in one country.",
+                "It matches the dominant query, so most queries are routed to one shard.",
+                "It does not change during the row's lifetime.",
+                "Ranges of the creation timestamp, so new data lands on the newest shard.",
+            ),
+        ),
+        _t(
+            "Quais são propriedades de uma boa shard key (chave de particionamento)? Selecione "
+            "todas que se aplicam.",
+            "Uma boa chave tem alta cardinalidade e distribuição uniforme (sem shard quente), "
+            "corresponde à consulta dominante para que a maioria das consultas vá a um único "
+            "shard, e não muda durante a vida da linha (mudá-la significa mover a linha entre "
+            "shards). Uma chave de baixa cardinalidade e enviesada, como o país quando a maioria "
+            "dos usuários vive em um só, concentra a carga, e particionar por faixas de data de "
+            "criação envia toda escrita nova ao shard mais recente.",
+            (
+                "Alta cardinalidade, com valores distribuídos uniformemente entre as linhas.",
+                "Um código de país, mesmo que 80% dos usuários estejam em um só país.",
+                "Corresponde à consulta dominante, de modo que a maioria das consultas vai a "
+                "um único shard.",
+                "Não muda durante a vida da linha.",
+                "Faixas do timestamp de criação, para que os dados novos caiam no shard mais "
+                "recente.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q08",
+        "database-scaling",
+        MC,
+        MEDIUM,
+        ("a",),
+        ("connection-pooling", "diagnosis"),
+        _t(
+            'Requests are timing out with "timeout waiting for a connection from the pool", '
+            "yet the database's CPU and I/O are low. What is the most likely cause?",
+            "When the pool is the bottleneck and the database is idle, connections are being "
+            "held too long or never returned: a slow query holding connections, or a leak from "
+            "a missing release on an error path. Disk space (B), replica lag (C) and the need "
+            "for sharding (D) would show up in the database's own metrics or elsewhere, not as "
+            "waiting on a pool while the database is idle.",
+            (
+                "Connections are held too long or leaked, so the pool is exhausted even though "
+                "the database is idle.",
+                "The database server has run out of disk space.",
+                "Replication lag has grown too large.",
+                "The table has grown enough that it must be sharded.",
+            ),
+        ),
+        _t(
+            'As requisições estão expirando com "timeout waiting for a connection from the '
+            'pool", mas a CPU e o I/O do banco estão baixos. Qual é a causa mais provável?',
+            "Quando o gargalo é o pool e o banco está ocioso, as conexões estão sendo "
+            "seguradas por tempo demais ou nunca devolvidas: uma consulta lenta ocupando "
+            "conexões, ou um vazamento por falta de liberação em um caminho de erro. Espaço em "
+            "disco (B), lag de replicação (C) e necessidade de sharding (D) apareceriam nas "
+            "métricas do próprio banco ou em outro lugar, não como espera por um pool com o "
+            "banco ocioso.",
+            (
+                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o pool "
+                "mesmo com o banco ocioso.",
+                "O servidor de banco ficou sem espaço em disco.",
+                "O lag de replicação ficou grande demais.",
+                "A tabela cresceu a ponto de precisar de sharding.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q09",
+        "database-scaling",
+        MC,
+        HARD,
+        ("b",),
+        ("sharding", "transactions", "saga"),
+        _t(
+            "After sharding by `user_id`, a money transfer must update two users who live on "
+            "different shards. Which statement is correct?",
+            "A single database's ACID guarantees no longer cover a transaction that spans "
+            "shards. Common options are to design the shard key so that data that transacts "
+            "together is co-located, to use a saga with compensating actions (accepting "
+            "eventual consistency), or to use two-phase commit, which works but is "
+            "operationally expensive. A `BEGIN` on the router (A) cannot make two independent "
+            "databases commit atomically, per-shard replicas (C) do not coordinate shards, and "
+            "hash sharding (D) does not remove cross-shard operations.",
+            (
+                "Wrapping both updates in a normal `BEGIN ... COMMIT` issued by the "
+                "application's router guarantees atomicity across shards.",
+                "Single-database ACID no longer covers it; options include co-locating data "
+                "that transacts together, a saga with compensating actions, or a costly "
+                "two-phase commit.",
+                "Giving each shard a read replica restores atomicity across shards.",
+                "Hash-based sharding guarantees that both users always land on the same shard.",
+            ),
+        ),
+        _t(
+            "Após particionar por `user_id`, uma transferência de dinheiro precisa atualizar "
+            "dois usuários que estão em shards diferentes. Qual afirmação está correta?",
+            "As garantias ACID de um único banco deixam de cobrir uma transação que atravessa "
+            "shards. As opções comuns são projetar a shard key para que dados que transacionam "
+            "juntos fiquem no mesmo lugar, usar uma saga com ações compensatórias (aceitando "
+            "consistência eventual) ou usar two-phase commit, que funciona mas é operacionalmente "
+            "caro. Um `BEGIN` no roteador (A) não faz dois bancos independentes confirmarem de "
+            "forma atômica, réplicas por shard (C) não coordenam os shards, e o hash sharding "
+            "(D) não elimina operações entre shards.",
+            (
+                "Envolver as duas atualizações em um `BEGIN ... COMMIT` normal emitido pelo "
+                "roteador da aplicação garante atomicidade entre shards.",
+                "O ACID de um único banco não cobre o caso; as opções incluem manter juntos os "
+                "dados que transacionam, uma saga com ações compensatórias ou um two-phase "
+                "commit custoso.",
+                "Dar a cada shard uma réplica de leitura restaura a atomicidade entre shards.",
+                "O sharding por hash garante que os dois usuários sempre caiam no mesmo shard.",
+            ),
+        ),
+    ),
+    _q(
+        "database-scaling-q10",
+        "database-scaling",
+        SHORT,
+        HARD,
+        None,
+        ("indexing", "sharding", "replicas", "design"),
+        _t(
+            "A query scans a 200M-row table in full and is slow. How do you approach it, and "
+            "when would you reach for a read replica, denormalization or sharding instead of "
+            "just adding an index?",
+            "Self-check: did you mention (1) looking at the query plan and adding or fixing an "
+            "index first, (2) replicas for read load or heavy reports, (3) denormalizing the "
+            "hot access path, and (4) sharding only when write throughput or data volume "
+            "exceeds one primary?",
+            model_answer="Start with the query plan (`EXPLAIN ANALYZE`) and add an index that "
+            "matches the filter and sort columns, possibly a composite or covering one, so the "
+            "full scan becomes an index seek. If the table is well indexed but the primary is "
+            "overloaded by reads, add read replicas (accepting replication lag) and send heavy "
+            "reports there. If a hot query needs expensive joins, denormalize that access "
+            "path, copying the needed fields onto the row at write time. Reach for sharding "
+            "only when write throughput or the data volume itself outgrows one primary, since "
+            "replicas and indexes do not help there; it needs a carefully chosen shard key and "
+            "costs cross-shard joins and transactions.",
+        ),
+        _t(
+            "Uma consulta faz varredura completa em uma tabela de 200 milhões de linhas e está "
+            "lenta. Como você a aborda, e quando recorreria a uma réplica de leitura, a "
+            "desnormalização ou a sharding em vez de apenas adicionar um índice?",
+            "Autoavaliação: você mencionou (1) olhar o plano de execução e adicionar ou corrigir "
+            "um índice primeiro, (2) réplicas para carga de leitura ou relatórios pesados, "
+            "(3) desnormalizar o caminho de acesso quente e (4) sharding só quando a vazão de "
+            "escrita ou o volume de dados excede um primário?",
+            model_answer="Começar pelo plano de execução (`EXPLAIN ANALYZE`) e adicionar um "
+            "índice que combine com as colunas de filtro e ordenação, possivelmente composto ou "
+            "de cobertura, para que a varredura completa vire uma busca por índice. Se a tabela "
+            "está bem indexada mas o primário está sobrecarregado por leituras, adicionar "
+            "réplicas de leitura (aceitando o lag de replicação) e enviar os relatórios pesados "
+            "para elas. Se uma consulta quente exige joins caros, desnormalizar esse caminho de "
+            "acesso, copiando os campos necessários para a linha no momento da escrita. "
+            "Recorrer ao sharding só quando a vazão de escrita ou o próprio volume de dados "
+            "superar um primário, pois réplicas e índices não ajudam nesse caso; ele exige uma "
+            "shard key bem escolhida e custa joins e transações entre shards.",
+        ),
+    ),
+)
 
 
 QUESTIONS: tuple[QuestionSeed, ...] = (*_API, *_CACHE, *_LB, *_DB)
@@ -1425,6 +1857,49 @@ ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "autoscaling e o próximo gargalo.",
             }
         },
+    ),
+    AssessmentSeed(
+        code="system-design-database-scaling-quiz",
+        title="Database Scaling Quiz",
+        description="Read replicas, replication lag, connection pooling, sharding and "
+        "denormalization.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="database-scaling",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Escalabilidade de Banco de Dados",
+                "description": "Réplicas de leitura, lag de replicação, connection pooling, "
+                "sharding e desnormalização.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="system-design-checkpoint",
+        title="System Design Checkpoint",
+        description="A mixed check across API design, caching, load balancing and database "
+        "scaling.",
+        kind=AssessmentKind.MIXED,
+        question_codes=(
+            "api-design-q04",
+            "api-design-q07",
+            "caching-strategies-q01",
+            "caching-strategies-q06",
+            "caching-strategies-q09",
+            "load-balancing-q05",
+            "load-balancing-q09",
+            "database-scaling-q04",
+            "database-scaling-q06",
+            "database-scaling-q09",
+        ),
+        translations={
+            "pt-BR": {
+                "title": "Checkpoint de System Design",
+                "description": "Uma verificação mista entre design de APIs, cache, balanceamento "
+                "de carga e escalabilidade de banco de dados.",
+            }
+        },
+        pass_threshold=70,
+        completion_bonus_xp=40,
     ),
 )
 
