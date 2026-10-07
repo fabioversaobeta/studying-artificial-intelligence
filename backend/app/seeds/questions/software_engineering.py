@@ -1924,13 +1924,494 @@ DDD_ASSESSMENT = AssessmentSeed(
     },
 )
 
-# @@NEXT@@
+# ----------------------------------------------------------------------
+# testing-strategy
+# ----------------------------------------------------------------------
+
+_FLAKY_CODE = """```python
+import threading
+import time
+
+results = []
+
+
+def worker():
+    time.sleep(0.01)
+    results.append("done")
+
+
+def test_worker():
+    threading.Thread(target=worker).start()
+    time.sleep(0.01)
+    assert results == ["done"]
+```"""
+
+_TEST = "testing-strategy"
+
+TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        _TEST,
+        1,
+        MC,
+        EASY,
+        "a",
+        ("test-pyramid",),
+        _t(
+            "What does the test pyramid recommend?",
+            "The pyramid suggests many fast, focused unit tests at the base, fewer "
+            "integration tests in the middle and only a handful of slow end-to-end tests "
+            "at the top, because cost, slowness and flakiness grow as you go up. The "
+            'inverted shapes in B and D (the "ice-cream cone") are a known anti-pattern, '
+            "and C ignores the pyramid's point about balance.",
+            (
+                "Many fast unit tests, fewer integration tests and a few end-to-end tests.",
+                "Mostly end-to-end tests, with a few unit tests for the hardest functions.",
+                "The same number of tests at every level.",
+                "Mostly manual tests, with automation only for the user interface.",
+            ),
+        ),
+        _t(
+            "O que a pirâmide de testes recomenda?",
+            "A pirâmide sugere muitos testes unitários rápidos e focados na base, menos "
+            "testes de integração no meio e apenas alguns testes end-to-end lentos no topo, "
+            "pois custo, lentidão e instabilidade crescem à medida que se sobe. Os formatos "
+            'invertidos de B e D (o "cone de sorvete") são um anti-padrão conhecido, e C '
+            "ignora o ponto da pirâmide sobre equilíbrio.",
+            (
+                "Muitos testes unitários rápidos, menos testes de integração e poucos "
+                "testes end-to-end.",
+                "Principalmente testes end-to-end, com alguns testes unitários para as "
+                "funções mais difíceis.",
+                "A mesma quantidade de testes em todos os níveis.",
+                "Principalmente testes manuais, com automação apenas para a interface.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        2,
+        MC,
+        EASY,
+        "c",
+        ("test-doubles", "fakes"),
+        _t(
+            "Which kind of test double is a lightweight but working implementation, such as "
+            "an in-memory repository that stores items in a dictionary?",
+            "A fake has real, working behavior but takes a shortcut that makes it unsuitable "
+            "for production (an in-memory store instead of a database). A stub (A) only "
+            "returns canned answers, a mock (B) is set up with expectations about the calls "
+            "it should receive, and a dummy (D) is merely passed to fill a parameter and is "
+            "never used.",
+            (
+                "Stub",
+                "Mock",
+                "Fake",
+                "Dummy",
+            ),
+        ),
+        _t(
+            "Qual tipo de test double é uma implementação leve, porém funcional, como um "
+            "repositório em memória que guarda itens em um dicionário?",
+            "Um fake tem comportamento real e funcional, mas usa um atalho que o torna "
+            "inadequado para produção (um armazenamento em memória em vez de um banco). Um "
+            "stub (A) apenas devolve respostas prontas, um mock (B) é configurado com "
+            "expectativas sobre as chamadas que deve receber e um dummy (D) só é passado "
+            "para preencher um parâmetro e nunca é usado.",
+            (
+                "Stub",
+                "Mock",
+                "Fake",
+                "Dummy",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        3,
+        MC,
+        EASY,
+        "b",
+        ("flaky-tests",),
+        _t(
+            "Why are flaky tests (tests that sometimes pass and sometimes fail without code "
+            "changes) so damaging to a team?",
+            "When a test fails randomly, people learn to rerun and ignore red builds, so "
+            "real regressions slip through and trust in the whole suite erodes. Flakiness "
+            "does not make tests faster (A), and it has nothing to do with code coverage "
+            "(C) or with the framework's license (D).",
+            (
+                "They make the suite run faster because failed tests stop early.",
+                "They erode trust in the suite, so real failures get ignored or rerun.",
+                "They reduce code coverage until the failures are fixed.",
+                "They violate the license of most test frameworks.",
+            ),
+        ),
+        _t(
+            "Por que testes instáveis (flaky), que às vezes passam e às vezes falham sem "
+            "mudança de código, são tão prejudiciais para uma equipe?",
+            "Quando um teste falha aleatoriamente, as pessoas aprendem a reexecutar e "
+            "ignorar builds vermelhos, então regressões reais passam despercebidas e a "
+            "confiança em toda a suíte se corrói. A instabilidade não deixa os testes mais "
+            "rápidos (A) e não tem relação com cobertura de código (C) nem com a licença do "
+            "framework (D).",
+            (
+                "Eles deixam a suíte mais rápida, pois testes que falham param cedo.",
+                "Eles corroem a confiança na suíte, então falhas reais são ignoradas ou "
+                "reexecutadas.",
+                "Eles reduzem a cobertura de código até as falhas serem corrigidas.",
+                "Eles violam a licença da maioria dos frameworks de teste.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        4,
+        CODE,
+        MEDIUM,
+        "d",
+        ("flaky-tests", "concurrency"),
+        _t(
+            "What is the main problem with this test?\n\n" + _FLAKY_CODE,
+            "The test races against the thread: it assumes the worker finishes within the "
+            "same 10 ms the test sleeps, but both sleeps are the same length and scheduling "
+            "is not deterministic, so the test fails often and unpredictably. It should "
+            "synchronize explicitly, for example by calling `join()` on the thread or "
+            "waiting on a `threading.Event`. The `==` comparison, the global list and the "
+            "thread being non-daemon are not the cause.",
+            (
+                "`assert` should compare with `is` instead of `==`.",
+                "The global list should be replaced with a `Mock`.",
+                "The thread should be a daemon thread.",
+                "It depends on timing (a `sleep` race); it should wait deterministically, "
+                "for example with `join()` or an `Event`.",
+            ),
+        ),
+        _t(
+            "Qual é o principal problema deste teste?\n\n" + _FLAKY_CODE,
+            "O teste disputa uma corrida com a thread: ele assume que o worker termina "
+            "dentro dos mesmos 10 ms em que o teste dorme, mas os dois sleeps têm o mesmo "
+            "tamanho e o agendamento não é determinístico, então o teste falha com "
+            "frequência e de forma imprevisível. Ele deve sincronizar explicitamente, por "
+            "exemplo chamando `join()` na thread ou esperando um `threading.Event`. A "
+            "comparação com `==`, a lista global e a thread não ser daemon não são a causa.",
+            (
+                "O `assert` deveria comparar com `is` em vez de `==`.",
+                "A lista global deveria ser substituída por um `Mock`.",
+                "A thread deveria ser uma thread daemon.",
+                "Ele depende de tempo (uma corrida de `sleep`); deveria esperar de forma "
+                "determinística, por exemplo com `join()` ou um `Event`.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        5,
+        MC,
+        MEDIUM,
+        "c",
+        ("mocking", "boundaries"),
+        _t(
+            "You are unit-testing a `price_order()` function that calls a pure helper "
+            "`round_to_cents()`, builds a `Money` value object and calls a client that "
+            "fetches tax rates from a third-party HTTP API. Which dependency is the best "
+            "candidate for a test double?",
+            "The remote tax client is slow, non-deterministic, may cost money and lives "
+            "outside your process, so it should be replaced by a stub or fake behind a "
+            "port. Pure helpers (A) and value objects (B) are fast and deterministic, and "
+            "mocking them couples the test to implementation details. The list built "
+            "inside the function (D) is an internal detail, not a collaborator.",
+            (
+                "The pure helper `round_to_cents()`.",
+                "The `Money` value object.",
+                "The client that calls the third-party tax API.",
+                "The list that `price_order()` builds internally.",
+            ),
+        ),
+        _t(
+            "Você está testando unitariamente uma função `price_order()` que chama um "
+            "helper puro `round_to_cents()`, cria um value object `Money` e chama um "
+            "cliente que busca alíquotas em uma API HTTP de terceiros. Qual dependência é "
+            "a melhor candidata a test double?",
+            "O cliente remoto de alíquotas é lento, não determinístico, pode custar "
+            "dinheiro e vive fora do seu processo, então deve ser substituído por um stub "
+            "ou fake atrás de uma port. Helpers puros (A) e value objects (B) são rápidos "
+            "e determinísticos, e mocká-los acopla o teste a detalhes de implementação. A "
+            "lista montada dentro da função (D) é um detalhe interno, não um colaborador.",
+            (
+                "O helper puro `round_to_cents()`.",
+                "O value object `Money`.",
+                "O cliente que chama a API de alíquotas de terceiros.",
+                "A lista que `price_order()` monta internamente.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        6,
+        MC,
+        MEDIUM,
+        "a",
+        ("behavior-vs-implementation", "refactoring"),
+        _t(
+            "After a pure refactoring that did not change any behavior, 30 unit tests fail. "
+            "What is the most likely cause?",
+            "Tests that assert on private methods, internal call order or mock "
+            "interactions are coupled to how the code works instead of what it does, so "
+            "any restructuring breaks them. Good tests exercise the public behavior and "
+            "survive refactoring. Passing tests that do not break (B) would be the normal "
+            "result, too few tests (C) cannot cause failures, and a refactoring cannot "
+            "make the test runner outdated (D).",
+            (
+                "The tests are coupled to implementation details such as private methods or "
+                "mock interactions.",
+                "The tests were too independent of each other.",
+                "There were too few tests in the suite.",
+                "The test runner is out of date.",
+            ),
+        ),
+        _t(
+            "Após uma refatoração pura que não mudou nenhum comportamento, 30 testes "
+            "unitários falham. Qual é a causa mais provável?",
+            "Testes que verificam métodos privados, ordem interna de chamadas ou "
+            "interações de mocks estão acoplados a como o código funciona, e não ao que "
+            "ele faz, então qualquer reestruturação os quebra. Bons testes exercitam o "
+            "comportamento público e sobrevivem a refatorações. Testes independentes entre "
+            "si (B) não causam isso, poucos testes (C) não causam falhas e uma refatoração "
+            "não deixa o test runner desatualizado (D).",
+            (
+                "Os testes estão acoplados a detalhes de implementação, como métodos "
+                "privados ou interações de mocks.",
+                "Os testes eram independentes demais entre si.",
+                "Havia poucos testes na suíte.",
+                "O test runner está desatualizado.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        7,
+        MS,
+        MEDIUM,
+        "ac",
+        ("test-pyramid", "integration-tests"),
+        _t(
+            "Which TWO checks belong at the integration level rather than in a unit test?",
+            "Verifying a SQL query against a real test database and verifying that the "
+            "HTTP layer, authentication and service work together are integration concerns "
+            "because they need real components wired together. A discount rule over a few "
+            "inputs (B) and a pure sort function (D) are classic fast unit tests, and "
+            "button color (E) is a visual concern, not a service integration.",
+            (
+                "A repository's SQL query returns the right rows when run against a real "
+                "test database.",
+                "A discount rule gives the right result for three sample inputs.",
+                "An HTTP endpoint, its authentication middleware and the service behind it "
+                "work together and return the expected error format.",
+                "A pure function sorts a list in ascending order.",
+                "A button has the brand's color.",
+            ),
+        ),
+        _t(
+            "Quais DUAS verificações pertencem ao nível de integração, e não a um teste unitário?",
+            "Verificar uma consulta SQL contra um banco de teste real e verificar que a "
+            "camada HTTP, a autenticação e o serviço funcionam juntos são preocupações de "
+            "integração, pois precisam de componentes reais conectados. Uma regra de "
+            "desconto com algumas entradas (B) e uma função pura de ordenação (D) são "
+            "testes unitários rápidos clássicos, e a cor de um botão (E) é uma preocupação "
+            "visual, não de integração de serviços.",
+            (
+                "A consulta SQL de um repositório retorna as linhas certas quando executada "
+                "contra um banco de teste real.",
+                "Uma regra de desconto dá o resultado correto para três entradas de exemplo.",
+                "Um endpoint HTTP, seu middleware de autenticação e o serviço por trás "
+                "funcionam juntos e retornam o formato de erro esperado.",
+                "Uma função pura ordena uma lista em ordem crescente.",
+                "Um botão tem a cor da marca.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        8,
+        MC,
+        MEDIUM,
+        "b",
+        ("tdd",),
+        _t(
+            "Which sequence describes the Test-Driven Development cycle?",
+            "TDD is red-green-refactor: write a small failing test (red), write the "
+            "simplest code that makes it pass (green), then improve the design while the "
+            "tests stay green. Writing all the code first (A) or tests only at the end (C) "
+            "is not TDD, and adding code before a failing test exists (D) loses the "
+            "feedback the cycle provides.",
+            (
+                "Write all production code, then write tests to cover it.",
+                "Write a failing test, make it pass with the simplest code, then refactor "
+                "with the tests green.",
+                "Write all tests at the end of the sprint, then fix any failures.",
+                "Write production code first, then add a failing test to confirm the bug.",
+            ),
+        ),
+        _t(
+            "Qual sequência descreve o ciclo do Test-Driven Development?",
+            "O TDD é red-green-refactor: escrever um pequeno teste que falha (red), "
+            "escrever o código mais simples que o faz passar (green) e então melhorar o "
+            "design com os testes verdes. Escrever todo o código antes (A) ou os testes só "
+            "no fim (C) não é TDD, e adicionar código antes de existir um teste falhando "
+            "(D) perde o feedback que o ciclo oferece.",
+            (
+                "Escrever todo o código de produção e depois escrever testes para cobri-lo.",
+                "Escrever um teste que falha, fazê-lo passar com o código mais simples e "
+                "depois refatorar com os testes verdes.",
+                "Escrever todos os testes no fim da sprint e depois corrigir as falhas.",
+                "Escrever o código de produção primeiro e depois adicionar um teste que "
+                "falha para confirmar o bug.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        9,
+        MC,
+        HARD,
+        "c",
+        ("contract-tests", "microservices"),
+        _t(
+            "A consumer team and a provider team share an HTTP API. End-to-end tests in a "
+            "shared staging environment are slow and flaky, and the consumer's hand-written "
+            "stubs of the provider have drifted from reality. What best gives fast, "
+            "reliable feedback that a provider change will not break the consumer?",
+            "Consumer-driven contract tests record the requests and responses the consumer "
+            "relies on, and the provider's build verifies it still satisfies them, so "
+            "breaking changes are caught early without a shared environment. More "
+            "end-to-end tests (A) add slowness and flakiness, unverified stubs (B) are the "
+            "very drift problem, and manual QA (D) is slow and does not scale.",
+            (
+                "Add more end-to-end tests in the shared staging environment.",
+                "Keep using the hand-written stubs and update them when someone remembers.",
+                "Introduce consumer-driven contract tests that the provider verifies in its "
+                "own build.",
+                "Ask QA to manually test every integration before each release.",
+            ),
+        ),
+        _t(
+            "Um time consumidor e um time provedor compartilham uma API HTTP. Os testes "
+            "end-to-end em um ambiente de staging compartilhado são lentos e instáveis, e "
+            "os stubs escritos à mão pelo consumidor divergiram da realidade. O que melhor "
+            "dá feedback rápido e confiável de que uma mudança do provedor não quebrará o "
+            "consumidor?",
+            "Contract tests dirigidos pelo consumidor registram as requisições e respostas "
+            "em que o consumidor se apoia, e o build do provedor verifica que ele ainda as "
+            "satisfaz, então mudanças que quebram são pegas cedo sem um ambiente "
+            "compartilhado. Mais testes end-to-end (A) aumentam lentidão e instabilidade, "
+            "stubs não verificados (B) são o próprio problema de divergência e QA manual "
+            "(D) é lento e não escala.",
+            (
+                "Adicionar mais testes end-to-end no ambiente de staging compartilhado.",
+                "Continuar usando os stubs escritos à mão e atualizá-los quando alguém lembrar.",
+                "Introduzir contract tests dirigidos pelo consumidor, verificados pelo "
+                "provedor em seu próprio build.",
+                "Pedir ao QA que teste manualmente cada integração antes de cada release.",
+            ),
+        ),
+    ),
+    _q(
+        _TEST,
+        10,
+        SHORT,
+        HARD,
+        None,
+        ("coverage", "mutation-testing", "test-quality"),
+        _t(
+            "A service has 95% line coverage, yet bugs keep reaching production. Why is "
+            "coverage not enough, and what would you do to improve confidence?",
+            "Self-check: did you mention (1) that coverage only shows executed lines, not "
+            "assertion quality, (2) missing edge cases/integration gaps, and (3) remedies "
+            "such as mutation testing, property-based tests, reviewing assertions or "
+            "risk-based testing?",
+            None,
+            "Line coverage only says which lines ran during tests, not whether anything "
+            "meaningful was asserted: a test with no assertions gives the same coverage. It "
+            "also says nothing about untested inputs, boundary cases, concurrency, "
+            "integration seams or missing requirements. To improve confidence, review and "
+            "strengthen assertions, add edge-case and property-based tests, use mutation "
+            "testing to check whether tests detect injected faults, add integration and "
+            "contract tests at risky boundaries, and write a regression test for every "
+            "escaped bug. Treat coverage as a tool to find untested code, not as a goal.",
+        ),
+        _t(
+            "Um serviço tem 95% de cobertura de linhas, mas bugs continuam chegando à "
+            "produção. Por que a cobertura não basta e o que você faria para aumentar a "
+            "confiança?",
+            "Autoavaliação: você mencionou (1) que a cobertura mostra apenas linhas "
+            "executadas, não a qualidade das asserções, (2) casos de borda ausentes e "
+            "lacunas de integração e (3) remédios como mutation testing, testes baseados "
+            "em propriedades, revisão das asserções ou testes orientados a risco?",
+            None,
+            "A cobertura de linhas só diz quais linhas rodaram durante os testes, não se "
+            "algo significativo foi verificado: um teste sem asserções dá a mesma "
+            "cobertura. Ela também não diz nada sobre entradas não testadas, casos de "
+            "borda, concorrência, pontos de integração ou requisitos ausentes. Para "
+            "aumentar a confiança, revise e fortaleça as asserções, adicione testes de "
+            "casos de borda e baseados em propriedades, use mutation testing para checar "
+            "se os testes detectam falhas injetadas, adicione testes de integração e de "
+            "contrato nas fronteiras de risco e escreva um teste de regressão para cada bug "
+            "que escapou. Trate a cobertura como ferramenta para achar código sem teste, "
+            "não como meta.",
+        ),
+    ),
+)
+
+TESTING_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-testing-strategy-quiz",
+    title="Testing Strategy Quiz",
+    description="The test pyramid, test doubles, flaky tests, TDD and test quality.",
+    kind=AssessmentKind.COMPETENCY,
+    competency_slug="testing-strategy",
+    translations={
+        "pt-BR": {
+            "title": "Quiz de Estratégia de Testes",
+            "description": "A pirâmide de testes, test doubles, testes instáveis, TDD e "
+            "qualidade dos testes.",
+        }
+    },
+)
+
+MIXED_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-checkpoint",
+    title="Software Engineering Checkpoint",
+    description="A mixed check across SOLID, patterns, architecture, DDD and testing.",
+    kind=AssessmentKind.MIXED,
+    question_codes=(
+        "solid-principles-q03",
+        "solid-principles-q06",
+        "design-patterns-q04",
+        "design-patterns-q07",
+        "clean-architecture-q03",
+        "clean-architecture-q05",
+        "domain-driven-design-q04",
+        "domain-driven-design-q05",
+        "testing-strategy-q05",
+        "testing-strategy-q08",
+    ),
+    translations={
+        "pt-BR": {
+            "title": "Checkpoint de Engenharia de Software",
+            "description": "Uma verificação mista entre SOLID, patterns, arquitetura, DDD e "
+            "testes.",
+        }
+    },
+    pass_threshold=70,
+    completion_bonus_xp=40,
+)
+
 
 QUESTIONS: tuple[QuestionSeed, ...] = (
     *SOLID_QUESTIONS,
     *PATTERNS_QUESTIONS,
     *CLEAN_QUESTIONS,
     *DDD_QUESTIONS,
+    *TESTING_QUESTIONS,
 )
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
@@ -1938,6 +2419,8 @@ ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     PATTERNS_ASSESSMENT,
     CLEAN_ASSESSMENT,
     DDD_ASSESSMENT,
+    TESTING_ASSESSMENT,
+    MIXED_ASSESSMENT,
 )
 
 QUESTION_SET = SubjectQuestionSet(
