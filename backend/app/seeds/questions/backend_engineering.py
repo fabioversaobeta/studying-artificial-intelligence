@@ -150,10 +150,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "or triggers something (a payment, an email) is not idempotent, and a `PATCH` "
             "that applies a relative change such as an increment would be applied twice.",
             _options(
-                "`POST /payments` with `{\"amount\": 50}`",
+                '`POST /payments` with `{"amount": 50}`',
                 "`PUT /users/42` with the full new representation of the user",
                 "`POST /emails/send` with a recipient and a body",
-                "`PATCH /counters/7` with `{\"increment\": 1}`",
+                '`PATCH /counters/7` with `{"increment": 1}`',
             ),
         ),
         _t(
@@ -165,10 +165,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dispara algo (um pagamento, um e-mail) não é idempotente, e um `PATCH` que aplica "
             "uma mudança relativa, como um incremento, seria aplicado duas vezes.",
             _options(
-                "`POST /payments` com `{\"amount\": 50}`",
+                '`POST /payments` com `{"amount": 50}`',
                 "`PUT /users/42` com a nova representação completa do usuário",
                 "`POST /emails/send` com destinatário e corpo",
-                "`PATCH /counters/7` com `{\"increment\": 1}`",
+                '`PATCH /counters/7` com `{"increment": 1}`',
             ),
         ),
     ),
@@ -181,7 +181,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
         ("fastapi", "validation"),
         _t(
             "An endpoint declares a Pydantic body model with `age: int`, and a client sends "
-            "`{\"age\": \"abc\"}`. What does FastAPI return by default?",
+            '`{"age": "abc"}`. What does FastAPI return by default?',
             "FastAPI validates the body before your handler runs and answers "
             "`422 Unprocessable Entity` with a structured list of errors (location, message, "
             "type). The handler is never called, so there is no `500`, and `404` is about a "
@@ -196,7 +196,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
         ),
         _t(
             "Um endpoint declara um modelo Pydantic de corpo com `age: int`, e um cliente "
-            "envia `{\"age\": \"abc\"}`. O que o FastAPI retorna por padrão?",
+            'envia `{"age": "abc"}`. O que o FastAPI retorna por padrão?',
             "O FastAPI valida o corpo antes de executar o handler e responde "
             "`422 Unprocessable Entity` com uma lista estruturada de erros (localização, "
             "mensagem, tipo). O handler nunca é chamado, então não há `500`, e `404` trata de "
@@ -377,8 +377,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "tentativa seja enfileirada duas vezes.",
             _options(
                 "Aplicar rate limit ao endpoint para que as novas tentativas sejam rejeitadas.",
-                "Trocar o endpoint para `GET`, porque requisições `GET` são seguras para "
-                "repetir.",
+                "Trocar o endpoint para `GET`, porque requisições `GET` são seguras para repetir.",
                 "Retornar `200` imediatamente e processar a transferência em segundo plano.",
                 "Exigir uma `Idempotency-Key` gerada pelo cliente, guardá-la com o resultado "
                 "sob uma constraint de unicidade e devolver o resultado guardado quando a "
@@ -396,8 +395,8 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
         _t(
             "Which of these make a test of a list endpoint (`GET /items`) meaningfully "
             "strong? Select all that apply.",
-            "A real test pins down behavior: the exact response shape (not just \"some keys "
-            "exist\"), known seeded data with the expected default order and consistent "
+            'A real test pins down behavior: the exact response shape (not just "some keys '
+            'exist"), known seeded data with the expected default order and consistent '
             "pagination metadata, and the edge cases (empty result, last page, invalid "
             "parameters). Asserting only `200` passes for almost any body, and skipping "
             "invalid input leaves exactly the paths where APIs break.",
@@ -415,7 +414,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "Quais destes tornam o teste de um endpoint de listagem (`GET /items`) "
             "realmente forte? Selecione todos que se aplicam.",
             "Um teste de verdade fixa o comportamento: o formato exato da resposta (não só "
-            "\"algumas chaves existem\"), dados conhecidos com a ordem padrão esperada e "
+            '"algumas chaves existem"), dados conhecidos com a ordem padrão esperada e '
             "metadados de paginação consistentes, e os casos de borda (resultado vazio, "
             "última página, parâmetros inválidos). Verificar só o `200` passa para quase "
             "qualquer corpo, e ignorar entradas inválidas deixa justamente os caminhos onde "
@@ -451,8 +450,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Nothing: FastAPI always runs `async def` handlers in a thread pool.",
                 "The blocking database call stalls the event loop, delaying all other "
                 "requests; use a plain `def` handler or an async driver with `await`.",
-                "`Depends` cannot be used in an `async def` handler, so it raises a "
-                "`SyntaxError`.",
+                "`Depends` cannot be used in an `async def` handler, so it raises a `SyntaxError`.",
                 "`db.get(...)` returns a coroutine that FastAPI awaits automatically.",
             ),
         ),
@@ -564,8 +562,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Hashed with a fast function such as SHA-256, because fast is better for "
                 "login performance.",
                 "Encoded with Base64, which makes them unreadable.",
-                "Hashed with a slow, salted password-hashing algorithm such as Argon2id or "
-                "bcrypt.",
+                "Hashed with a slow, salted password-hashing algorithm such as Argon2id or bcrypt.",
             ),
         ),
         _t(
@@ -577,8 +574,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "SHA-256) permitem testar bilhões de palpites por segundo; e Base64 é uma "
             "codificação, não uma proteção.",
             _options(
-                "Criptografadas com AES, para que o suporte possa recuperar senhas "
-                "esquecidas.",
+                "Criptografadas com AES, para que o suporte possa recuperar senhas esquecidas.",
                 "Com hash de uma função rápida como SHA-256, pois rápido é melhor para o "
                 "desempenho do login.",
                 "Codificadas em Base64, o que as torna ilegíveis.",
@@ -662,8 +658,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "O payload é apenas codificado: qualquer um com o token pode lê-lo, e a "
                 "assinatura só protege contra adulteração.",
                 "A assinatura torna as claims confidenciais.",
-                "O servidor precisa consultar o emissor a cada requisição para verificar o "
-                "token.",
+                "O servidor precisa consultar o emissor a cada requisição para verificar o token.",
             ),
         ),
     ),
@@ -815,8 +810,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Base64-decode the payload and trust the claims, since the request came over "
                 "HTTPS.",
                 "Reject the token if it is expired (`exp`) or not yet valid (`nbf`).",
-                "Check that the issuer (`iss`) and audience (`aud`) match what the API "
-                "expects.",
+                "Check that the issuer (`iss`) and audience (`aud`) match what the API expects.",
                 "Accept whatever algorithm the token's `alg` header declares, for "
                 "compatibility with any issuer.",
             ),
@@ -1035,7 +1029,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
         _t(
             "The `users` table has a nullable column `nickname`. Which query returns the "
             "users that have no nickname?",
-            "`NULL` means \"unknown or missing\", and any comparison with `NULL` using `=` "
+            '`NULL` means "unknown or missing", and any comparison with `NULL` using `=` '
             "yields `NULL` (not true), so `nickname = NULL` matches no rows at all, even "
             "when nicknames are missing. The correct test is `IS NULL`. An empty string is a "
             "real value different from `NULL`, and `==` is not SQL.",
@@ -1049,7 +1043,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
         _t(
             "A tabela `users` tem uma coluna anulável `nickname`. Qual consulta retorna os "
             "usuários que não têm apelido?",
-            "`NULL` significa \"desconhecido ou ausente\", e qualquer comparação com `NULL` "
+            '`NULL` significa "desconhecido ou ausente", e qualquer comparação com `NULL` '
             "usando `=` resulta em `NULL` (não verdadeiro), então `nickname = NULL` não "
             "retorna nenhuma linha, mesmo quando há apelidos ausentes. O teste correto é "
             "`IS NULL`. Uma string vazia é um valor real, diferente de `NULL`, e `==` não é "
@@ -1081,8 +1075,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
                 "IS NULL;`",
-                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS "
-                "NULL;`",
+                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS NULL;`",
                 "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
                 "IS NOT NULL;`",
                 "`SELECT user_id FROM orders WHERE user_id IS NULL;`",
@@ -1100,8 +1093,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
                 "IS NULL;`",
-                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS "
-                "NULL;`",
+                "`SELECT u.id FROM users u JOIN orders o ON o.user_id = u.id WHERE o.id IS NULL;`",
                 "`SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id "
                 "IS NOT NULL;`",
                 "`SELECT user_id FROM orders WHERE user_id IS NULL;`",
@@ -1166,8 +1158,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`created_at` would be needed). Mentioning an indexed column is not enough: "
             "column order matters, and `LIMIT` does not disable indexes.",
             _options(
-                "Both queries use the index equally well, because both mention indexed "
-                "columns.",
+                "Both queries use the index equally well, because both mention indexed columns.",
                 "Query 2 uses the index, but Query 1 does not because `ORDER BY` always needs "
                 "a separate sort.",
                 "Query 1 can seek by `user_id` and read rows already ordered by `created_at`; "
@@ -1177,8 +1168,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             ),
         ),
         _t(
-            "Dado este índice composto, qual afirmação está correta?\n\n"
-            + _COMPOSITE_INDEX_SQL,
+            "Dado este índice composto, qual afirmação está correta?\n\n" + _COMPOSITE_INDEX_SQL,
             "Uma B-tree em `(user_id, created_at)` é ordenada primeiro por `user_id` e, "
             "dentro de cada usuário, por `created_at`. A Query 1 pode ir direto a "
             "`user_id = 5` e ler as linhas já em ordem de `created_at` (de trás para "
@@ -1263,8 +1253,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "in `BEGIN`/`COMMIT` at the default level does not change that, since the plain "
             "read takes no lock.",
             _options(
-                "A single statement: `UPDATE accounts SET balance = balance + 10 WHERE id = "
-                "1`.",
+                "A single statement: `UPDATE accounts SET balance = balance + 10 WHERE id = 1`.",
                 "`SELECT balance` in the application, add 10, then `UPDATE accounts SET "
                 "balance = <computed value>`.",
                 "Inside a transaction, `SELECT balance ... FOR UPDATE`, then update the row.",
@@ -1287,8 +1276,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`BEGIN`/`COMMIT` no nível padrão não muda isso, pois a leitura simples não "
             "toma lock.",
             _options(
-                "Um único comando: `UPDATE accounts SET balance = balance + 10 WHERE id = "
-                "1`.",
+                "Um único comando: `UPDATE accounts SET balance = balance + 10 WHERE id = 1`.",
                 "`SELECT balance` na aplicação, somar 10 e então `UPDATE accounts SET "
                 "balance = <valor calculado>`.",
                 "Dentro de uma transação, `SELECT balance ... FOR UPDATE` e depois atualizar "
@@ -1474,16 +1462,581 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "com um `statement_timeout` maior.",
                 "Ambas têm sucesso, pois o MVCC permite que escritores atualizem as mesmas "
                 "linhas sem bloquear uns aos outros.",
-                "Cada `UPDATE` ignora silenciosamente a linha bloqueada pela outra "
-                "transação.",
+                "Cada `UPDATE` ignora silenciosamente a linha bloqueada pela outra transação.",
             ),
         ),
     ),
 )
 
-QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS + AUTH_QUESTIONS + PG_QUESTIONS
+# ----------------------------------------------------------------------
+# event-driven-architecture
+# ----------------------------------------------------------------------
 
-ASSESSMENTS: tuple[AssessmentSeed, ...] = ()
+_DUAL_WRITE_CODE = """```python
+def place_order(db, broker, data):
+    order = Order(**data)
+    db.add(order)
+    db.commit()
+    broker.publish("order.placed", {"order_id": str(order.id)})
+    return order
+```"""
+
+_DEDUP_CONSUMER_CODE = """```python
+def handle(message):
+    with db.begin():
+        inserted = db.execute(
+            "INSERT INTO processed_messages (message_id) VALUES (:id) "
+            "ON CONFLICT DO NOTHING",
+            {"id": message.id},
+        ).rowcount
+        if inserted == 0:
+            return  # already processed
+        record_charge(db, message.payload)  # writes to the same database
+```"""
+
+_EDA = "event-driven-architecture"
+
+EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "event-driven-architecture-q01",
+        _EDA,
+        MC,
+        EASY,
+        ("c",),
+        ("queues", "pub-sub"),
+        _t(
+            "What is the key difference between a work queue with competing consumers and a "
+            "pub/sub topic?",
+            "In a work queue, each message is delivered to just one of the competing "
+            "consumers, which is how you spread work across workers. In pub/sub, every "
+            "subscriber receives its own copy of each message, so billing, analytics and "
+            "notifications can all react to the same event. Both are asynchronous, and both "
+            "can be durable, so those are not the distinguishing factors.",
+            _options(
+                "A work queue is synchronous, while pub/sub is asynchronous.",
+                "Pub/sub messages are never persisted, while queue messages always are.",
+                "In a work queue each message is handled by one consumer; in pub/sub each "
+                "subscriber receives its own copy of every message.",
+                "A work queue can have only one consumer, while pub/sub has many.",
+            ),
+        ),
+        _t(
+            "Qual é a principal diferença entre uma fila de trabalho com consumidores "
+            "concorrentes e um tópico pub/sub?",
+            "Em uma fila de trabalho, cada mensagem é entregue a apenas um dos consumidores "
+            "concorrentes, e é assim que se distribui trabalho entre workers. No pub/sub, "
+            "cada assinante recebe sua própria cópia de cada mensagem, então faturamento, "
+            "analytics e notificações podem reagir ao mesmo evento. Ambos são assíncronos e "
+            "ambos podem ser duráveis, então esses não são os fatores que os distinguem.",
+            _options(
+                "Uma fila de trabalho é síncrona, enquanto o pub/sub é assíncrono.",
+                "Mensagens de pub/sub nunca são persistidas, enquanto as de fila sempre são.",
+                "Em uma fila de trabalho cada mensagem é tratada por um consumidor; no "
+                "pub/sub cada assinante recebe sua própria cópia de toda mensagem.",
+                "Uma fila de trabalho só pode ter um consumidor, enquanto o pub/sub tem vários.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q02",
+        _EDA,
+        MC,
+        EASY,
+        ("d",),
+        ("delivery-guarantees", "idempotency"),
+        _t(
+            "A broker offers at-least-once delivery. What must the consumer be designed for?",
+            "At-least-once means a message is never silently lost, but it can be delivered "
+            "more than once (for example after a consumer crash before the acknowledgement, "
+            "or an acknowledgement timeout). The consumer must therefore be idempotent: "
+            "processing the same message twice must have the same effect as processing it "
+            "once. Duplicates are expected, loss is not allowed by the guarantee, and global "
+            "ordering is not part of it.",
+            _options(
+                "Messages are never duplicated, so no special handling is needed.",
+                "Messages may be lost, so the consumer must poll the database as a backup.",
+                "Messages always arrive in the global order they were published.",
+                "The same message may arrive more than once, so processing must be idempotent.",
+            ),
+        ),
+        _t(
+            "Um broker oferece entrega at-least-once. Para o que o consumidor deve ser projetado?",
+            "At-least-once significa que uma mensagem nunca se perde silenciosamente, mas "
+            "pode ser entregue mais de uma vez (por exemplo, após uma queda do consumidor "
+            "antes do acknowledgement, ou um timeout do acknowledgement). Portanto o "
+            "consumidor deve ser idempotente: processar a mesma mensagem duas vezes deve ter "
+            "o mesmo efeito que processá-la uma vez. Duplicatas são esperadas, a perda não é "
+            "permitida pela garantia, e ordenação global não faz parte dela.",
+            _options(
+                "As mensagens nunca são duplicadas, então nenhum tratamento especial é necessário.",
+                "As mensagens podem se perder, então o consumidor deve consultar o banco "
+                "como reserva.",
+                "As mensagens sempre chegam na ordem global em que foram publicadas.",
+                "A mesma mensagem pode chegar mais de uma vez, então o processamento deve ser "
+                "idempotente.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q03",
+        _EDA,
+        MC,
+        EASY,
+        ("a",),
+        ("decoupling", "message-queues"),
+        _t(
+            "The order service publishes an `OrderPlaced` message to a broker, and the email "
+            "service consumes it, instead of the order service calling the email service over "
+            "HTTP. What is the main benefit?",
+            "The services are decoupled in time: if the email service is slow or down, "
+            "orders still succeed and the messages wait in the queue until it recovers, and "
+            "traffic spikes are absorbed by the queue. It does not give exactly-once "
+            "delivery, it does not remove the need for failure handling (retries, duplicates, "
+            "dead letters), and the email is sent later, not before the order response.",
+            _options(
+                "Order processing keeps working when the email service is slow or down, and "
+                "the queue absorbs traffic spikes.",
+                "It guarantees that each email is sent exactly once.",
+                "It removes the need to handle failures in the email service.",
+                "The email is guaranteed to be sent before the order response returns.",
+            ),
+        ),
+        _t(
+            "O serviço de pedidos publica uma mensagem `OrderPlaced` em um broker, e o "
+            "serviço de e-mail a consome, em vez de o serviço de pedidos chamar o de e-mail "
+            "por HTTP. Qual é o principal benefício?",
+            "Os serviços ficam desacoplados no tempo: se o serviço de e-mail estiver lento "
+            "ou fora do ar, os pedidos continuam funcionando e as mensagens esperam na fila "
+            "até ele se recuperar, e picos de tráfego são absorvidos pela fila. Isso não dá "
+            "entrega exactly-once, não elimina a necessidade de tratar falhas (retries, "
+            "duplicatas, dead letters), e o e-mail é enviado depois, não antes da resposta "
+            "do pedido.",
+            _options(
+                "O processamento de pedidos continua funcionando quando o serviço de e-mail "
+                "está lento ou fora do ar, e a fila absorve picos de tráfego.",
+                "Garante que cada e-mail seja enviado exatamente uma vez.",
+                "Elimina a necessidade de tratar falhas no serviço de e-mail.",
+                "O e-mail é garantidamente enviado antes de a resposta do pedido retornar.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q04",
+        _EDA,
+        MC,
+        MEDIUM,
+        ("b",),
+        ("exactly-once", "delivery-guarantees"),
+        _t(
+            'Which statement about "exactly-once delivery" across a network and '
+            "independent systems is the most accurate?",
+            "Over an unreliable network, a sender cannot know whether a lost acknowledgement "
+            "means the message was lost or only the reply, so true exactly-once delivery is "
+            "not generally achievable end to end. In practice you get exactly-once effects "
+            "by combining at-least-once delivery with idempotent (or transactional) "
+            "processing. Acknowledgements alone do not deduplicate, retrying an at-most-once "
+            "sender produces at-least-once, and acknowledging before processing risks "
+            "losing the message on a crash.",
+            _options(
+                "Any broker provides it once acknowledgements are enabled.",
+                "It is not generally achievable end to end; in practice you combine "
+                "at-least-once delivery with idempotent processing to get exactly-once "
+                "effects.",
+                "At-most-once delivery plus retries on the sender gives exactly-once.",
+                "Acknowledging each message before processing it guarantees exactly-once "
+                "processing.",
+            ),
+        ),
+        _t(
+            'Qual afirmação sobre "entrega exactly-once" através de uma rede e de sistemas '
+            "independentes é a mais precisa?",
+            "Em uma rede não confiável, o remetente não sabe se um acknowledgement perdido "
+            "significa que a mensagem se perdeu ou apenas a resposta, então a entrega "
+            "exactly-once verdadeira geralmente não é alcançável de ponta a ponta. Na "
+            "prática, obtêm-se efeitos exactly-once combinando entrega at-least-once com "
+            "processamento idempotente (ou transacional). Acknowledgements sozinhos não "
+            "deduplicam, repetir um remetente at-most-once produz at-least-once, e dar "
+            "acknowledge antes de processar arrisca perder a mensagem em uma queda.",
+            _options(
+                "Qualquer broker a fornece quando os acknowledgements estão habilitados.",
+                "Geralmente não é alcançável de ponta a ponta; na prática combina-se "
+                "entrega at-least-once com processamento idempotente para obter efeitos "
+                "exactly-once.",
+                "Entrega at-most-once mais retries no remetente resulta em exactly-once.",
+                "Dar acknowledge em cada mensagem antes de processá-la garante "
+                "processamento exactly-once.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q05",
+        _EDA,
+        CODE,
+        MEDIUM,
+        ("a",),
+        ("dual-write", "outbox", "reliability"),
+        _t(
+            "What is the reliability problem in this code?\n\n" + _DUAL_WRITE_CODE,
+            "This is the dual-write problem: the database and the broker are two systems "
+            "that cannot be updated atomically. If the process crashes or the broker is "
+            "unavailable after `commit()` but before `publish()` succeeds, the order exists "
+            "and no event is ever sent. The commit has already happened, so nothing rolls "
+            "back, and publishing after the commit does not by itself duplicate events. The "
+            "usual fix is the transactional outbox.",
+            _options(
+                "A crash or broker failure after the commit leaves a saved order whose event "
+                "is never published.",
+                "Publishing after the commit makes the event be delivered twice.",
+                "If `publish` fails, the already committed transaction is rolled back "
+                "automatically.",
+                "`broker.publish` is blocked until the database replicas catch up.",
+            ),
+        ),
+        _t(
+            "Qual é o problema de confiabilidade neste código?\n\n" + _DUAL_WRITE_CODE,
+            "Este é o problema do dual-write: o banco de dados e o broker são dois sistemas "
+            "que não podem ser atualizados atomicamente. Se o processo cair ou o broker "
+            "estiver indisponível depois do `commit()` mas antes de o `publish()` ter "
+            "sucesso, o pedido existe e nenhum evento é enviado. O commit já aconteceu, "
+            "então nada é revertido, e publicar após o commit não duplica eventos por si só. "
+            "A correção usual é o transactional outbox.",
+            _options(
+                "Uma queda ou falha do broker após o commit deixa um pedido salvo cujo "
+                "evento nunca é publicado.",
+                "Publicar após o commit faz o evento ser entregue duas vezes.",
+                "Se o `publish` falhar, a transação já commitada é revertida automaticamente.",
+                "`broker.publish` fica bloqueado até as réplicas do banco o alcançarem.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q06",
+        _EDA,
+        MC,
+        MEDIUM,
+        ("d",),
+        ("outbox", "reliability"),
+        _t(
+            "Which description matches the transactional outbox pattern?",
+            "In the outbox pattern the business change and the event row are written in the "
+            "same local database transaction, so either both exist or neither does. A relay "
+            "process then reads unsent rows and publishes them to the broker, marking them "
+            "sent; this gives at-least-once publishing, so consumers must still be "
+            "idempotent. Publishing first and writing later reintroduces the dual-write "
+            "gap, in-memory buffers lose events on a crash, and distributed two-phase commit "
+            "is a different (and heavier) technique.",
+            _options(
+                "Publish to the broker first, then write to the database, retrying forever "
+                "if the write fails.",
+                "Keep events in an in-memory list and flush them to the broker every few seconds.",
+                "Run a distributed two-phase commit between the database and the broker for "
+                "every request.",
+                "Insert the event into an outbox table in the same transaction as the state "
+                "change; a separate relay publishes the rows and marks them as sent.",
+            ),
+        ),
+        _t(
+            "Qual descrição corresponde ao padrão transactional outbox?",
+            "No padrão outbox, a mudança de negócio e a linha do evento são gravadas na "
+            "mesma transação local do banco, então ou existem as duas ou nenhuma. Um "
+            "processo relay lê então as linhas não enviadas e as publica no broker, "
+            "marcando-as como enviadas; isso dá publicação at-least-once, então os "
+            "consumidores ainda precisam ser idempotentes. Publicar primeiro e gravar depois "
+            "reintroduz a lacuna do dual-write, buffers em memória perdem eventos em uma "
+            "queda, e two-phase commit distribuído é uma técnica diferente (e mais pesada).",
+            _options(
+                "Publicar no broker primeiro e depois gravar no banco, repetindo para sempre "
+                "se a gravação falhar.",
+                "Manter os eventos em uma lista em memória e descarregá-los no broker a cada "
+                "alguns segundos.",
+                "Executar um two-phase commit distribuído entre o banco e o broker em toda "
+                "requisição.",
+                "Inserir o evento em uma tabela outbox na mesma transação da mudança de "
+                "estado; um relay separado publica as linhas e as marca como enviadas.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q07",
+        _EDA,
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("idempotent-consumer", "deduplication", "sql"),
+        _t(
+            "The broker redelivers message `m1` after a first attempt that had already "
+            "committed. What happens in this handler?\n\n" + _DEDUP_CONSUMER_CODE,
+            "The first delivery inserts `m1` into `processed_messages` (rowcount 1) and "
+            "records the charge, committing both together. On redelivery, `ON CONFLICT DO "
+            "NOTHING` inserts nothing (rowcount 0) and the handler returns without charging "
+            "again. Because the dedup row and the side effect share one transaction, a "
+            "crash before commit rolls back both and the retry starts clean. A conflict does "
+            "not raise an error, and the insert does not wait for anything to be removed.",
+            _options(
+                "The insert succeeds again and the customer is charged twice.",
+                "The insert affects 0 rows, so the handler returns without charging again.",
+                "`ON CONFLICT` raises an exception and the message goes to a dead-letter queue.",
+                "The insert waits until the earlier `processed_messages` row is deleted.",
+            ),
+        ),
+        _t(
+            "O broker reentrega a mensagem `m1` após uma primeira tentativa que já havia "
+            "feito commit. O que acontece neste handler?\n\n" + _DEDUP_CONSUMER_CODE,
+            "A primeira entrega insere `m1` em `processed_messages` (rowcount 1) e registra "
+            "a cobrança, fazendo commit dos dois juntos. Na reentrega, `ON CONFLICT DO "
+            "NOTHING` não insere nada (rowcount 0) e o handler retorna sem cobrar de novo. "
+            "Como a linha de deduplicação e o efeito colateral compartilham uma transação, "
+            "uma queda antes do commit desfaz ambos e a nova tentativa começa limpa. Um "
+            "conflito não lança erro, e o insert não espera nada ser removido.",
+            _options(
+                "O insert tem sucesso de novo e o cliente é cobrado duas vezes.",
+                "O insert afeta 0 linhas, então o handler retorna sem cobrar de novo.",
+                "`ON CONFLICT` lança uma exceção e a mensagem vai para uma dead-letter queue.",
+                "O insert espera até a linha anterior de `processed_messages` ser apagada.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q08",
+        _EDA,
+        MS,
+        MEDIUM,
+        ("a", "c", "d"),
+        ("consumers", "acknowledgements", "dead-letter-queue"),
+        _t(
+            "Which practices are sound for a consumer working with an at-least-once broker? "
+            "Select all that apply.",
+            "Acknowledge only after the work has been done (or durably recorded), so a "
+            "crash leads to redelivery rather than loss. Send messages that keep failing to a "
+            "dead-letter queue after bounded retries, so one poison message does not block "
+            "the rest. Deduplicate with a unique message id or business key, because "
+            "duplicates will happen. Acknowledging on receipt turns the guarantee into "
+            "at-most-once (a crash loses the message), and ordering across queues or "
+            "partitions is not guaranteed.",
+            _options(
+                "Acknowledge a message only after it has been processed successfully.",
+                "Acknowledge as soon as the message is received, to avoid any redelivery.",
+                "Move a message that keeps failing to a dead-letter queue after a bounded "
+                "number of retries.",
+                "Deduplicate using a unique message id or a business key.",
+                "Assume messages in different partitions or queues are processed in the "
+                "order they were published.",
+            ),
+        ),
+        _t(
+            "Quais práticas são adequadas para um consumidor que trabalha com um broker "
+            "at-least-once? Selecione todas que se aplicam.",
+            "Dar acknowledge apenas depois de o trabalho ter sido feito (ou registrado de "
+            "forma durável), para que uma queda leve à reentrega e não à perda. Enviar "
+            "mensagens que continuam falhando para uma dead-letter queue após um número "
+            "limitado de tentativas, para que uma poison message não bloqueie as demais. "
+            "Deduplicar com um id único de mensagem ou uma chave de negócio, pois "
+            "duplicatas vão acontecer. Dar acknowledge ao receber transforma a garantia em "
+            "at-most-once (uma queda perde a mensagem), e a ordenação entre filas ou "
+            "partições não é garantida.",
+            _options(
+                "Dar acknowledge em uma mensagem somente depois de processá-la com sucesso.",
+                "Dar acknowledge assim que a mensagem for recebida, para evitar qualquer "
+                "reentrega.",
+                "Mover para uma dead-letter queue a mensagem que continua falhando após um "
+                "número limitado de tentativas.",
+                "Deduplicar usando um id único de mensagem ou uma chave de negócio.",
+                "Supor que mensagens de partições ou filas diferentes são processadas na "
+                "ordem em que foram publicadas.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q09",
+        _EDA,
+        MC,
+        HARD,
+        ("c",),
+        ("ordering", "partitioning", "scalability"),
+        _t(
+            "A topic is split into partitions for throughput. The events of one order "
+            "(`Created`, `Paid`, `Shipped`) must be processed in order, but different orders "
+            "may be processed in parallel. What is the standard design?",
+            "Ordering is guaranteed only within a partition. Publishing with the order id as "
+            "the partition (ordering) key sends all events of one order to the same "
+            "partition, where a single consumer in the group processes them sequentially, "
+            "while different orders spread across partitions and run in parallel. Random "
+            "keys lose per-order ordering, sleeping in the consumer is a fragile guess about "
+            "timing, and a single partition gives up the parallelism you wanted.",
+            _options(
+                "Use random keys for an even spread and let the consumers sort events by "
+                "timestamp.",
+                "Use a single partition for the whole topic and a single consumer.",
+                "Publish with the order id as the partition key, so all events of an order "
+                "land in the same partition and are consumed in sequence.",
+                "Make the consumer sleep a few seconds when it receives `Paid` before `Created`.",
+            ),
+        ),
+        _t(
+            "Um tópico é dividido em partições para ganhar vazão. Os eventos de um pedido "
+            "(`Created`, `Paid`, `Shipped`) precisam ser processados em ordem, mas pedidos "
+            "diferentes podem ser processados em paralelo. Qual é o design padrão?",
+            "A ordem só é garantida dentro de uma partição. Publicar com o id do pedido como "
+            "chave de partição (ordenação) envia todos os eventos de um pedido para a mesma "
+            "partição, onde um único consumidor do grupo os processa em sequência, enquanto "
+            "pedidos diferentes se espalham pelas partições e rodam em paralelo. Chaves "
+            "aleatórias perdem a ordem por pedido, dormir no consumidor é um palpite frágil "
+            "sobre tempo, e uma única partição abre mão do paralelismo desejado.",
+            _options(
+                "Usar chaves aleatórias para uma distribuição uniforme e deixar os "
+                "consumidores ordenarem os eventos por timestamp.",
+                "Usar uma única partição para o tópico inteiro e um único consumidor.",
+                "Publicar com o id do pedido como chave de partição, de modo que todos os "
+                "eventos de um pedido caiam na mesma partição e sejam consumidos em "
+                "sequência.",
+                "Fazer o consumidor dormir alguns segundos ao receber `Paid` antes de `Created`.",
+            ),
+        ),
+    ),
+    _q(
+        "event-driven-architecture-q10",
+        _EDA,
+        SHORT,
+        HARD,
+        None,
+        ("outbox", "idempotent-consumer", "reliability", "design"),
+        _t(
+            "Design the flow between an Order service and a Payment service so that an order "
+            "is never saved without its `OrderPlaced` event being eventually published, and "
+            "the customer is never charged twice, even with crashes and redeliveries. Which "
+            "components and guarantees do you use?",
+            "Self-check: did you mention (1) the transactional outbox written in the same "
+            "transaction as the order, (2) a relay that publishes with at-least-once "
+            "semantics, (3) an idempotent consumer with deduplication by event id in the same "
+            "transaction as the charge, (4) acknowledging after processing, and (5) retries "
+            "with a dead-letter queue and monitoring?",
+            model_answer="Producer side: in one database transaction, save the order and "
+            "insert an `OrderPlaced` row (with a unique event id) into an outbox table. A "
+            "relay process (polling or log-based change data capture) publishes unsent rows "
+            "to the broker and marks them sent. That gives at-least-once publishing with no "
+            "dual-write gap, but duplicates are possible. Consumer side: Payment acknowledges "
+            "a message only after processing, and processes idempotently: in one transaction "
+            "it inserts the event id into a processed-messages table (primary key) and "
+            "records the charge; a conflict means a duplicate, so it skips the work. For "
+            "the external payment provider call, pass an idempotency key derived from the "
+            "event or order id. Add bounded retries with backoff, a dead-letter queue for "
+            "poison messages, and monitoring of outbox lag and queue depth. Result: "
+            "at-least-once delivery plus idempotent processing gives exactly-once effects.",
+        ),
+        _t(
+            "Projete o fluxo entre um serviço de Pedidos e um serviço de Pagamentos de modo "
+            "que um pedido nunca seja salvo sem que seu evento `OrderPlaced` seja "
+            "eventualmente publicado e que o cliente nunca seja cobrado duas vezes, mesmo "
+            "com quedas e reentregas. Quais componentes e garantias você usa?",
+            "Autoavaliação: você mencionou (1) o transactional outbox gravado na mesma "
+            "transação do pedido, (2) um relay que publica com semântica at-least-once, "
+            "(3) um consumidor idempotente com deduplicação por id de evento na mesma "
+            "transação da cobrança, (4) acknowledge após o processamento e (5) retries com "
+            "dead-letter queue e monitoramento?",
+            model_answer="Lado produtor: em uma única transação do banco, salvar o pedido e "
+            "inserir uma linha `OrderPlaced` (com um id de evento único) em uma tabela "
+            "outbox. Um processo relay (polling ou change data capture baseado em log) "
+            "publica as linhas não enviadas no broker e as marca como enviadas. Isso dá "
+            "publicação at-least-once sem a lacuna do dual-write, mas duplicatas são "
+            "possíveis. Lado consumidor: Pagamentos dá acknowledge somente após processar, e "
+            "processa de forma idempotente: em uma transação insere o id do evento em uma "
+            "tabela de mensagens processadas (chave primária) e registra a cobrança; um "
+            "conflito indica duplicata, então pula o trabalho. Na chamada ao provedor de "
+            "pagamento externo, usar uma chave de idempotência derivada do id do evento ou "
+            "do pedido. Acrescentar retries limitados com backoff, uma dead-letter queue "
+            "para poison messages e monitoramento do atraso da outbox e da profundidade da "
+            "fila. Resultado: entrega at-least-once mais processamento idempotente dá "
+            "efeitos exactly-once.",
+        ),
+    ),
+)
+
+QUESTIONS: tuple[QuestionSeed, ...] = REST_QUESTIONS + AUTH_QUESTIONS + PG_QUESTIONS + EDA_QUESTIONS
+
+ASSESSMENTS: tuple[AssessmentSeed, ...] = (
+    AssessmentSeed(
+        code="rest-api-design-quiz",
+        title="REST API Implementation Quiz",
+        description="Status codes, idempotency, pagination, concurrency control and testing.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="rest-api-design",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Implementação de APIs REST",
+                "description": "Status codes, idempotência, paginação, controle de "
+                "concorrência e testes.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="authentication-authorization-quiz",
+        title="Authentication & Authorization Quiz",
+        description="Password hashing, sessions vs JWTs, OAuth2/OIDC, IDOR, XSS and CSRF.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="authentication-authorization",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Autenticação e Autorização",
+                "description": "Hash de senhas, sessões vs JWTs, OAuth2/OIDC, IDOR, XSS e CSRF.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="postgresql-fundamentals-quiz",
+        title="PostgreSQL Fundamentals Quiz",
+        description="NULLs, joins, indexes, EXPLAIN, isolation levels, locking and deadlocks.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="postgresql-fundamentals",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Fundamentos de PostgreSQL",
+                "description": "NULLs, joins, índices, EXPLAIN, níveis de isolamento, locks e "
+                "deadlocks.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="event-driven-architecture-quiz",
+        title="Event-Driven Architecture Quiz",
+        description="Queues, pub/sub, delivery guarantees, outbox and idempotent consumers.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="event-driven-architecture",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Arquitetura Orientada a Eventos",
+                "description": "Filas, pub/sub, garantias de entrega, outbox e consumidores "
+                "idempotentes.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="backend-engineering-checkpoint",
+        title="Backend Engineering Checkpoint",
+        description="A mixed check across APIs, auth, PostgreSQL and event-driven design.",
+        kind=AssessmentKind.MIXED,
+        question_codes=(
+            "rest-api-design-q02",
+            "rest-api-design-q05",
+            "rest-api-design-q07",
+            "authentication-authorization-q05",
+            "authentication-authorization-q08",
+            "postgresql-fundamentals-q05",
+            "postgresql-fundamentals-q06",
+            "event-driven-architecture-q02",
+            "event-driven-architecture-q05",
+            "event-driven-architecture-q06",
+        ),
+        translations={
+            "pt-BR": {
+                "title": "Checkpoint de Engenharia de Backend",
+                "description": "Uma verificação mista entre APIs, autenticação, PostgreSQL e "
+                "design orientado a eventos.",
+            }
+        },
+        pass_threshold=75,
+        completion_bonus_xp=40,
+    ),
+)
 
 QUESTION_SET = SubjectQuestionSet(
     subject_slug="backend-engineering",
