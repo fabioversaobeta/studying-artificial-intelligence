@@ -1465,18 +1465,479 @@ CLEAN_ASSESSMENT = AssessmentSeed(
     },
 )
 
+# ----------------------------------------------------------------------
+# domain-driven-design
+# ----------------------------------------------------------------------
+
+_EQUALITY_CODE = """```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Money:
+    amount: int
+    currency: str
+
+
+class Customer:
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+    def __eq__(self, other):
+        return isinstance(other, Customer) and self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
+
+print(
+    Money(5, "USD") == Money(5, "USD"),
+    Customer(1, "Ann") == Customer(1, "Anna"),
+    Customer(1, "Ann") == Customer(2, "Ann"),
+)
+```"""
+
+_DDD = "domain-driven-design"
+
+DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        _DDD,
+        1,
+        MC,
+        EASY,
+        "c",
+        ("value-objects",),
+        _t(
+            "Which of these concepts is best modeled as a Value Object?",
+            "A Value Object has no identity of its own: it is defined by its attributes, is "
+            "immutable and is interchangeable with any other with the same values. "
+            "`Money(10, 'EUR')` is the same as any other ten euros. A customer (A), an order "
+            "(B) and a bank account (D) are tracked over time and have an identity that "
+            "survives changes to their attributes, so they are Entities.",
+            (
+                "A customer, who may change name and address over the years.",
+                "An order that moves from placed to shipped to delivered.",
+                "An amount of money with a currency, such as 10 EUR.",
+                "A bank account that is identified by its account number.",
+            ),
+        ),
+        _t(
+            "Qual destes conceitos é mais bem modelado como um Value Object?",
+            "Um Value Object não tem identidade própria: é definido por seus atributos, é "
+            "imutável e intercambiável com qualquer outro de mesmos valores. "
+            "`Money(10, 'EUR')` é igual a quaisquer outros dez euros. Um cliente (A), um "
+            "pedido (B) e uma conta bancária (D) são acompanhados ao longo do tempo e têm "
+            "uma identidade que sobrevive a mudanças de atributos, portanto são Entities.",
+            (
+                "Um cliente, que pode mudar de nome e de endereço ao longo dos anos.",
+                "Um pedido que passa de feito para enviado e entregue.",
+                "Uma quantia em dinheiro com moeda, como 10 EUR.",
+                "Uma conta bancária identificada pelo número da conta.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        2,
+        MC,
+        EASY,
+        "a",
+        ("ubiquitous-language",),
+        _t(
+            "What is the Ubiquitous Language in DDD?",
+            "It is a shared, precise vocabulary built by developers and domain experts "
+            "together and used everywhere inside one bounded context: in conversations, "
+            "documents and the code itself (class and method names). It is not a "
+            "programming language (B), a translation layer (C), or a glossary kept only "
+            "by business analysts (D).",
+            (
+                "A common vocabulary shared by developers and domain experts, used in "
+                "conversation and in the code of a bounded context.",
+                "A programming language that every team in the company must use.",
+                "A layer that translates database column names into English.",
+                "A glossary maintained by business analysts and not reflected in the code.",
+            ),
+        ),
+        _t(
+            "O que é a Ubiquitous Language no DDD?",
+            "É um vocabulário compartilhado e preciso, construído em conjunto por "
+            "desenvolvedores e especialistas de domínio e usado em todo lugar dentro de um "
+            "bounded context: em conversas, documentos e no próprio código (nomes de "
+            "classes e métodos). Não é uma linguagem de programação (B), uma camada de "
+            "tradução (C) nem um glossário mantido só por analistas de negócio (D).",
+            (
+                "Um vocabulário comum entre desenvolvedores e especialistas de domínio, "
+                "usado nas conversas e no código de um bounded context.",
+                "Uma linguagem de programação que todos os times da empresa devem usar.",
+                "Uma camada que traduz nomes de colunas do banco para o inglês.",
+                "Um glossário mantido por analistas de negócio e que não aparece no código.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        3,
+        MC,
+        EASY,
+        "b",
+        ("bounded-context",),
+        _t(
+            'In an e-commerce company, "Customer" means a billing entity with a tax id in '
+            "Accounting, but a person with a wish list in Marketing. What does DDD suggest?",
+            "A bounded context is the boundary inside which a model and its terms have one "
+            "consistent meaning. Rather than forcing a single universal Customer (A, D), DDD "
+            "models each meaning in its own context and defines explicit translations "
+            "between them. Renaming one of them to something unrelated (C) would break each "
+            "team's ubiquitous language.",
+            (
+                "Build one universal `Customer` class with every field either team needs.",
+                "Treat Accounting and Marketing as separate bounded contexts, each with its "
+                "own `Customer` model, and map between them explicitly.",
+                'Rename "Customer" in Marketing to a term the business never uses.',
+                "Share a single database table so both models stay identical.",
+            ),
+        ),
+        _t(
+            'Em uma empresa de e-commerce, "Cliente" significa uma entidade de cobrança '
+            "com CNPJ/CPF na Contabilidade, mas uma pessoa com lista de desejos no "
+            "Marketing. O que o DDD sugere?",
+            "Um bounded context é a fronteira dentro da qual um modelo e seus termos têm "
+            "um significado consistente. Em vez de forçar um único Cliente universal (A, "
+            "D), o DDD modela cada significado em seu próprio contexto e define traduções "
+            "explícitas entre eles. Renomear um deles para algo sem relação (C) quebraria "
+            "a ubiquitous language de cada time.",
+            (
+                "Construir uma única classe `Customer` universal com todos os campos de que "
+                "os dois times precisam.",
+                "Tratar Contabilidade e Marketing como bounded contexts separados, cada um "
+                "com seu próprio modelo de `Customer`, e mapear entre eles explicitamente.",
+                'Renomear "Cliente" no Marketing para um termo que o negócio nunca usa.',
+                "Compartilhar uma única tabela de banco para que os dois modelos sejam idênticos.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        4,
+        CODE,
+        MEDIUM,
+        "c",
+        ("entities", "value-objects", "equality"),
+        _t(
+            "What does this program print, and what does it illustrate?\n\n" + _EQUALITY_CODE,
+            "`Money` is a frozen dataclass, so equality compares all attributes: the first "
+            "comparison is `True`. `Customer` defines equality by `id` only, so the same id "
+            "with a different name is still the same customer (`True`), while a different id "
+            "with the same name is a different customer (`False`). Value Objects are equal "
+            "by value; Entities are equal by identity.",
+            (
+                "`True False False`; both compare all attributes.",
+                "`False True False`; only entities compare by value.",
+                "`True True False`; value objects are equal by value, entities by identity.",
+                "`True True True`; equality never depends on the class.",
+            ),
+        ),
+        _t(
+            "O que este programa imprime e o que ele ilustra?\n\n" + _EQUALITY_CODE,
+            "`Money` é uma dataclass congelada, então a igualdade compara todos os "
+            "atributos: a primeira comparação é `True`. `Customer` define a igualdade só "
+            "pelo `id`, então o mesmo id com nome diferente continua sendo o mesmo cliente "
+            "(`True`), enquanto id diferente com o mesmo nome é outro cliente (`False`). "
+            "Value Objects são iguais por valor; Entities, por identidade.",
+            (
+                "`True False False`; ambos comparam todos os atributos.",
+                "`False True False`; só entidades comparam por valor.",
+                "`True True False`; value objects são iguais por valor, entidades por identidade.",
+                "`True True True`; a igualdade nunca depende da classe.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        5,
+        MC,
+        MEDIUM,
+        "b",
+        ("aggregates", "invariants"),
+        _t(
+            "An `Order` must never exceed the customer's credit limit across its lines. "
+            "Which design best respects the aggregate pattern?",
+            "The aggregate root is the only entry point, so it can enforce the invariant "
+            "every time a line is added, and the repository loads and saves the aggregate "
+            "as a whole. Letting any service edit `OrderLine` rows (A) bypasses the "
+            "invariant, navigating freely across object graphs (C) blurs the boundaries, "
+            "and one giant aggregate (D) causes contention and huge loads.",
+            (
+                "Any service updates `OrderLine` records directly through its own repository.",
+                "`Order` is the root with an `add_line()` method that checks the limit, and "
+                "the repository saves the whole `Order`.",
+                "Each `OrderLine` holds references to the full `Customer` and `Product` "
+                "object graphs.",
+                "One large aggregate holds all orders, customers and products together.",
+            ),
+        ),
+        _t(
+            "Um `Order` nunca pode exceder o limite de crédito do cliente somando suas "
+            "linhas. Qual design respeita melhor o padrão aggregate?",
+            "A raiz do aggregate é o único ponto de entrada, então pode impor a invariante "
+            "a cada linha adicionada, e o repositório carrega e salva o aggregate inteiro. "
+            "Deixar qualquer serviço editar registros de `OrderLine` (A) contorna a "
+            "invariante, navegar livremente por grafos de objetos (C) borra as fronteiras "
+            "e um aggregate gigante (D) causa contenção e cargas enormes.",
+            (
+                "Qualquer serviço atualiza registros de `OrderLine` diretamente por seu "
+                "próprio repositório.",
+                "`Order` é a raiz, com um método `add_line()` que verifica o limite, e o "
+                "repositório salva o `Order` inteiro.",
+                "Cada `OrderLine` guarda referências aos grafos completos de `Customer` e "
+                "`Product`.",
+                "Um único aggregate grande contém todos os pedidos, clientes e produtos.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        6,
+        MC,
+        MEDIUM,
+        "d",
+        ("aggregates", "references"),
+        _t(
+            "Why should an aggregate usually reference another aggregate by its identity "
+            "rather than holding the object itself?",
+            "Referencing by id keeps each aggregate a small consistency boundary: it is "
+            "loaded and saved on its own, and code cannot accidentally modify another "
+            "aggregate through a navigation path. Foreign keys are not a DDD requirement "
+            "(A), identity is not always faster (B), and referencing by id does not make "
+            "two aggregates share one transaction (C); the guidance is the opposite.",
+            (
+                "Because the database requires foreign keys to be integers.",
+                "Because comparing ids is always faster than comparing objects.",
+                "So that both aggregates can be updated in the same transaction.",
+                "To keep each aggregate a small consistency boundary and avoid loading or "
+                "changing another aggregate by accident.",
+            ),
+        ),
+        _t(
+            "Por que um aggregate normalmente referencia outro aggregate pela identidade, "
+            "em vez de guardar o próprio objeto?",
+            "Referenciar por id mantém cada aggregate como uma pequena fronteira de "
+            "consistência: ele é carregado e salvo sozinho, e o código não consegue "
+            "modificar outro aggregate por acidente através de um caminho de navegação. "
+            "Chaves estrangeiras não são exigência do DDD (A), identidade nem sempre é mais "
+            "rápida (B) e referenciar por id não faz dois aggregates compartilharem uma "
+            "transação (C); a orientação é a oposta.",
+            (
+                "Porque o banco de dados exige que chaves estrangeiras sejam inteiros.",
+                "Porque comparar ids é sempre mais rápido que comparar objetos.",
+                "Para que os dois aggregates possam ser atualizados na mesma transação.",
+                "Para manter cada aggregate como uma pequena fronteira de consistência e "
+                "evitar carregar ou alterar outro aggregate por acidente.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        7,
+        MS,
+        MEDIUM,
+        "ac",
+        ("strategic-vs-tactical",),
+        _t(
+            "Which TWO of these are tactical DDD building blocks (as opposed to strategic "
+            "patterns)?",
+            "Tactical patterns shape the model inside a bounded context: aggregates, "
+            "entities, value objects, repositories, domain events. A context map, the "
+            "ubiquitous language and the anti-corruption layer are strategic: they deal "
+            "with how contexts and teams relate or with the shared vocabulary.",
+            (
+                "Aggregate",
+                "Context map",
+                "Value object",
+                "Ubiquitous language",
+                "Anti-corruption layer",
+            ),
+        ),
+        _t(
+            "Quais DOIS destes são blocos de construção táticos do DDD (em oposição a "
+            "padrões estratégicos)?",
+            "Os padrões táticos moldam o modelo dentro de um bounded context: aggregates, "
+            "entities, value objects, repositories, domain events. O context map, a "
+            "ubiquitous language e a anti-corruption layer são estratégicos: tratam de "
+            "como contextos e times se relacionam ou do vocabulário compartilhado.",
+            (
+                "Aggregate",
+                "Context map",
+                "Value object",
+                "Ubiquitous language",
+                "Anti-corruption layer",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        8,
+        MC,
+        MEDIUM,
+        "a",
+        ("anti-corruption-layer", "context-mapping"),
+        _t(
+            "A new Billing context must consume data from a legacy ERP whose model is "
+            "confusing and uses different terms. How do you protect the new model?",
+            "An anti-corruption layer translates between the legacy model and your own, so "
+            "the foreign concepts never leak into the domain. Adopting the ERP's model "
+            "(B, a conformist relationship) imports its confusion, reading its tables "
+            "directly (C) couples you to its schema, and a shared kernel (D) requires "
+            "both teams to co-own and co-change the same model, which does not fit a "
+            "legacy system.",
+            (
+                "Put an anti-corruption layer between them that translates the ERP's data "
+                "into the Billing model.",
+                "Adopt the ERP's model and terms everywhere in Billing.",
+                "Let Billing query the ERP's database tables directly in its domain code.",
+                "Create a shared kernel co-owned by the ERP and Billing teams.",
+            ),
+        ),
+        _t(
+            "Um novo contexto de Billing precisa consumir dados de um ERP legado cujo "
+            "modelo é confuso e usa termos diferentes. Como proteger o novo modelo?",
+            "Uma anti-corruption layer traduz entre o modelo legado e o seu, de modo que "
+            "os conceitos externos nunca vazem para o domínio. Adotar o modelo do ERP (B, "
+            "uma relação conformist) importa a confusão, ler as tabelas dele diretamente "
+            "(C) acopla você ao esquema, e um shared kernel (D) exige que os dois times "
+            "sejam donos e alterem juntos o mesmo modelo, o que não combina com um "
+            "sistema legado.",
+            (
+                "Colocar uma anti-corruption layer entre eles, traduzindo os dados do ERP "
+                "para o modelo de Billing.",
+                "Adotar o modelo e os termos do ERP em todo o Billing.",
+                "Deixar o Billing consultar diretamente as tabelas do ERP no código de domínio.",
+                "Criar um shared kernel de propriedade conjunta dos times do ERP e do Billing.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        9,
+        MC,
+        HARD,
+        "c",
+        ("aggregates", "domain-events", "consistency"),
+        _t(
+            "Placing an `Order` must lead to reducing stock in the `Inventory` aggregate. "
+            "Following classic aggregate design guidance, which approach is preferred?",
+            "The guidance is to change one aggregate per transaction and make cross-"
+            "aggregate rules eventually consistent: the order is committed, an "
+            "`OrderPlaced` event is published, and a handler updates inventory in its own "
+            "transaction (idempotently, with retries). Always updating both in one "
+            "transaction (A) couples aggregates and hurts scalability, embedding "
+            "Inventory in Order (B) creates an oversized aggregate, and ignoring the stock "
+            "change (D) breaks the business rule.",
+            (
+                "Always update both aggregates in one database transaction.",
+                "Make `Inventory` a child entity of `Order` so they share a boundary.",
+                "Commit the order, publish an `OrderPlaced` event, and let a handler reduce "
+                "stock in its own idempotent transaction.",
+                "Skip the stock update and reconcile manually at the end of the month.",
+            ),
+        ),
+        _t(
+            "Fazer um `Order` deve levar à redução do estoque no aggregate `Inventory`. "
+            "Seguindo a orientação clássica de design de aggregates, qual abordagem é "
+            "preferida?",
+            "A orientação é alterar um aggregate por transação e tornar as regras entre "
+            "aggregates eventualmente consistentes: o pedido é confirmado, um evento "
+            "`OrderPlaced` é publicado e um handler atualiza o estoque em sua própria "
+            "transação (de forma idempotente, com retentativas). Atualizar sempre os dois "
+            "em uma transação (A) acopla os aggregates e prejudica a escalabilidade, "
+            "embutir Inventory em Order (B) cria um aggregate grande demais e ignorar a "
+            "baixa de estoque (D) quebra a regra de negócio.",
+            (
+                "Sempre atualizar os dois aggregates em uma única transação de banco.",
+                "Tornar `Inventory` uma entidade filha de `Order` para compartilharem a fronteira.",
+                "Confirmar o pedido, publicar um evento `OrderPlaced` e deixar um handler "
+                "reduzir o estoque em sua própria transação idempotente.",
+                "Pular a atualização de estoque e reconciliar manualmente no fim do mês.",
+            ),
+        ),
+    ),
+    _q(
+        _DDD,
+        10,
+        SHORT,
+        HARD,
+        None,
+        ("bounded-context", "microservices", "strategic"),
+        _t(
+            "Is a bounded context the same thing as a microservice? Explain, and say how "
+            "you would decide where to draw context boundaries.",
+            "Self-check: did you mention (1) that a bounded context is a linguistic/model "
+            "boundary, not a deployment unit, (2) that contexts can live in a modular "
+            "monolith, and (3) signals for boundaries such as changing meaning of terms, "
+            "different invariants, or team ownership?",
+            None,
+            "No. A bounded context is a boundary of meaning: inside it, a model and its "
+            "ubiquitous language are consistent. A microservice is a deployment and runtime "
+            "unit. A context can be implemented as a module of a monolith, and one context "
+            "may even span several services, although aligning one context with one service "
+            "is a common and convenient choice. To find boundaries, look for places where "
+            "the same word means different things, where invariants and lifecycles differ, "
+            "where different experts or teams own the language, and use workshops such as "
+            "event storming. Start with a modular monolith and split deployment only when "
+            "there is a real scaling or autonomy need.",
+        ),
+        _t(
+            "Um bounded context é a mesma coisa que um microsserviço? Explique e diga como "
+            "você decidiria onde traçar as fronteiras dos contextos.",
+            "Autoavaliação: você mencionou (1) que um bounded context é uma fronteira "
+            "linguística/de modelo, não uma unidade de deploy, (2) que contextos podem "
+            "viver em um monolito modular e (3) sinais para fronteiras, como termos que "
+            "mudam de significado, invariantes diferentes ou propriedade por times?",
+            None,
+            "Não. Um bounded context é uma fronteira de significado: dentro dele, um modelo "
+            "e sua ubiquitous language são consistentes. Um microsserviço é uma unidade de "
+            "deploy e de execução. Um contexto pode ser implementado como um módulo de um "
+            "monolito, e um contexto pode até abranger vários serviços, embora alinhar um "
+            "contexto a um serviço seja uma escolha comum e conveniente. Para achar as "
+            "fronteiras, procure lugares em que a mesma palavra significa coisas "
+            "diferentes, onde invariantes e ciclos de vida diferem, onde especialistas ou "
+            "times diferentes são donos da linguagem, e use oficinas como event storming. "
+            "Comece com um monolito modular e separe o deploy só quando houver necessidade "
+            "real de escala ou autonomia.",
+        ),
+    ),
+)
+
+DDD_ASSESSMENT = AssessmentSeed(
+    code="software-engineering-domain-driven-design-quiz",
+    title="Domain-Driven Design Quiz",
+    description="Entities, value objects, aggregates, bounded contexts and strategic design.",
+    kind=AssessmentKind.COMPETENCY,
+    competency_slug="domain-driven-design",
+    translations={
+        "pt-BR": {
+            "title": "Quiz de Domain-Driven Design",
+            "description": "Entities, value objects, aggregates, bounded contexts e design "
+            "estratégico.",
+        }
+    },
+)
+
 # @@NEXT@@
 
 QUESTIONS: tuple[QuestionSeed, ...] = (
     *SOLID_QUESTIONS,
     *PATTERNS_QUESTIONS,
     *CLEAN_QUESTIONS,
+    *DDD_QUESTIONS,
 )
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
     SOLID_ASSESSMENT,
     PATTERNS_ASSESSMENT,
     CLEAN_ASSESSMENT,
+    DDD_ASSESSMENT,
 )
 
 QUESTION_SET = SubjectQuestionSet(
