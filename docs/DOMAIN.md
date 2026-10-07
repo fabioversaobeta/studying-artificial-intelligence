@@ -219,3 +219,31 @@ every translation has the same option ids as English; `short_answer` has a
 identical in every language; assessments reference existing questions, a
 competency assessment only its own competency's questions, thresholds are 1-100.
 This is the contract for the bulk generation of all 30 competencies (I6).
+
+## Recommendations: "what to study today" (I3)
+
+`GET /recommendations/today` is a deterministic, explainable rule set (no LLM,
+no stored state, read-only, never grants XP). Rules are pure functions in
+`app.domain.recommendations`; the weights are constants there. Each competency
+yields its candidate reasons; only the highest-scoring reason per competency is
+kept, results are ordered by score (desc) then competency id, and cut to
+`limit` (default 5, max 20).
+
+| Kind | When | Score |
+|---|---|---|
+| `review_due` | an SRS review is due (any state) | 100 + days overdue (capped at 30) |
+| `goal_deadline` | an active goal with a target date <= 14 days away (or past) is linked to a `learning`/`available` competency | 85 + 25 x closeness (85 at 14 days, 110 on/after the date) |
+| `strengthen_weak` | `learning`, mastery < 40 or last recall quality < 3 | 70 + 10 x shortfall below 40, +5 on a recall lapse |
+| `next_in_path` | first `available` step of a path under way (a step learning/mastered, not all mastered) | 55 |
+| `take_quiz` | `learning`, has an active quiz, quiz coverage < 50% | 45 + 10 x gap below 50% |
+| `continue_learning` | any other `learning` competency | 40 + 20 x distance from mastery 80 |
+
+Quiz coverage is the Practice signal's: distinct active questions whose latest
+finished answer is correct / active questions. A new user with nothing else
+gets one starting point (score 50): the first `available` step of the first
+learning path, else the first `available` competency. Goals have no structural
+link to the catalog, so a goal is linked to a competency when its title or
+description mentions the competency name (whole phrase, case-insensitive), or
+the subject name (then the subject's weakest `learning` competency, else its
+first `available`). The reason text is a localised template
+(`app.domain.recommendation_messages`, `en` / `pt-BR`, English fallback).

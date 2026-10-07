@@ -71,6 +71,12 @@ def ensure_review_scheduled(
     return review
 
 
+def list_reviews_for_user(db: Session, user_id: uuid.UUID) -> list[Review]:
+    """Every review row of the user (one per scheduled competency), one query."""
+    stmt = select(Review).where(Review.user_id == user_id).order_by(Review.due_at, Review.id)
+    return list(db.execute(stmt).scalars().all())
+
+
 def save_review(db: Session, review: Review) -> Review:
     db.add(review)
     db.flush()
