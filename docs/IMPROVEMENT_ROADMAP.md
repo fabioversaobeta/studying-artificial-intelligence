@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 15 |
-| P2 — Médio prazo | 23 | 15 |
+| P2 — Médio prazo | 23 | 16 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -154,7 +154,7 @@ estáveis.
 |---|---|---|---|---|---|---|---|---|---|
 | I2 | **Assessments / banco de questões** (`Assessment`, `Question`, tentativas, alimentando mastery). | P2 | L | DONE | S19 (`feat/s19-assessments-language`) | — | modelos, migration, services, API, seeds | 8a76ad7, 85b7bbe, 1722124, 8163355, 3b2f255 | Aditivo. Migration `c9d2f6a1e4b7` (down_revision `b7e1c4a9d3f5`), compartilhada com J6. Piloto de 12 questões; geração em massa = I6. |
 | I1 | **Camada `ai_service` provider-agnóstica** (interface + 1 provider Claude + fake para testes), sem SDK de provider fora dela. Base do AI Mentor e do grader. | P2 | L | DONE | S20 (`feat/s20-ai-service`) | — | `backend/app/services/ai/` (pacote), `backend/app/core/config.py`, `ai_usage` + migration | a88f76e..d94c5f5 | Ver `docs/PENDING.md`. Se usar a API da Anthropic, carregar a skill `claude-api`. |
-| I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | IN_PROGRESS | S28 (`feat/s28-recommendations`) | G1, G3 | novo service/endpoint/UI | | |
+| I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | DONE | S28 (`feat/s28-recommendations`) | G1, G3 | novo service/endpoint/UI | f2f17fe..c0a468b | `GET /recommendations/today` (regras puras + pesos em DOMAIN.md, sem migrations); card no dashboard. Metas ligadas a competências por nome (sem FK) — ver DECISIONS.md. |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
 | I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | IN_PROGRESS | S21–S27, uma por matéria (`feat/s21-…` a `feat/s27-…`) | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. |
@@ -209,6 +209,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-07 — I3 — `GET /recommendations/today` determinístico e explicável (6 tipos, pesos em DOMAIN.md, motivo em en/pt-BR, sem migrations/LLM, queries constantes) + card "Today's recommendations" no dashboard — `f2f17fe`, `391476c`, `c0a468b`, `b5e65d8`
 - 2026-10-06 — I2 — banco de questões traduzíveis (en/pt-BR), assessments, tentativas, correção determinística + autoavaliação de resposta curta, regra de XP anti-farm, Practice do mastery com quizzes, revisão espaçada em erro, UI `/quizzes`, seeds + validador (piloto de 12 questões) — `8a76ad7`, `85b7bbe`, `1722124`, `8163355`, `3b2f255`
 - 2026-10-06 — J6 — `users.preferred_language`, `PATCH /users/me`, página Settings com seletor de idioma — `88ebed6`, `24590f9`
 - 2026-10-06 — I1 — pacote `app/services/ai` (interface, provider Claude + fake, guardrails, ai_usage + migration dce0bce246d6, GET /ai/status); sem feature de produto — d94c5f5
