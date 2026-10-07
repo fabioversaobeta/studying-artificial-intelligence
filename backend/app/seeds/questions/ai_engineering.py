@@ -778,8 +778,7 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "Permanece constante, pois só a mensagem mais recente conta.",
                 "Cresce linearmente, pois cada turno acrescenta o mesmo custo fixo.",
-                "Cresce logaritmicamente, pois os turnos antigos são comprimidos "
-                "automaticamente.",
+                "Cresce logaritmicamente, pois os turnos antigos são comprimidos automaticamente.",
                 "Cresce de forma aproximadamente quadrática, pois cada turno relê todos os "
                 "turnos anteriores.",
             ),
@@ -1029,8 +1028,7 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "perder identificadores raros sem conteúdo semântico, por isso a recuperação "
             "híbrida combina as duas. C e D não recuperam nada por si só.",
             _options(
-                "Recuperação por palavras-chave (esparsa), como o BM25, que casa termos "
-                "exatos.",
+                "Recuperação por palavras-chave (esparsa), como o BM25, que casa termos exatos.",
                 "Somente recuperação densa, pois embeddings sempre capturam strings exatas.",
                 "Aumentar a temperatura do modelo de geração.",
                 "Aumentar a janela de contexto do modelo de geração.",
@@ -1186,8 +1184,7 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "substituem o chunking. E é falsa: nada na filtragem garante que a resposta "
             "gerada esteja ancorada.",
             _options(
-                "Restringir os resultados aos documentos que o usuário ou tenant atual pode "
-                "ver.",
+                "Restringir os resultados aos documentos que o usuário ou tenant atual pode ver.",
                 "Restringir os resultados ao produto, versão ou intervalo de datas corretos.",
                 "Reduzir o número de candidatos irrelevantes, o que melhora a precisão.",
                 "Eliminar a necessidade de dividir os documentos em chunks.",
@@ -1380,8 +1377,7 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             ),
         ),
         _t(
-            "Do ponto de vista mecânico, como funciona o tool calling (chamada de "
-            "ferramentas)?",
+            "Do ponto de vista mecânico, como funciona o tool calling (chamada de ferramentas)?",
             "O modelo apenas produz texto: ele emite uma requisição estruturada com o nome da "
             "ferramenta e seus argumentos. Sua aplicação executa a ferramenta e devolve o "
             "resultado como nova entrada para o modelo. A e B supõem que o modelo executa "
@@ -1584,8 +1580,7 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "Limites de passos, tempo e custo por execução.",
                 "Confirmação humana antes de ações irreversíveis.",
-                "Dar a cada agente apenas as ferramentas e permissões de que a tarefa "
-                "precisa.",
+                "Dar a cada agente apenas as ferramentas e permissões de que a tarefa precisa.",
                 "Confiar nos argumentos gerados pelo modelo sem validação, já que foi o "
                 "modelo que os escreveu.",
                 "Conceder todas as ferramentas a todos os agentes, caso algum precise.",
@@ -1626,8 +1621,7 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Devolver uma mensagem de erro clara como resultado da ferramenta para o "
                 "modelo se ajustar, com um limite de tentativas.",
                 "Abortar a execução inteira a qualquer erro de ferramenta.",
-                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada "
-                "funcionou.",
+                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada funcionou.",
                 "Gerar em código um resultado falso plausível para o laço continuar.",
             ),
         ),
@@ -1759,13 +1753,423 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
     ),
 )
 
-# @@NEXT-COMPETENCY@@
+_RECALL_CODE = """```python
+retrieved = ["d3", "d7", "d1", "d9"]  # ranked results
+relevant = {"d1", "d2"}               # ground-truth relevant documents
+k = 3
+
+hits = [d for d in retrieved[:k] if d in relevant]
+print(len(hits) / len(relevant), len(hits) / k)
+```"""
+
+# ----------------------------------------------------------------------
+# ai-evaluation
+# ----------------------------------------------------------------------
+_EVAL = "ai-evaluation"
+
+EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
+    _q(
+        "ai-evaluation-q01",
+        _EVAL,
+        MC,
+        EASY,
+        ("d",),
+        ("evaluation", "motivation"),
+        _t(
+            "Why is it not enough to check a handful of outputs by hand and conclude that an "
+            "LLM feature 'looks good'?",
+            "A few examples cannot reveal failure rates or regressions, and LLM outputs vary "
+            "across inputs, so you need systematic measurement on a representative dataset "
+            "that you can re-run after every change. A is wrong because quality drifts as "
+            "prompts, models and data change. B is false: outputs are not guaranteed to be "
+            "deterministic. C is wrong because evaluation and monitoring complement each "
+            "other.",
+            _options(
+                "Evaluation is only needed once, right before launch.",
+                "LLM outputs are deterministic, so tests are unnecessary.",
+                "Evaluation replaces the need for production monitoring.",
+                "A few examples cannot reveal failure rates or regressions; you need "
+                "systematic measurement on a representative dataset.",
+            ),
+        ),
+        _t(
+            "Por que não basta verificar algumas saídas manualmente e concluir que uma "
+            "funcionalidade com LLM 'parece boa'?",
+            "Poucos exemplos não revelam taxas de falha nem regressões, e as saídas variam "
+            "conforme a entrada, então é preciso medir de forma sistemática em um dataset "
+            "representativo que possa ser reexecutado a cada mudança. A está errada porque a "
+            "qualidade muda conforme prompts, modelos e dados mudam. B é falsa: as saídas não "
+            "têm garantia de serem determinísticas. C está errada porque avaliação e "
+            "monitoramento se complementam.",
+            _options(
+                "A avaliação só é necessária uma vez, logo antes do lançamento.",
+                "As saídas de LLMs são determinísticas, então testes são desnecessários.",
+                "A avaliação substitui a necessidade de monitoramento em produção.",
+                "Poucos exemplos não revelam taxas de falha nem regressões; é preciso medir "
+                "de forma sistemática em um dataset representativo.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q02",
+        _EVAL,
+        MC,
+        EASY,
+        ("b",),
+        ("golden-dataset",),
+        _t(
+            "What is a **golden dataset** in LLM evaluation?",
+            "A golden dataset is a curated set of representative inputs, each with an expected "
+            "output or grading criteria, including edge cases, that you reuse to measure "
+            "quality over time. A (raw, unreviewed logs) lacks expected answers, C confuses "
+            "evaluation data with training data, and D is not a real concept.",
+            _options(
+                "All production logs, stored without any review.",
+                "A curated set of representative inputs with expected outputs or grading "
+                "criteria, including edge cases, reused to measure quality over time.",
+                "The data the model was originally trained on.",
+                "A set of prompts run only at the highest temperature.",
+            ),
+        ),
+        _t(
+            "O que é um **golden dataset** na avaliação de LLMs?",
+            "Um golden dataset é um conjunto curado de entradas representativas, cada uma com "
+            "uma saída esperada ou critérios de avaliação, incluindo casos extremos, "
+            "reutilizado para medir a qualidade ao longo do tempo. A (logs brutos, sem "
+            "revisão) não tem respostas esperadas, C confunde dados de avaliação com dados de "
+            "treinamento, e D não é um conceito real.",
+            _options(
+                "Todos os logs de produção, armazenados sem nenhuma revisão.",
+                "Um conjunto curado de entradas representativas, com saídas esperadas ou "
+                "critérios de avaliação, incluindo casos extremos, reutilizado para medir a "
+                "qualidade ao longo do tempo.",
+                "Os dados com os quais o modelo foi originalmente treinado.",
+                "Um conjunto de prompts executados apenas na temperatura mais alta.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q03",
+        _EVAL,
+        MC,
+        EASY,
+        ("c",),
+        ("deterministic-checks",),
+        _t(
+            "Which property of an output is best verified with a **deterministic** check "
+            "rather than an LLM judge?",
+            "Whether the output is valid JSON with the required fields can be checked exactly "
+            "by code, which is cheap and has no judge variance. Tone, summary quality and "
+            "clarity for a beginner are subjective and need rubric-based human or LLM "
+            "evaluation.",
+            _options(
+                "Whether the tone is empathetic.",
+                "Whether a summary captures the key ideas.",
+                "Whether the output is valid JSON containing all required fields.",
+                "Whether an explanation is clear to a beginner.",
+            ),
+        ),
+        _t(
+            "Qual propriedade de uma saída é mais bem verificada com uma checagem "
+            "**determinística**, e não com um LLM juiz?",
+            "Se a saída é um JSON válido com os campos obrigatórios pode ser verificado "
+            "exatamente por código, de forma barata e sem variância de um juiz. Tom, "
+            "qualidade de um resumo e clareza para um iniciante são subjetivos e exigem "
+            "avaliação humana ou por LLM com base em uma rubrica.",
+            _options(
+                "Se o tom é empático.",
+                "Se um resumo captura as ideias principais.",
+                "Se a saída é um JSON válido contendo todos os campos obrigatórios.",
+                "Se uma explicação é clara para um iniciante.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q04",
+        _EVAL,
+        CODE,
+        MEDIUM,
+        ("b",),
+        ("retrieval-metrics", "recall", "precision"),
+        _t(
+            "What does this code print?\n\n" + _RECALL_CODE,
+            "Only `d1` appears among the top 3 results and is relevant, so there is 1 hit. "
+            "Recall@3 is hits divided by all relevant documents (1/2 = 0.5), while "
+            "precision@3 is hits divided by k (1/3). A swaps the two metrics. C and D use the "
+            "wrong denominators: `d9` is outside the top 3 and does not count.",
+            _options(
+                "`0.3333333333333333 0.5`",
+                "`0.5 0.3333333333333333`",
+                "`1.0 0.3333333333333333`",
+                "`0.5 0.5`",
+            ),
+        ),
+        _t(
+            "O que este código imprime?\n\n" + _RECALL_CODE,
+            "Apenas `d1` aparece entre os 3 primeiros resultados e é relevante, então há 1 "
+            "acerto. O recall@3 é acertos dividido por todos os documentos relevantes "
+            "(1/2 = 0,5), enquanto a precisão@3 é acertos dividido por k (1/3). A troca as "
+            "duas métricas. C e D usam denominadores errados: `d9` está fora dos 3 primeiros e "
+            "não conta.",
+            _options(
+                "`0.3333333333333333 0.5`",
+                "`0.5 0.3333333333333333`",
+                "`1.0 0.3333333333333333`",
+                "`0.5 0.5`",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q05",
+        _EVAL,
+        MC,
+        MEDIUM,
+        ("c",),
+        ("llm-as-judge", "position-bias"),
+        _t(
+            "In a pairwise comparison, an LLM judge picks whichever answer is shown first "
+            "about 80% of the time, even after you swap the order of the two answers. What is "
+            "happening and what is a sound mitigation?",
+            "This is position bias: the verdict depends on where the answer appears rather "
+            "than on its quality. Evaluate both orders and count only consistent verdicts "
+            "(treating disagreements as ties). A and B name other real biases, but they do "
+            "not match the symptom, since the preference follows position and not length or "
+            "authorship. D is not a fix: raising the temperature adds noise instead of "
+            "removing bias.",
+            _options(
+                "Verbosity bias; ask the candidate models for shorter answers.",
+                "Self-preference; replace the judge with a larger model and keep one order.",
+                "Position bias; run each comparison in both orders and count only consistent "
+                "verdicts.",
+                "Calibration drift; raise the judge's temperature.",
+            ),
+        ),
+        _t(
+            "Em uma comparação par a par, um LLM juiz escolhe a resposta mostrada primeiro em "
+            "cerca de 80% dos casos, mesmo depois de você trocar a ordem das duas respostas. "
+            "O que está acontecendo e qual é uma mitigação adequada?",
+            "Isto é viés de posição: o veredito depende de onde a resposta aparece, e não de "
+            "sua qualidade. Avalie as duas ordens e conte apenas os vereditos consistentes "
+            "(tratando divergências como empate). A e B citam outros vieses reais, mas não "
+            "combinam com o sintoma, pois a preferência acompanha a posição e não o tamanho ou "
+            "a autoria. D não é correção: aumentar a temperatura adiciona ruído em vez de "
+            "remover o viés.",
+            _options(
+                "Viés de verbosidade; pedir respostas mais curtas aos modelos candidatos.",
+                "Autopreferência; trocar o juiz por um modelo maior e manter uma única ordem.",
+                "Viés de posição; executar cada comparação nas duas ordens e contar apenas os "
+                "vereditos consistentes.",
+                "Deriva de calibração; aumentar a temperatura do juiz.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q06",
+        _EVAL,
+        MS,
+        MEDIUM,
+        ("a", "b", "c"),
+        ("llm-as-judge", "biases"),
+        _t(
+            "Which are known failure modes of LLM-as-judge evaluation? Select all that apply.",
+            "Judges can favor the answer in a particular position (position bias), prefer "
+            "longer answers regardless of quality (verbosity bias), and favor outputs "
+            "resembling their own (self-preference). D is false: temperature 0 makes the "
+            "judge repeatable, not unbiased. E is false: these biases affect LLM judges "
+            "directly, which is why they must be measured.",
+            _options(
+                "Position bias: favoring an answer because of where it appears.",
+                "Verbosity bias: favoring longer answers regardless of quality.",
+                "Self-preference: favoring outputs that resemble the judge model's own style.",
+                "Setting temperature to 0 removes all of the judge's biases.",
+                "Length bias only affects human raters, never LLM judges.",
+            ),
+        ),
+        _t(
+            "Quais são modos de falha conhecidos da avaliação com LLM como juiz "
+            "(LLM-as-judge)? Selecione todos que se aplicam.",
+            "Juízes podem favorecer a resposta em uma posição específica (viés de posição), "
+            "preferir respostas mais longas independentemente da qualidade (viés de "
+            "verbosidade) e favorecer saídas parecidas com as suas (autopreferência). D é "
+            "falsa: temperatura 0 torna o juiz repetível, não imparcial. E é falsa: esses "
+            "vieses afetam diretamente juízes LLM, e por isso precisam ser medidos.",
+            _options(
+                "Viés de posição: favorecer uma resposta pelo lugar onde ela aparece.",
+                "Viés de verbosidade: favorecer respostas mais longas independentemente da "
+                "qualidade.",
+                "Autopreferência: favorecer saídas parecidas com o estilo do próprio modelo juiz.",
+                "Definir a temperatura como 0 remove todos os vieses do juiz.",
+                "O viés de tamanho afeta apenas avaliadores humanos, nunca juízes LLM.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q07",
+        _EVAL,
+        MC,
+        MEDIUM,
+        ("d",),
+        ("regression-suite", "slices"),
+        _t(
+            "After a prompt change, your eval's overall score rises by two points, but the "
+            "score on one category (refund questions) falls from 90 to 60. What should you "
+            "do?",
+            "Aggregate scores can hide regressions in slices, so inspect the per-category "
+            "results and investigate the drop before shipping; the fix may be to adjust the "
+            "prompt or accept a conscious trade-off. A ignores a serious regression. B "
+            "dismisses a clear signal as noise without evidence. C is unrelated, since a "
+            "judge's temperature does not explain a category drop.",
+            _options(
+                "Ship it, because the overall score improved.",
+                "Discard the results, assuming the eval is too noisy to trust.",
+                "Raise the judge's temperature and re-run until the category recovers.",
+                "Inspect the per-category results and investigate the refund regression "
+                "before deciding whether to ship.",
+            ),
+        ),
+        _t(
+            "Depois de uma mudança no prompt, a nota geral da avaliação sobe dois pontos, mas "
+            "a nota de uma categoria (perguntas sobre reembolso) cai de 90 para 60. O que "
+            "fazer?",
+            "Notas agregadas podem esconder regressões em fatias, então examine os resultados "
+            "por categoria e investigue a queda antes de publicar; a solução pode ser ajustar "
+            "o prompt ou aceitar conscientemente um trade-off. A ignora uma regressão séria. B "
+            "descarta um sinal claro como ruído sem evidência. C não tem relação, pois a "
+            "temperatura do juiz não explica a queda de uma categoria.",
+            _options(
+                "Publicar, porque a nota geral melhorou.",
+                "Descartar os resultados, supondo que a avaliação é ruidosa demais para confiar.",
+                "Aumentar a temperatura do juiz e reexecutar até a categoria se recuperar.",
+                "Examinar os resultados por categoria e investigar a regressão de reembolso "
+                "antes de decidir se publica.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q08",
+        _EVAL,
+        MC,
+        MEDIUM,
+        ("a",),
+        ("online-evaluation", "offline-evaluation"),
+        _t(
+            "Which of these can you only learn through **online** evaluation (on live "
+            "traffic) and not from an offline golden dataset?",
+            "Real users phrase requests in ways you did not anticipate, and their behavior "
+            "(retries, abandonment, ratings) reveals satisfaction and distribution drift "
+            "that a fixed dataset cannot show. B, C and D can all be measured offline on "
+            "fixed or labeled data.",
+            _options(
+                "How real users actually phrase requests and whether they are satisfied or retry.",
+                "Whether outputs match the required JSON schema on the golden set.",
+                "Whether a prompt change regressed the fixed regression suite.",
+                "How closely the judge agrees with human labels on a labeled sample.",
+            ),
+        ),
+        _t(
+            "Qual destas coisas você só descobre por meio de avaliação **online** (em tráfego "
+            "real) e não a partir de um golden dataset offline?",
+            "Usuários reais formulam pedidos de formas que você não previu, e o comportamento "
+            "deles (novas tentativas, abandono, avaliações) revela satisfação e deriva da "
+            "distribuição que um dataset fixo não mostra. B, C e D podem ser medidas offline "
+            "em dados fixos ou rotulados.",
+            _options(
+                "Como usuários reais realmente formulam os pedidos e se ficam satisfeitos ou "
+                "tentam de novo.",
+                "Se as saídas seguem o schema JSON exigido no conjunto golden.",
+                "Se uma mudança de prompt causou regressão na suíte de regressão fixa.",
+                "O quanto o juiz concorda com rótulos humanos em uma amostra rotulada.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q09",
+        _EVAL,
+        MC,
+        HARD,
+        ("c",),
+        ("overfitting", "held-out-set"),
+        _t(
+            "A team iterates on its prompt until the score on its golden dataset reaches 98%. "
+            "What is the main risk, and what protects against it?",
+            "Repeatedly tuning against the same examples overfits the prompt to them, so the "
+            "score overestimates real-world quality. Keep a held-out set that is not used "
+            "during tuning, and keep refreshing the data with new production cases. A is "
+            "exactly the mistake being warned about. B and D are not real consequences.",
+            _options(
+                "None: a higher golden-set score always means better production quality.",
+                "The dataset becomes too large to run.",
+                "Overfitting to the eval set; keep a held-out set and refresh data with new "
+                "production cases.",
+                "The judge refuses to score examples it has seen before.",
+            ),
+        ),
+        _t(
+            "Uma equipe itera no prompt até a nota no seu golden dataset chegar a 98%. Qual é "
+            "o principal risco e o que protege contra ele?",
+            "Ajustar repetidamente contra os mesmos exemplos faz o prompt sofrer overfitting "
+            "neles, e a nota superestima a qualidade real. Mantenha um conjunto separado "
+            "(held-out) que não seja usado no ajuste e continue renovando os dados com novos "
+            "casos de produção. A é exatamente o erro de que se está alertando. B e D não são "
+            "consequências reais.",
+            _options(
+                "Nenhum: uma nota maior no conjunto golden sempre significa melhor qualidade "
+                "em produção.",
+                "O dataset fica grande demais para executar.",
+                "Overfitting ao conjunto de avaliação; manter um conjunto held-out e renovar "
+                "os dados com novos casos de produção.",
+                "O juiz se recusa a avaliar exemplos que já viu antes.",
+            ),
+        ),
+    ),
+    _q(
+        "ai-evaluation-q10",
+        _EVAL,
+        SHORT,
+        HARD,
+        None,
+        ("llm-as-judge", "validation"),
+        _t(
+            "How would you validate an LLM judge before using it to gate releases, and when "
+            "would you prefer a deterministic check instead?",
+            "Self-check: did you mention (1) comparing the judge with human labels on a "
+            "sample, (2) a clear rubric and bias mitigations such as swapping order, and "
+            "(3) preferring deterministic checks for objective, code-verifiable properties?",
+            model_answer="Have humans label a representative sample, run the judge on the same "
+            "items and measure agreement, inspecting disagreements and slices where it fails. "
+            "Give the judge a specific rubric, mitigate known biases (swap answer order, watch "
+            "for length and self-preference), and re-check agreement when the judge, rubric or "
+            "task changes. Use deterministic checks whenever a property can be verified by "
+            "code, such as schema validity, required fields, exact values or forbidden "
+            "content, because they are cheaper, exact and free of judge variance. Reserve the "
+            "judge for subjective qualities such as helpfulness or faithfulness.",
+        ),
+        _t(
+            "Como você validaria um LLM juiz antes de usá-lo para liberar releases, e quando "
+            "preferiria uma checagem determinística?",
+            "Autoavaliação: você mencionou (1) comparar o juiz com rótulos humanos em uma "
+            "amostra, (2) uma rubrica clara e mitigações de vieses, como trocar a ordem, e "
+            "(3) preferir checagens determinísticas para propriedades objetivas verificáveis "
+            "por código?",
+            model_answer="Pedir a humanos que rotulem uma amostra representativa, executar o "
+            "juiz nos mesmos itens e medir a concordância, examinando as divergências e as "
+            "fatias em que ele falha. Dar ao juiz uma rubrica específica, mitigar vieses "
+            "conhecidos (trocar a ordem das respostas, observar tamanho e autopreferência) e "
+            "verificar a concordância de novo quando o juiz, a rubrica ou a tarefa mudarem. "
+            "Usar checagens determinísticas sempre que uma propriedade puder ser verificada "
+            "por código, como validade de schema, campos obrigatórios, valores exatos ou "
+            "conteúdo proibido, pois são mais baratas, exatas e livres de variância do juiz. "
+            "Reservar o juiz para qualidades subjetivas, como utilidade ou fidelidade.",
+        ),
+    ),
+)
 
 QUESTIONS: tuple[QuestionSeed, ...] = (
     *LLM_QUESTIONS,
     *CONTEXT_QUESTIONS,
     *RAG_QUESTIONS,
     *AGENT_QUESTIONS,
+    *EVAL_QUESTIONS,
 )
 
 ASSESSMENTS: tuple[AssessmentSeed, ...] = (
@@ -1782,6 +2186,88 @@ ASSESSMENTS: tuple[AssessmentSeed, ...] = (
                 "os modelos alucinam.",
             }
         },
+    ),
+    AssessmentSeed(
+        code="ai-engineering-context-engineering-quiz",
+        title="Context Engineering Quiz",
+        description="Context budgets, pollution, compression, summaries and ordering.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="context-engineering",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Context Engineering",
+                "description": "Orçamento de contexto, poluição, compressão, resumos e ordenação.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="ai-engineering-rag-architecture-quiz",
+        title="RAG Architecture Quiz",
+        description="Ingestion, chunking, hybrid retrieval, reranking and diagnosing failures.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="rag-architecture",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Arquitetura RAG",
+                "description": "Ingestão, chunking, recuperação híbrida, reranking e "
+                "diagnóstico de falhas.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="ai-engineering-ai-agents-tool-use-quiz",
+        title="AI Agents and Tool Use Quiz",
+        description="Tool calling, the agent loop, safeguards and choosing an architecture.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="ai-agents-tool-use",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Agentes de IA e Uso de Ferramentas",
+                "description": "Tool calling, o laço do agente, salvaguardas e escolha de "
+                "arquitetura.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="ai-engineering-ai-evaluation-quiz",
+        title="AI Evaluation Quiz",
+        description="Golden datasets, deterministic checks, LLM-as-judge biases and metrics.",
+        kind=AssessmentKind.COMPETENCY,
+        competency_slug="ai-evaluation",
+        translations={
+            "pt-BR": {
+                "title": "Quiz de Avaliação de IA",
+                "description": "Golden datasets, checagens determinísticas, vieses do LLM "
+                "como juiz e métricas.",
+            }
+        },
+    ),
+    AssessmentSeed(
+        code="ai-engineering-checkpoint",
+        title="AI Engineering Checkpoint",
+        description="A mixed check across LLM fundamentals, context, RAG, agents and evaluation.",
+        kind=AssessmentKind.MIXED,
+        question_codes=(
+            "llm-fundamentals-q02",
+            "llm-fundamentals-q04",
+            "context-engineering-q02",
+            "context-engineering-q07",
+            "rag-architecture-q03",
+            "rag-architecture-q06",
+            "ai-agents-tool-use-q05",
+            "ai-agents-tool-use-q08",
+            "ai-evaluation-q03",
+            "ai-evaluation-q05",
+        ),
+        translations={
+            "pt-BR": {
+                "title": "Checkpoint de Engenharia de IA",
+                "description": "Uma verificação mista entre fundamentos de LLMs, contexto, "
+                "RAG, agentes e avaliação.",
+            }
+        },
+        pass_threshold=70,
+        completion_bonus_xp=40,
     ),
 )
 
