@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.domain.assessments import XP_BY_DIFFICULTY
 from app.models.assessment import (
     Assessment,
     AssessmentKind,
@@ -78,10 +79,10 @@ class TestShippedSeeds:
         assert validate_main() == 0
         assert "OK" in capsys.readouterr().out
 
-    def test_pilot_covers_two_competencies_in_both_languages(self):
+    def test_python_bank_covers_its_competencies_in_both_languages(self):
         questions = QUESTION_SET.questions
-        assert len(questions) == 12
-        assert {q.competency_slug for q in questions} == {"python-fundamentals", "type-hints"}
+        assert len(questions) >= 12
+        assert {q.competency_slug for q in questions} >= {"python-fundamentals", "type-hints"}
         assert all(set(q.text) == {Language.EN, Language.PT_BR} for q in questions)
         assert all(q.source.value == "ai_generated" for q in questions)
         assert {q.type for q in questions} >= {
@@ -92,7 +93,9 @@ class TestShippedSeeds:
         }
 
     def test_loader_discovers_the_subject_modules(self):
-        assert [s.subject_slug for s in load_question_sets()] == ["python"]
+        slugs = [s.subject_slug for s in load_question_sets()]
+        assert "python" in slugs
+        assert len(slugs) == len(set(slugs))  # one module per subject
 
 
 class TestValidatorRejects:
@@ -279,21 +282,25 @@ class TestAssessmentValidation:
 class TestSeedLoader:
     def test_seeding_is_idempotent(self, db: Session):
         competencies = seed_subjects(db)
-        assert seed_questions(db, competencies) == 12
+        sets = load_question_sets()
+        expected_questions = sum(len(s.questions) for s in sets)
+        expected_translations = sum(len(q.text) for s in sets for q in s.questions)
+        expected_assessments = sum(len(s.assessments) for s in sets)
+        assert seed_questions(db, competencies) == expected_questions
         counts = (
             db.query(Question).count(),
             db.query(QuestionTranslation).count(),
             db.query(Assessment).count(),
             db.query(AssessmentQuestion).count(),
         )
-        assert seed_questions(db, competencies) == 12
+        assert seed_questions(db, competencies) == expected_questions
         assert counts == (
             db.query(Question).count(),
             db.query(QuestionTranslation).count(),
             db.query(Assessment).count(),
             db.query(AssessmentQuestion).count(),
         )
-        assert counts == (12, 24, 3, 6 + 6 + 5)
+        assert counts[:3] == (expected_questions, expected_translations, expected_assessments)
 
     def test_seeded_rows_follow_the_data(self, db: Session):
         seed_questions(db, seed_subjects(db))
@@ -355,7 +362,9 @@ class TestSeedLoader:
         quizzes = client.get(f"{API}/assessments", headers=headers).json()
         quiz = next(q for q in quizzes if q["code"] == "python-type-hints-quiz")
         assert quiz["title"] == "Quiz de Type Hints"
-        assert quiz["question_count"] == 6
+        assert quiz["question_count"] == sum(
+            1 for q in QUESTION_SET.questions if q.competency_slug == "type-hints"
+        )
 
         attempt = client.post(f"{API}/assessments/{quiz['id']}/attempts", headers=headers).json()
         assert all(q["language"] == "pt-BR" for q in attempt["questions"])
@@ -384,6 +393,11 @@ class TestSeedLoader:
                 )
         result = client.post(f"{API}/attempts/{attempt['id']}/finish", headers=headers).json()
         assert result["score_percent"] == 100.0 and result["passed"] is True
-        # easy 10 + easy 10 + medium 20 + medium 20 + hard 30 + hard 30, plus the 25 bonus.
-        assert result["xp_questions"] == 120
-        assert result["xp_awarded"] == 145
+        # Every question is paid its difficulty's XP once, plus the 25 completion bonus.
+        expected_xp = sum(
+            XP_BY_DIFFICULTY[q.difficulty.value]
+            for q in QUESTION_SET.questions
+            if q.competency_slug == "type-hints"
+        )
+        assert result["xp_questions"] == expected_xp
+        assert result["xp_awarded"] == expected_xp + 25
