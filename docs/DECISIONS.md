@@ -510,3 +510,23 @@ scores move on their next event.
 `PATCH /attempts/{id}/responses/{question_id}` replaces the answer (idempotent).
 `PUT` would be the natural verb, but the frontend `apiClient` (being rewritten
 by another session) only exposes get/post/patch.
+
+## Rule-based "what to study today" (I3)
+
+**Decision**: recommendations are computed on read by pure rules with
+documented constant weights (`docs/DOMAIN.md`), with a localised template per
+reason; no LLM and no schema change (nothing is stored, so there is nothing to
+drift). One suggestion per competency, ordered by score then id.
+**Why**: transparent > clever; every suggestion can be explained by one
+sentence and reproduced by hand. A future mentor (I1) may rephrase the text but
+the decision stays with the rules.
+**Goals are linked to competencies by name**: `LearningGoal` has no competency
+or subject reference and the brief forbade migrations, so a goal counts for a
+competency when its title/description mentions the competency (or subject)
+name. This is a heuristic and misses goals worded differently; the proper fix
+is a goal-to-competency link (new nullable column or join table), left for a
+separate item if the owner wants it.
+**Queries**: the service reuses the E1 batch state derivation (made public as
+`learning_service.competencies_with_state`) plus one query each for reviews,
+paths, goals, quizzes and quiz coverage; the count is constant in the amount of
+data (tested). `GET` never writes.

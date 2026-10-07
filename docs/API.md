@@ -91,6 +91,7 @@ dependency when they are introduced.
 | `POST /attempts/{id}/responses/{question_id}/self-grade` | ✓ | `{is_correct}` for a saved short answer, while the attempt is open |
 | `POST /attempts/{id}/finish` | ✓ | Score, pay XP (see below), update mastery/review/streak, reveal results. Idempotent |
 | `GET /assessments/stats/by-competency` | ✓ | Paginated per-competency stats: coverage, accuracy, attempts, XP |
+| `GET /recommendations/today` | ✓ | "What to study today": `{items: [...]}`, at most `limit` (1-20, default 5). Each item: `kind` (`review_due`, `continue_learning`, `next_in_path`, `take_quiz`, `goal_deadline`, `strengthen_weak`), `competency` (`id`, `name`, `subject_id`, `subject_name`), `reason` (in your `preferred_language`), `score`, `action` (`type` `review`/`competency`/`assessment`/`path` plus `id` or `slug`). Deterministic, read-only; rules and weights in `docs/DOMAIN.md` |
 | `GET /health` | — | Liveness probe |
 | `GET /health/ready` | — | Readiness probe (checks DB connectivity) |
 
