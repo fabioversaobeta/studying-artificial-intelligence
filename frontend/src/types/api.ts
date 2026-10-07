@@ -220,6 +220,30 @@ export interface Dashboard {
   recent_study_sessions: StudySession[]
 }
 
+// ---- Recommendations ("what to study today") -------------------------------
+
+export type RecommendationKind =
+  | 'review_due'
+  | 'continue_learning'
+  | 'next_in_path'
+  | 'take_quiz'
+  | 'goal_deadline'
+  | 'strengthen_weak'
+
+export interface RecommendationAction {
+  type: 'review' | 'competency' | 'assessment' | 'path'
+  id: Uuid | null
+  slug: string | null
+}
+
+export interface Recommendation {
+  kind: RecommendationKind
+  competency: { id: Uuid; name: string; subject_id: Uuid; subject_name: string }
+  reason: string
+  score: number
+  action: RecommendationAction
+}
+
 // ---- Assessments (quizzes) -------------------------------------------------
 
 export type QuestionType = 'multiple_choice' | 'multi_select' | 'short_answer' | 'code_reading'

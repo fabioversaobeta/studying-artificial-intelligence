@@ -10,6 +10,10 @@ vi.mock('@/services/learning-service', () => ({
   learningService: { getDashboard: vi.fn() },
 }))
 
+vi.mock('@/features/recommendations/today-recommendations-card', () => ({
+  TodayRecommendationsCard: () => <div>recommendations-card</div>,
+}))
+
 const getDashboard = vi.mocked(learningService.getDashboard)
 
 const base: Dashboard = {

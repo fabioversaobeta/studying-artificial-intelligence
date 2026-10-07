@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAsync } from '@/hooks/use-async'
 import { learningService } from '@/services/learning-service'
+import { TodayRecommendationsCard } from '@/features/recommendations/today-recommendations-card'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PageSpinner } from '@/components/ui/spinner'
@@ -43,6 +44,8 @@ export function DashboardPage() {
           />
         </Link>
       </div>
+
+      <TodayRecommendationsCard />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
