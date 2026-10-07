@@ -26,6 +26,20 @@ def count_goals_for_user(db: Session, user_id: uuid.UUID) -> int:
     return int(db.execute(stmt).scalar_one())
 
 
+def list_active_goals_with_deadline(db: Session, user_id: uuid.UUID) -> list[LearningGoal]:
+    """Active goals that have a target date, soonest first (ties by id)."""
+    stmt = (
+        select(LearningGoal)
+        .where(
+            LearningGoal.user_id == user_id,
+            LearningGoal.status == GoalStatus.ACTIVE,
+            LearningGoal.target_date.is_not(None),
+        )
+        .order_by(LearningGoal.target_date, LearningGoal.id)
+    )
+    return list(db.execute(stmt).scalars().all())
+
+
 def get_goal(db: Session, goal_id: uuid.UUID) -> LearningGoal | None:
     return db.get(LearningGoal, goal_id)
 

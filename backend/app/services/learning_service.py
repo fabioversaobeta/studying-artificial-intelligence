@@ -145,6 +145,14 @@ def get_subject_detail(db: Session, user_id: uuid.UUID, subject_id: uuid.UUID) -
     }
 
 
+def competencies_with_state(
+    db: Session, user_id: uuid.UUID, competencies: list[Competency]
+) -> list[dict]:
+    """Public entry point of the batch skill-tree state derivation, shared with
+    the recommendation service (constant query count)."""
+    return _competencies_with_state(db, user_id, competencies)
+
+
 def _competencies_with_state(
     db: Session, user_id: uuid.UUID, competencies: list[Competency]
 ) -> list[dict]:

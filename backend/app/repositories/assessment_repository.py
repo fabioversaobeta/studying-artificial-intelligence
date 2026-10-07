@@ -452,6 +452,27 @@ def correct_latest_by_competency(
     return {cid: int(n) for cid, n in db.execute(stmt).all()}
 
 
+def first_quiz_by_competency(db: Session) -> dict[uuid.UUID, uuid.UUID]:
+    """For each competency, the id of its first active assessment that has at
+    least one active question (ordered by sort_order, title, id). One query."""
+    stmt = (
+        select(Assessment.competency_id, Assessment.id)
+        .join(AssessmentQuestion, AssessmentQuestion.assessment_id == Assessment.id)
+        .join(Question, Question.id == AssessmentQuestion.question_id)
+        .where(
+            Assessment.is_active.is_(True),
+            Assessment.competency_id.is_not(None),
+            Question.is_active.is_(True),
+        )
+        .group_by(Assessment.id, Assessment.competency_id, Assessment.sort_order, Assessment.title)
+        .order_by(Assessment.sort_order, Assessment.title, Assessment.id)
+    )
+    first: dict[uuid.UUID, uuid.UUID] = {}
+    for competency_id, assessment_id in db.execute(stmt).all():
+        first.setdefault(competency_id, assessment_id)
+    return first
+
+
 def active_questions_by_competency(
     db: Session, competency_ids: Collection[uuid.UUID]
 ) -> dict[uuid.UUID, int]:
