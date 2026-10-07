@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 15 |
-| P2 — Médio prazo | 23 | 15 |
+| P2 — Médio prazo | 24 | 16 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -157,7 +157,7 @@ estáveis.
 | I3 | **Motor de recomendação** "o que estudar hoje" (revisões vencidas + competências desbloqueadas + metas). | P2 | L | IN_PROGRESS | S28 (`feat/s28-recommendations`) | G1, G3 | novo service/endpoint/UI | | |
 | I4 | **Simulação de entrevista** (`InterviewSession`, sessões guiadas, pontuação). | P2 | L | TODO | | I1, I2 | modelos, services, API, UI | | |
 | I5 | **Correção automática de challenges** (LLM-as-judge) com dataset dourado de regressão antes de conceder XP automaticamente. | P2 | L | TODO | | I1 | `challenge_service.py`, testes de avaliação | | Ver `docs/PENDING.md`. |
-| I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | IN_PROGRESS | S21–S27, uma por matéria (`feat/s21-…` a `feat/s27-…`) | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. |
+| I6 | **Geração de questões por IA** (Claude): rascunhar o banco de questões das 30 competências, nos dois idiomas, como seeds `source=ai_generated` com validação automática. | P2 | L | DONE | S21–S27 (coordenador) | I2 | `backend/app/seeds/questions/*` | | Decisão D6 do dono: as questões são escritas pela IA. Uma sessão por matéria. **300 questões** (50/50/40/40/40/40/40 por matéria) em en+pt-BR, validadas, loader idempotente (300 q / 600 traduções / 37 assessments). Itens para revisão do dono em `docs/QUESTION_REVIEW.md`. |
 
 ---
 
@@ -174,6 +174,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
 | J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | DONE | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | 88ebed6, 24590f9 | Entregue junto com o I2 (mesma migration). |
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | TODO | | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
+| J8 | Validador de questões: checar distribuição da posição da resposta correta e viés de tamanho (a correta ser sempre a mais longa) e avisar. | P2 | S | TODO | | — | `backend/app/seeds/questions/validate.py`, testes | | Sugestão da S27 (system-design-interviews q04/q09 têm esse viés). |
 
 ## Mapa de conflitos (para quem coordena as sessões)
 
@@ -249,6 +250,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 - 2026-10-06 — A4 — dev dep `httpx` -> `httpx2>=2.13` (recomendação do Starlette); decisão do dono, sem warnings no pytest
 - 2026-10-06 — D6 (frontend) — `apiClient.delete` adicionado pelo coordenador após o merge do C5 (api-client.ts era da S17)
 - 2026-10-06 — Fase 1 concluída e mergeada (I1, I2, J6). Fase 2 iniciada: S21–S27 (I6: questões por matéria) e S28 (I3: recomendação)
+- 2026-10-07 — I6 — 300 questões nas 7 matérias (en+pt-BR) mergeadas; revisão do dono em docs/QUESTION_REVIEW.md; J8 criado
 - 2026-10-06 — J4 — sessões < 10 min mantêm o streak sem XP (`gamification_service.record_activity`); decisão do dono (opção a)
 - 2026-10-06 — Trilha I aprovada; Fase 1 iniciada: S19 (I2 + J6), S20 (I1); itens novos J6, J7, I6 criados; decisões do dono em PROPOSAL_TRACK_I.md §3.1
 - 2026-10-06 — wave 4 iniciada: S16 (E2,D6), S17 (C5), S18 (J1,J2) reivindicadas; decisões do dono: sem estorno de XP no D6; C5 deve usar a melhor solução (cookie httpOnly + proxy same-origin)
