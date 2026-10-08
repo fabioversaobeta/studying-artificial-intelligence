@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { useI18n } from '@/i18n/use-i18n'
 
 function StatCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
@@ -20,6 +21,7 @@ function StatCard({ label, value, hint }: { label: string; value: string | numbe
 
 export function DashboardPage() {
   const { data, error, isLoading, refetch } = useAsync(() => learningService.getDashboard(), [])
+  const { t, formatDate, formatNumber } = useI18n()
 
   if (isLoading) return <PageSpinner />
   if (error) return <ErrorAlert message={error} onRetry={refetch} />
@@ -28,19 +30,23 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-heading">Dashboard</h1>
-        <p className="mt-1 text-sm text-fg-muted">Where you stand today.</p>
+        <h1 className="text-xl font-semibold text-heading">{t('dashboard.title')}</h1>
+        <p className="mt-1 text-sm text-fg-muted">{t('dashboard.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Level" value={data.level} hint={`${data.xp_to_next_level} XP to next`} />
-        <StatCard label="Total XP" value={data.total_xp} />
-        <StatCard label="Streak" value={`${data.current_streak_days}d`} hint={`Best: ${data.longest_streak_days}d`} />
-        <Link to="/reviews" aria-label={`Due reviews: ${data.due_review_count}. Open reviews`}>
+        <StatCard label={t('dashboard.level')} value={data.level} hint={t('dashboard.xpToNext', { value: formatNumber(data.xp_to_next_level) })} />
+        <StatCard label={t('dashboard.totalXp')} value={formatNumber(data.total_xp)} />
+        <StatCard
+          label={t('dashboard.streak')}
+          value={t('nav.streakShort', { count: data.current_streak_days })}
+          hint={t('dashboard.best', { count: data.longest_streak_days })}
+        />
+        <Link to="/reviews" aria-label={t('dashboard.dueReviewsLink', { count: data.due_review_count })}>
           <StatCard
-            label="Due Reviews"
+            label={t('dashboard.dueReviews')}
             value={data.due_review_count}
-            hint={data.due_review_count > 0 ? 'Review now →' : undefined}
+            hint={data.due_review_count > 0 ? t('dashboard.reviewNow') : undefined}
           />
         </Link>
       </div>
@@ -50,16 +56,16 @@ export function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium text-heading">Active Goals</h2>
+            <h2 className="font-medium text-heading">{t('dashboard.activeGoals')}</h2>
             <Link to="/goals" className="text-sm text-accent-light hover:underline">
-              Manage
+              {t('dashboard.manage')}
             </Link>
           </div>
           {data.active_goals.length === 0 ? (
             <p className="text-sm text-fg-muted">
-              No active goals yet.{' '}
+              {t('dashboard.noGoals')}{' '}
               <Link to="/goals" className="text-accent-light hover:underline">
-                Set one
+                {t('dashboard.setOne')}
               </Link>
               .
             </p>
@@ -69,7 +75,7 @@ export function DashboardPage() {
                 <li key={goal.id} className="text-sm text-fg">
                   {goal.title}
                   {goal.target_date && (
-                    <span className="ml-2 text-xs text-fg-muted">by {goal.target_date}</span>
+                    <span className="ml-2 text-xs text-fg-muted">{t('dashboard.goalBy', { date: formatDate(goal.target_date) })}</span>
                   )}
                 </li>
               ))}
@@ -78,12 +84,12 @@ export function DashboardPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-3 font-medium text-heading">Weakest Competencies</h2>
+          <h2 className="mb-3 font-medium text-heading">{t('dashboard.weakest')}</h2>
           {data.weakest_competencies.length === 0 ? (
             <p className="text-sm text-fg-muted">
-              Nothing tracked yet.{' '}
+              {t('dashboard.nothingTracked')}{' '}
               <Link to="/subjects" className="text-accent-light hover:underline">
-                Start studying
+                {t('dashboard.startStudying')}
               </Link>
               .
             </p>
@@ -91,9 +97,9 @@ export function DashboardPage() {
             <ul className="space-y-2">
               {data.weakest_competencies.map((m) => (
                 <li key={m.competency_id} className="flex items-center justify-between text-sm">
-                  <span className="text-fg-muted">Competency {m.competency_id.slice(0, 8)}</span>
+                  <span className="text-fg-muted">{t('dashboard.competencyRef', { id: m.competency_id.slice(0, 8) })}</span>
                   <Badge tone={m.score < 40 ? 'danger' : m.score < 80 ? 'warning' : 'success'}>
-                    {m.score.toFixed(0)}%
+                    {t('common.percent', { value: formatNumber(m.score, { maximumFractionDigits: 0 }) })}
                   </Badge>
                 </li>
               ))}
@@ -103,21 +109,21 @@ export function DashboardPage() {
       </div>
 
       <Card>
-        <h2 className="mb-3 font-medium text-heading">Recent Study Sessions</h2>
+        <h2 className="mb-3 font-medium text-heading">{t('dashboard.recentSessions')}</h2>
         {data.recent_study_sessions.length === 0 ? (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-fg-muted">No study sessions logged yet.</p>
+            <p className="text-sm text-fg-muted">{t('dashboard.noSessions')}</p>
             <Link to="/subjects">
-              <Button variant="secondary">Browse Subjects</Button>
+              <Button variant="secondary">{t('dashboard.browseSubjects')}</Button>
             </Link>
           </div>
         ) : (
           <ul className="space-y-2">
             {data.recent_study_sessions.map((s) => (
               <li key={s.id} className="flex items-center justify-between text-sm">
-                <span className="text-fg">{s.notes ?? 'Study session'}</span>
+                <span className="text-fg">{s.notes ?? t('dashboard.studySession')}</span>
                 <span className="text-fg-muted">
-                  {s.duration_minutes} min · {new Date(s.occurred_at).toLocaleDateString()}
+                  {t('dashboard.sessionMeta', { minutes: s.duration_minutes, date: formatDate(s.occurred_at) })}
                 </span>
               </li>
             ))}

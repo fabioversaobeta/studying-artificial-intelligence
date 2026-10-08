@@ -5,10 +5,12 @@ import { useAsync } from '@/hooks/use-async'
 import { useToast } from '@/features/feedback/toast-context'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { translate } from '@/i18n'
 import { Input, Label } from '@/components/ui/input'
 import { ErrorAlert } from '@/components/ui/alert'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { Language } from '@/types/api'
+import { useI18n } from '@/i18n/use-i18n'
 
 const LANGUAGE_OPTIONS: { value: Language; label: string }[] = [
   { value: 'en', label: 'English' },
@@ -18,6 +20,7 @@ const LANGUAGE_OPTIONS: { value: Language; label: string }[] = [
 export function SettingsPage() {
   const { data: user, error, isLoading, refetch } = useAsync(() => authService.me(), [])
   const toast = useToast()
+  const { t, setLanguage: applyLanguage } = useI18n()
   const [displayName, setDisplayName] = useState('')
   const [language, setLanguage] = useState<Language>('en')
   const [isSaving, setIsSaving] = useState(false)
@@ -41,9 +44,11 @@ export function SettingsPage() {
       })
       setDisplayName(updated.display_name)
       setLanguage(updated.preferred_language)
-      toast.show('Settings saved', 'success')
+      // The interface switches immediately; the success toast is built in the new language.
+      applyLanguage(updated.preferred_language)
+      toast.show(translate(updated.preferred_language, 'settings.saved'), 'success')
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Could not save settings')
+      setFormError(err instanceof Error ? err.message : t('settings.saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -55,15 +60,15 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-heading">Settings</h1>
-        <p className="mt-1 text-sm text-fg-muted">Your profile and content preferences.</p>
+        <h1 className="text-xl font-semibold text-heading">{t('settings.title')}</h1>
+        <p className="mt-1 text-sm text-fg-muted">{t('settings.subtitle')}</p>
       </div>
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && <ErrorAlert message={formError} />}
           <div>
-            <Label htmlFor="settings-display-name">Display name</Label>
+            <Label htmlFor="settings-display-name">{t('settings.displayName')}</Label>
             <Input
               id="settings-display-name"
               required
@@ -73,7 +78,7 @@ export function SettingsPage() {
             />
           </div>
           <div>
-            <Label htmlFor="settings-language">Content language</Label>
+            <Label htmlFor="settings-language">{t('settings.language')}</Label>
             <select
               id="settings-language"
               value={language}
@@ -88,12 +93,11 @@ export function SettingsPage() {
               ))}
             </select>
             <p id="settings-language-hint" className="mt-1.5 text-xs text-fg-muted">
-              Applies to quiz questions and explanations. Content without a translation falls back
-              to English. The interface itself stays in English for now.
+              {t('settings.languageHint')}
             </p>
           </div>
           <Button type="submit" disabled={isSaving || displayName.trim() === ''}>
-            {isSaving ? 'Saving…' : 'Save changes'}
+            {isSaving ? t('settings.saving') : t('settings.save')}
           </Button>
         </form>
       </Card>

@@ -6,33 +6,16 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
 import { recommendationHref } from '@/features/recommendations/recommendation-href'
-import type { RecommendationKind } from '@/types/api'
-
-const KIND_LABEL: Record<RecommendationKind, string> = {
-  review_due: 'Review',
-  continue_learning: 'Continue',
-  next_in_path: 'Next step',
-  take_quiz: 'Quiz',
-  goal_deadline: 'Goal',
-  strengthen_weak: 'Strengthen',
-}
-
-const KIND_CTA: Record<RecommendationKind, string> = {
-  review_due: 'Review now',
-  continue_learning: 'Keep studying',
-  next_in_path: 'Open path',
-  take_quiz: 'Take quiz',
-  goal_deadline: 'Study now',
-  strengthen_weak: 'Practice',
-}
+import { useT } from '@/i18n/use-i18n'
 
 export function TodayRecommendationsCard() {
   const { data, error, isLoading, refetch } = useAsync(() => recommendationService.getToday(), [])
+  const t = useT()
 
   return (
     <Card aria-labelledby="today-recommendations-title" role="region">
       <h2 id="today-recommendations-title" className="mb-3 font-medium text-heading">
-        Today&apos;s recommendations
+        {t('reco.title')}
       </h2>
       {isLoading ? (
         <Spinner />
@@ -40,9 +23,9 @@ export function TodayRecommendationsCard() {
         <ErrorAlert message={error} onRetry={refetch} />
       ) : !data || data.length === 0 ? (
         <p className="text-sm text-fg-muted">
-          Nothing to recommend right now.{' '}
+          {t('reco.empty')}{' '}
           <Link to="/subjects" className="text-accent-light hover:underline">
-            Browse subjects
+            {t('reco.browse')}
           </Link>
           .
         </p>
@@ -56,7 +39,7 @@ export function TodayRecommendationsCard() {
               <div className="min-w-0">
                 <p className="text-sm font-medium text-fg">
                   {item.competency.name}{' '}
-                  <Badge tone="neutral">{KIND_LABEL[item.kind]}</Badge>
+                  <Badge tone="neutral">{t(`reco.kind.${item.kind}`)}</Badge>
                 </p>
                 <p className="text-xs text-fg-muted">
                   {item.competency.subject_name} · {item.reason}
@@ -64,10 +47,10 @@ export function TodayRecommendationsCard() {
               </div>
               <Link
                 to={recommendationHref(item)}
-                aria-label={`${KIND_CTA[item.kind]}: ${item.competency.name}`}
+                aria-label={t('reco.ctaLabel', { cta: t(`reco.cta.${item.kind}`), name: item.competency.name })}
                 className="text-sm text-accent-light hover:underline"
               >
-                {KIND_CTA[item.kind]} →
+                {t(`reco.cta.${item.kind}`)} →
               </Link>
             </li>
           ))}

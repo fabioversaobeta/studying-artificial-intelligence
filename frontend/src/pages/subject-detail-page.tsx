@@ -4,9 +4,11 @@ import { learningService } from '@/services/learning-service'
 import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
 import { CompetencyCard } from '@/features/learning/competency-card'
+import { useT } from '@/i18n/use-i18n'
 
 export function SubjectDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const t = useT()
   const { data, error, isLoading, refetch } = useAsync(
     () => learningService.getSubject(id!),
     [id],
@@ -20,7 +22,7 @@ export function SubjectDetailPage() {
     <div className="space-y-6">
       <div>
         <Link to="/subjects" className="text-sm text-accent-light hover:underline">
-          ← All subjects
+          {t('subjects.all')}
         </Link>
         <h1 className="mt-2 text-xl font-semibold text-heading">{data.subject.name}</h1>
         <p className="mt-1 text-sm text-fg-muted">{data.subject.description}</p>
