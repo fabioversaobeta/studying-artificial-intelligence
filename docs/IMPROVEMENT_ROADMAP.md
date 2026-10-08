@@ -42,7 +42,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 | Fase | Itens | Concluídos |
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
-| P1 — Curto prazo | 17 | 15 |
+| P1 — Curto prazo | 18 | 15 |
 | P2 — Médio prazo | 25 | 18 |
 
 *(Atualize estes contadores quando concluir um item.)*
@@ -176,6 +176,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | IN_PROGRESS | S29 (`feat/s29-ui-i18n`) | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
 | J8 | Validador de questões: checar distribuição da posição da resposta correta e viés de tamanho (a correta ser sempre a mais longa) e avisar. | P2 | S | DONE | S30 (`fix/s30-question-validator`) | cdd8518 | `backend/app/seeds/questions/validate.py`, testes | | Sugestão da S27 (system-design-interviews q04/q09 têm esse viés). |
 | J9 | Teste instável no frontend: `quiz-attempt-page.test.tsx` > "shows one question at a time with progress and an accessible question list" falhou 1 vez em 3 execuções completas da suíte (passa isolado 3/3). Investigar a causa (timing/`waitFor`/foco) em vez de só aumentar timeouts. | P2 | S | IN_PROGRESS | S31 (`fix/s31-flaky-quiz-test`) | — | `frontend/src/pages/quiz-attempt-page.test.tsx` | | Detectado pelo coordenador após o merge da S28; mensagem de erro completa não capturada — reproduzir em loop. |
+| J10 | **Reequilibrar o viés de tamanho das alternativas** nas questões escritas pela IA: em 24 das 30 competências a opção correta é a mais longa em mais da metade das questões (clean-architecture, consensus-algorithms, partitioning-sharding, rest-api-design, system-design-interviews e technical-communication em 8/8). Reescrever distratores/enunciados para que o tamanho não denuncie a resposta; depois ligar `--strict` no CI. | P1 | M | TODO | | J8 | `backend/app/seeds/questions/*.py`, `.github/workflows/ci.yml` | | Achado do validador do J8 (24 avisos, 0 de posição). Alvo: zerar os avisos de tamanho mantendo a correção técnica das questões. Reescrita via IA, sem alterar `code`, `correct` nem dificuldade. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
 
@@ -212,6 +213,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
 - 2026-10-08 — J8 — validador de questões: avisos de viés (correta sempre a mais longa; letra da correta concentrada) separados dos erros, flag `--strict`; hoje 24 avisos de tamanho, 0 de posição — cdd8518
+- 2026-10-08 — J8 — validador com avisos de viés e --strict (S30); achou 24 competências com viés de tamanho -> J10 criado
 - 2026-10-08 — master enviada ao GitHub; CI verde (após corrigir 2 erros de mypy do Python 3.12). Iniciadas S29 (J7), S30 (J8), S31 (J9)
 - 2026-10-07 — I3 — `GET /recommendations/today` determinístico e explicável (6 tipos, pesos em DOMAIN.md, motivo em en/pt-BR, sem migrations/LLM, queries constantes) + card "Today's recommendations" no dashboard — `f2f17fe`, `391476c`, `c0a468b`, `b5e65d8`
 - 2026-10-06 — I2 — banco de questões traduzíveis (en/pt-BR), assessments, tentativas, correção determinística + autoavaliação de resposta curta, regra de XP anti-farm, Practice do mastery com quizzes, revisão espaçada em erro, UI `/quizzes`, seeds + validador (piloto de 12 questões) — `8a76ad7`, `85b7bbe`, `1722124`, `8163355`, `3b2f255`
