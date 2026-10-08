@@ -469,6 +469,8 @@ def first_quiz_by_competency(db: Session) -> dict[uuid.UUID, uuid.UUID]:
     )
     first: dict[uuid.UUID, uuid.UUID] = {}
     for competency_id, assessment_id in db.execute(stmt).all():
+        if competency_id is None:  # the query already filters these out; narrows the type
+            continue
         first.setdefault(competency_id, assessment_id)
     return first
 

@@ -148,4 +148,9 @@ def total_study_minutes_by_competency(
         .where(StudySession.user_id == user_id, StudySession.competency_id.in_(competency_ids))
         .group_by(StudySession.competency_id)
     )
-    return {competency_id: int(total) for competency_id, total in db.execute(stmt).all()}
+    return {
+        competency_id: int(total)
+        for competency_id, total in db.execute(stmt).all()
+        if competency_id
+        is not None  # sessions may have no competency; they have no per-competency total
+    }
