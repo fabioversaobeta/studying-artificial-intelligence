@@ -11,8 +11,10 @@ questions (roadmap I6): anything that passes here is structurally safe; the
 *pedagogical* review (is the answer actually right?) stays a human job.
 """
 
+import argparse
 import re
 import sys
+from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 
 from app.domain.assessments import CHOICE_TYPES, MULTI_ANSWER_TYPES, SINGLE_ANSWER_TYPES
@@ -37,6 +39,20 @@ OPTION_ID_RE = re.compile(r"^[a-z0-9_]{1,10}$")
 FENCE_RE = re.compile(r"```[^\n]*\n(.*?)```", re.DOTALL)
 MIN_OPTIONS = 2
 MAX_OPTIONS = 8
+
+# --- Quality-bias warnings (never errors; ``--strict`` makes them fail) -------
+# Evaluated per competency, on the English text, over single-answer choice
+# questions (multiple_choice / code_reading) that have at least
+# LENGTH_BIAS_MIN_OPTIONS options. multi_select and short_answer are ignored.
+LENGTH_BIAS_MIN_OPTIONS = 3
+# Warn when the correct option is the strictly longest one in MORE than this
+# share of a competency's questions (and the competency has enough questions).
+LENGTH_BIAS_MAX_SHARE = 0.5
+LENGTH_BIAS_MIN_QUESTIONS = 4
+# Warn when one letter holds MORE than this share of the correct answers of a
+# competency that has at least POSITION_BIAS_MIN_QUESTIONS such questions.
+POSITION_BIAS_MAX_SHARE = 0.4
+POSITION_BIAS_MIN_QUESTIONS = 8
 
 
 def _norm(text: str) -> str:
@@ -247,17 +263,82 @@ def validate_all() -> list[str]:
     return validate_question_sets(load_question_sets())
 
 
-def main() -> int:
-    sets = load_question_sets()
+def _single_answer_choices(sets: Iterable[SubjectQuestionSet]) -> dict[str, list[QuestionSeed]]:
+    by_competency: dict[str, list[QuestionSeed]] = defaultdict(list)
+    for qs in sets:
+        for q in qs.questions:
+            text = q.text.get(DEFAULT_LANGUAGE)
+            if (
+                q.type in SINGLE_ANSWER_TYPES
+                and text is not None
+                and text.options
+                and q.correct is not None
+                and len(q.correct) == 1
+                and q.correct[0] in {o.id for o in text.options}
+            ):
+                by_competency[q.competency_slug].append(q)
+    return by_competency
+
+
+def _correct_is_longest(q: QuestionSeed) -> bool:
+    options = q.text[DEFAULT_LANGUAGE].options or []
+    lengths = {o.id: len(o.text.strip()) for o in options}
+    assert q.correct is not None
+    own = lengths[q.correct[0]]
+    return all(own > n for oid, n in lengths.items() if oid != q.correct[0])
+
+
+def quality_warnings(sets: Iterable[SubjectQuestionSet]) -> list[str]:
+    """Statistical bias warnings (correct answer is a length / position tell)."""
+    warnings: list[str] = []
+    for competency, questions in sorted(_single_answer_choices(sets).items()):
+        wide = [q for q in questions if len(q.text[DEFAULT_LANGUAGE].options or []) >= 3]
+        if len(wide) >= LENGTH_BIAS_MIN_QUESTIONS:
+            longest = [q for q in wide if _correct_is_longest(q)]
+            if len(longest) / len(wide) > LENGTH_BIAS_MAX_SHARE:
+                codes = ", ".join(q.code for q in longest)
+                warnings.append(
+                    f"competency {competency!r}: the correct option is the longest in "
+                    f"{len(longest)}/{len(wide)} questions (> {LENGTH_BIAS_MAX_SHARE:.0%}): {codes}"
+                )
+        if len(questions) >= POSITION_BIAS_MIN_QUESTIONS:
+            letters = Counter(q.correct[0] for q in questions if q.correct)
+            letter, count = letters.most_common(1)[0]
+            if count / len(questions) > POSITION_BIAS_MAX_SHARE:
+                warnings.append(
+                    f"competency {competency!r}: correct answer is {letter!r} in "
+                    f"{count}/{len(questions)} questions (> {POSITION_BIAS_MAX_SHARE:.0%}); "
+                    f"distribution {dict(sorted(letters.items()))}"
+                )
+    return warnings
+
+
+def run(sets: Sequence[SubjectQuestionSet], strict: bool = False) -> int:
     errors = validate_question_sets(sets)
+    warnings = quality_warnings(sets)
     total = sum(len(s.questions) for s in sets)
     if errors:
         print(f"{len(errors)} problem(s) in the question seeds:")
         for error in errors:
             print(f"  - {error}")
+    if warnings:
+        print(f"{len(warnings)} quality warning(s):")
+        for warning in warnings:
+            print(f"  - {warning}")
+    if errors:
+        return 1
+    if warnings and strict:
+        print("FAILED (--strict): warnings are treated as errors.")
         return 1
     print(f"OK: {total} questions in {len(sets)} subject file(s) are valid.")
     return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Validate the question-bank seeds.")
+    parser.add_argument("--strict", action="store_true", help="fail on quality warnings too")
+    args = parser.parse_args(argv)
+    return run(load_question_sets(), strict=args.strict)
 
 
 if __name__ == "__main__":
