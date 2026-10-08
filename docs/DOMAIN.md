@@ -220,6 +220,15 @@ identical in every language; assessments reference existing questions, a
 competency assessment only its own competency's questions, thresholds are 1-100.
 This is the contract for the bulk generation of all 30 competencies (I6).
 
+Besides errors, the validator prints **quality warnings** (J8) that do not fail
+it unless `--strict` is passed (`python -m app.seeds.questions.validate
+--strict`). Per competency, over English single-answer questions: the correct
+option being the strictly longest in more than 50% of the questions (>= 4
+questions with >= 3 options; the offending questions are listed), and one
+letter holding more than 40% of the correct answers (>= 8 questions). The
+thresholds are constants at the top of `validate.py`; fix warnings by
+rebalancing option length/order in the seed, not by raising the thresholds.
+
 ## Recommendations: "what to study today" (I3)
 
 `GET /recommendations/today` is a deterministic, explainable rule set (no LLM,
