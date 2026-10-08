@@ -233,6 +233,9 @@ export const en = {
   'difficulty.easy': 'easy',
   'difficulty.medium': 'medium',
   'difficulty.hard': 'hard',
+  'difficulty.beginner': 'beginner',
+  'difficulty.intermediate': 'intermediate',
+  'difficulty.advanced': 'advanced',
 
   // Quizzes list and history
   'quizzes.title': 'Quizzes',
@@ -274,6 +277,7 @@ export const en = {
   'quiz.questionsNav': 'Questions',
   'quiz.questionNavAnswered': 'Question {n}, answered',
   'quiz.questionNavUnanswered': 'Question {n}, not answered',
+  'quiz.questionLabel': 'Question {n}',
   'quiz.questionHeading': 'Question {n} of {total}',
   'quiz.selectAll': 'select all that apply',
   'quiz.shortAnswer': 'short answer',

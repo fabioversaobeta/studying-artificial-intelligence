@@ -7,10 +7,12 @@ import { QuizRunner } from '@/features/quiz/quiz-runner'
 import { ErrorAlert } from '@/components/ui/alert'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { AttemptDetail } from '@/types/api'
+import { useT } from '@/i18n/use-i18n'
 
 /** One attempt: the quiz itself while open, the graded review once finished. */
 export function QuizAttemptPage() {
   const { attemptId = '' } = useParams()
+  const t = useT()
   const { data, error, isLoading, refetch } = useAsync(
     () => assessmentService.getAttempt(attemptId),
     [attemptId],
@@ -21,9 +23,9 @@ export function QuizAttemptPage() {
   if (error || !data) {
     return (
       <div className="space-y-4">
-        <ErrorAlert message={error ?? 'Attempt not found'} onRetry={refetch} />
+        <ErrorAlert message={error ?? t('attempt.notFound')} onRetry={refetch} />
         <Link to="/quizzes" className="text-sm text-accent-light hover:underline">
-          Back to quizzes
+          {t('attempt.backToQuizzes')}
         </Link>
       </div>
     )

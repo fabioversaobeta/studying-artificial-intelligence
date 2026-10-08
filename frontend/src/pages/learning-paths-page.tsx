@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
+import { useT } from '@/i18n/use-i18n'
 
 const sortedItems = (path: LearningPath) =>
   [...path.items].sort((a, b) => a.sort_order - b.sort_order)
@@ -15,13 +16,6 @@ const stateTone: Record<CompetencyState, 'neutral' | 'accent' | 'success' | 'war
   available: 'accent',
   learning: 'warning',
   mastered: 'success',
-}
-
-const stateLabel: Record<CompetencyState, string> = {
-  locked: 'Locked',
-  available: 'Available',
-  learning: 'Learning',
-  mastered: 'Mastered',
 }
 
 function ProgressBar({ label, value }: { label: string; value: number }) {
@@ -42,6 +36,7 @@ function ProgressBar({ label, value }: { label: string; value: number }) {
 
 export function LearningPathsPage() {
   const { data, error, isLoading, refetch } = useAsync(() => learningService.listLearningPaths(), [])
+  const t = useT()
 
   if (isLoading) return <PageSpinner />
   if (error) return <ErrorAlert message={error} onRetry={refetch} />
@@ -50,13 +45,13 @@ export function LearningPathsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-heading">Learning Paths</h1>
-        <p className="mt-1 text-sm text-fg-muted">Curated sequences of competencies to follow.</p>
+        <h1 className="text-xl font-semibold text-heading">{t('paths.title')}</h1>
+        <p className="mt-1 text-sm text-fg-muted">{t('paths.subtitle')}</p>
       </div>
 
       {data.length === 0 ? (
         <Card>
-          <p className="text-sm text-fg-muted">No learning paths available yet.</p>
+          <p className="text-sm text-fg-muted">{t('paths.empty')}</p>
         </Card>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2">
@@ -72,13 +67,14 @@ export function LearningPathsPage() {
                     <p className="mt-1 text-sm text-fg-muted">{path.description}</p>
                   )}
                   <p className="mt-3 text-xs text-fg-muted">
-                    {path.items.length} step{path.items.length === 1 ? '' : 's'}
-                    {path.progress && ` · ${path.progress.mastered_steps} mastered`}
+                    {t('paths.steps', { count: path.items.length })}
+                    {path.progress &&
+                      ` · ${t('paths.masteredSteps', { count: path.progress.mastered_steps })}`}
                   </p>
                   {path.progress && (
                     <div className="mt-2">
                       <ProgressBar
-                        label={`${path.title} progress`}
+                        label={t('paths.progressLabel', { title: path.title })}
                         value={path.progress.average_mastery}
                       />
                     </div>
@@ -96,6 +92,7 @@ export function LearningPathsPage() {
 export function LearningPathDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const { data, error, isLoading, refetch } = useAsync(() => learningService.getLearningPath(slug!), [slug])
+  const t = useT()
 
   if (isLoading) return <PageSpinner />
   if (error) return <ErrorAlert message={error} onRetry={refetch} />
@@ -107,7 +104,7 @@ export function LearningPathDetailPage() {
     <div className="space-y-6">
       <div>
         <Link to="/learning-paths" className="text-sm text-accent-light hover:underline">
-          ← All learning paths
+          {t('paths.all')}
         </Link>
         <h1 className="mt-2 text-xl font-semibold text-heading">{data.title}</h1>
         {data.description && <p className="mt-1 text-sm text-fg-muted">{data.description}</p>}
@@ -116,18 +113,21 @@ export function LearningPathDetailPage() {
       {data.progress && (
         <Card>
           <p className="text-sm text-fg">
-            {data.progress.mastered_steps} of {data.progress.total_steps} steps mastered
+            {t('paths.summary', {
+              mastered: data.progress.mastered_steps,
+              total: data.progress.total_steps,
+            })}
             {' · '}
-            {Math.round(data.progress.average_mastery)}% average mastery
+            {t('paths.averageMastery', { value: Math.round(data.progress.average_mastery) })}
           </p>
           <div className="mt-2">
-            <ProgressBar label="Path progress" value={data.progress.average_mastery} />
+            <ProgressBar label={t('paths.pathProgress')} value={data.progress.average_mastery} />
           </div>
         </Card>
       )}
 
       {items.length === 0 ? (
-        <p className="text-sm text-fg-muted">This path has no steps yet.</p>
+        <p className="text-sm text-fg-muted">{t('paths.noSteps')}</p>
       ) : (
         <ol className="space-y-3">
           {items.map((item, i) => (
@@ -143,12 +143,12 @@ export function LearningPathDetailPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-medium text-fg">
-                        <span className="sr-only">Step {i + 1}: </span>
+                        <span className="sr-only">{t('paths.step', { n: i + 1 })}</span>
                         {item.competency.name}
                       </h2>
-                      <Badge>{item.competency.difficulty}</Badge>
+                      <Badge>{t(`difficulty.${item.competency.difficulty}`)}</Badge>
                       {item.state && (
-                        <Badge tone={stateTone[item.state]}>{stateLabel[item.state]}</Badge>
+                        <Badge tone={stateTone[item.state]}>{t(`competency.state.${item.state}`)}</Badge>
                       )}
                     </div>
                     {item.competency.description && (
@@ -157,7 +157,7 @@ export function LearningPathDetailPage() {
                     {item.mastery_score != null && (
                       <div className="mt-2">
                         <ProgressBar
-                          label={`${item.competency.name} mastery`}
+                          label={t('competency.masteryLabel', { name: item.competency.name })}
                           value={item.mastery_score}
                         />
                       </div>
@@ -166,7 +166,7 @@ export function LearningPathDetailPage() {
                       to={`/subjects/${item.competency.subject_id}`}
                       className="mt-2 inline-block text-sm text-accent-light hover:underline"
                     >
-                      Study in subject →
+                      {t('paths.studyInSubject')}
                     </Link>
                   </div>
                 </div>

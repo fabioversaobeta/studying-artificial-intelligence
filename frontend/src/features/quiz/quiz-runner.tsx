@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { ErrorAlert } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/input'
 import type { AnswerResult, AttemptDetail, AttemptQuestion } from '@/types/api'
+import { useI18n } from '@/i18n/use-i18n'
 
 interface Draft {
   optionIds: string[]
@@ -49,6 +50,7 @@ export function QuizRunner({
   attempt: AttemptDetail
   onFinished: (result: AttemptDetail) => void
 }) {
+  const { t, formatNumber } = useI18n()
   const [questions, setQuestions] = useState(attempt.questions)
   const [drafts, setDrafts] = useState(() => initialDrafts(attempt.questions))
   const [index, setIndex] = useState(() => {
@@ -128,7 +130,7 @@ export function QuizRunner({
       }
       return true
     } catch (err) {
-      setError(messageOf(err, 'Could not save your answer'))
+      setError(messageOf(err, t('quiz.saveError')))
       return false
     }
   }
@@ -153,7 +155,7 @@ export function QuizRunner({
       const result = await assessmentService.selfGrade(attempt.id, question.id, isCorrect)
       setReveals((prev) => ({ ...prev, [question.id]: result }))
     } catch (err) {
-      setError(messageOf(err, 'Could not save your grade'))
+      setError(messageOf(err, t('quiz.gradeError')))
     } finally {
       setBusy(false)
     }
@@ -170,7 +172,7 @@ export function QuizRunner({
       if (!(await persist())) return
       onFinished(await assessmentService.finishAttempt(attempt.id))
     } catch (err) {
-      setError(messageOf(err, 'Could not finish the quiz'))
+      setError(messageOf(err, t('quiz.finishError')))
     } finally {
       setBusy(false)
     }
@@ -211,12 +213,12 @@ export function QuizRunner({
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-lg font-semibold text-heading">{attempt.assessment_title}</h1>
           <p className="text-sm text-fg-muted" aria-live="polite">
-            {answeredCount} of {total} answered
+            {t('quiz.answeredCount', { answered: answeredCount, total })}
           </p>
         </div>
         <div
           role="progressbar"
-          aria-label="Questions answered"
+          aria-label={t('quiz.answeredProgress')}
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={answeredCount}
@@ -227,7 +229,7 @@ export function QuizRunner({
             style={{ width: `${(answeredCount / total) * 100}%` }}
           />
         </div>
-        <nav aria-label="Questions" className="flex flex-wrap gap-1.5">
+        <nav aria-label={t('quiz.questionsNav')} className="flex flex-wrap gap-1.5">
           {questions.map((q, i) => {
             const answered = hasAnswer(q, drafts[q.id])
             return (
@@ -236,7 +238,7 @@ export function QuizRunner({
                 type="button"
                 onClick={() => void go(i)}
                 disabled={busy}
-                aria-label={`Question ${i + 1}${answered ? ', answered' : ', not answered'}`}
+                aria-label={t(answered ? 'quiz.questionNavAnswered' : 'quiz.questionNavUnanswered', { n: i + 1 })}
                 aria-current={i === index ? 'step' : undefined}
                 className={[
                   'h-8 w-8 rounded-full text-sm font-medium transition-colors',
@@ -261,12 +263,12 @@ export function QuizRunner({
             tabIndex={-1}
             className="text-sm font-semibold text-heading focus:outline-none"
           >
-            Question {index + 1} of {total}
+            {t('quiz.questionHeading', { n: index + 1, total })}
           </h2>
-          <Badge tone={difficultyTone[question.difficulty]}>{question.difficulty}</Badge>
-          <Badge tone="accent">{question.xp_value} XP</Badge>
-          {question.type === 'multi_select' && <Badge>select all that apply</Badge>}
-          {question.type === 'short_answer' && <Badge>short answer</Badge>}
+          <Badge tone={difficultyTone[question.difficulty]}>{t(`difficulty.${question.difficulty}`)}</Badge>
+          <Badge tone="accent">{t('common.xp', { value: formatNumber(question.xp_value) })}</Badge>
+          {question.type === 'multi_select' && <Badge>{t('quiz.selectAll')}</Badge>}
+          {question.type === 'short_answer' && <Badge>{t('quiz.shortAnswer')}</Badge>}
         </div>
 
         <LessonContent markdown={question.prompt} />
@@ -274,7 +276,7 @@ export function QuizRunner({
         {question.options ? (
           <fieldset className="space-y-2" disabled={busy}>
             <legend className="sr-only">
-              {question.type === 'multi_select' ? 'Select all that apply' : 'Choose one answer'}
+              {question.type === 'multi_select' ? t('quiz.legendMulti') : t('quiz.legendSingle')}
             </legend>
             {question.options.map((option, i) => {
               const checked = draft.optionIds.includes(option.id)
@@ -314,13 +316,13 @@ export function QuizRunner({
           <div className="space-y-3">
             <div>
               <label htmlFor={`${fieldsetName}-text`} className="sr-only">
-                Your answer
+                {t('quiz.yourAnswerLabel')}
               </label>
               <Textarea
                 id={`${fieldsetName}-text`}
                 rows={5}
                 maxLength={5000}
-                placeholder="Write your answer in your own words…"
+                placeholder={t('quiz.answerPlaceholder')}
                 value={draft.text}
                 disabled={busy}
                 onChange={(e) => setDraft({ text: e.target.value })}
@@ -333,12 +335,12 @@ export function QuizRunner({
                 disabled={busy || draft.text.trim() === ''}
                 onClick={() => void checkShortAnswer()}
               >
-                Check answer
+                {t('quiz.checkAnswer')}
               </Button>
             )}
             {savedShort && reveal && (
               <div className="space-y-3 rounded-xl border border-border bg-surface-raised p-4">
-                <h3 className="text-sm font-semibold text-heading">Model answer</h3>
+                <h3 className="text-sm font-semibold text-heading">{t('quiz.modelAnswer')}</h3>
                 <p className="text-sm text-fg">
                   <InlineMarkdown>{reveal.model_answer ?? ''}</InlineMarkdown>
                 </p>
@@ -347,7 +349,7 @@ export function QuizRunner({
                     <InlineMarkdown>{reveal.explanation}</InlineMarkdown>
                   </p>
                 )}
-                <div role="group" aria-label="Grade your own answer" className="flex gap-2">
+                <div role="group" aria-label={t('quiz.gradeGroup')} className="flex gap-2">
                   <Button
                     type="button"
                     variant={reveal.is_correct === true ? 'primary' : 'secondary'}
@@ -355,7 +357,7 @@ export function QuizRunner({
                     disabled={busy}
                     onClick={() => void selfGrade(true)}
                   >
-                    I got it right
+                    {t('quiz.gotRight')}
                   </Button>
                   <Button
                     type="button"
@@ -364,11 +366,11 @@ export function QuizRunner({
                     disabled={busy}
                     onClick={() => void selfGrade(false)}
                   >
-                    I got it wrong
+                    {t('quiz.gotWrong')}
                   </Button>
                 </div>
                 <p className="text-xs text-fg-muted">
-                  You grade this one yourself. Ungraded short answers count as wrong.
+                  {t('quiz.selfGradeNote')}
                 </p>
               </div>
             )}
@@ -381,20 +383,18 @@ export function QuizRunner({
       {confirmFinish && (
         <div
           role="alertdialog"
-          aria-label="Finish with unanswered questions"
+          aria-label={t('quiz.finishDialog')}
           className="space-y-3 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm"
         >
           <p className="text-fg">
-            {unanswered === 1
-              ? '1 question is unanswered and will count as wrong.'
-              : `${unanswered} questions are unanswered and will count as wrong.`}
+            {t('quiz.unanswered', { count: unanswered })}
           </p>
           <div className="flex gap-2">
             <Button type="button" onClick={() => void finish(true)} disabled={busy}>
-              Finish anyway
+              {t('quiz.finishAnyway')}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setConfirmFinish(false)}>
-              Keep answering
+              {t('quiz.keepAnswering')}
             </Button>
           </div>
         </div>
@@ -407,21 +407,21 @@ export function QuizRunner({
           disabled={busy || index === 0}
           onClick={() => void go(index - 1)}
         >
-          Previous
+          {t('quiz.previous')}
         </Button>
         {isLast ? (
           <Button type="button" disabled={busy} onClick={() => void finish()}>
-            {busy ? 'Saving…' : 'Finish quiz'}
+            {busy ? t('quiz.saving') : t('quiz.finish')}
           </Button>
         ) : (
           <Button type="button" disabled={busy} onClick={() => void go(index + 1)}>
-            Next
+            {t('quiz.next')}
           </Button>
         )}
       </div>
       <p className="text-xs text-fg-muted">
-        Keyboard: <kbd>1</kbd>–<kbd>9</kbd> choose an option, <kbd>N</kbd> or <kbd>Enter</kbd> next,{' '}
-        <kbd>P</kbd> previous.
+        {t('quiz.kbdIntro')} <kbd>1</kbd>–<kbd>9</kbd> {t('quiz.kbdChoose')} <kbd>N</kbd>{' '}
+        {t('quiz.kbdOr')} <kbd>Enter</kbd> {t('quiz.kbdNext')} <kbd>P</kbd> {t('quiz.kbdPrevious')}
       </p>
     </div>
   )

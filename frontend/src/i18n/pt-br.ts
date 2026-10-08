@@ -229,6 +229,9 @@ export const ptBR: Dictionary = {
   'difficulty.easy': 'fácil',
   'difficulty.medium': 'médio',
   'difficulty.hard': 'difícil',
+  'difficulty.beginner': 'iniciante',
+  'difficulty.intermediate': 'intermediário',
+  'difficulty.advanced': 'avançado',
 
   // Quizzes list and history
   'quizzes.title': 'Quizzes',
@@ -271,6 +274,7 @@ export const ptBR: Dictionary = {
   'quiz.questionsNav': 'Perguntas',
   'quiz.questionNavAnswered': 'Pergunta {n}, respondida',
   'quiz.questionNavUnanswered': 'Pergunta {n}, não respondida',
+  'quiz.questionLabel': 'Pergunta {n}',
   'quiz.questionHeading': 'Pergunta {n} de {total}',
   'quiz.selectAll': 'marque todas que se aplicam',
   'quiz.shortAnswer': 'resposta curta',
