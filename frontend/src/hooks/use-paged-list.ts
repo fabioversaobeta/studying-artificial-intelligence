@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, type Paged } from '@/services/api-client'
+import { useT } from '@/i18n/use-i18n'
 
 type FetchPage<T> = (params: { limit: number; offset: number }) => Promise<Paged<T>>
 
@@ -32,6 +33,9 @@ export function usePagedList<T>(fetchPage: FetchPage<T>, pageSize = 20, deps: un
     isLoadingMore: false,
     loadMoreError: null,
   })
+  const t = useT()
+  const tRef = useRef(t)
+  tRef.current = t
   const fetchRef = useRef(fetchPage)
   fetchRef.current = fetchPage
   const generation = useRef(0)
@@ -64,7 +68,7 @@ export function usePagedList<T>(fetchPage: FetchPage<T>, pageSize = 20, deps: un
           ...prev,
           items: [],
           total: 0,
-          error: messageOf(err, 'Something went wrong'),
+          error: messageOf(err, tRef.current('common.somethingWrong')),
           isLoading: false,
           isLoadingMore: false,
         }))
@@ -92,7 +96,7 @@ export function usePagedList<T>(fetchPage: FetchPage<T>, pageSize = 20, deps: un
         setState((prev) => ({
           ...prev,
           isLoadingMore: false,
-          loadMoreError: messageOf(err, 'Could not load more'),
+          loadMoreError: messageOf(err, tRef.current('common.couldNotLoadMore')),
         }))
       })
   }, [pageSize])
