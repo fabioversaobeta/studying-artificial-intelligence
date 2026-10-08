@@ -10,10 +10,12 @@ import { ErrorAlert } from '@/components/ui/alert'
 import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { Assessment } from '@/types/api'
+import { useI18n, useT } from '@/i18n/use-i18n'
+import type { MessageKey } from '@/i18n'
 
-function actionLabel(assessment: Assessment): string {
-  if (assessment.open_attempt_id) return 'Resume'
-  return assessment.attempts_completed > 0 ? 'Try again' : 'Start'
+function actionKey(assessment: Assessment): MessageKey {
+  if (assessment.open_attempt_id) return 'quizzes.resume'
+  return assessment.attempts_completed > 0 ? 'quizzes.tryAgain' : 'quizzes.start'
 }
 
 function AssessmentCard({
@@ -26,6 +28,8 @@ function AssessmentCard({
   onStart: (assessment: Assessment) => void
 }) {
   const titleId = `assessment-${assessment.id}`
+  const { t, formatNumber } = useI18n()
+  const action = t(actionKey(assessment))
   return (
     <Card role="group" aria-labelledby={titleId} className="space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -38,24 +42,28 @@ function AssessmentCard({
           )}
         </div>
         {assessment.passed ? (
-          <Badge tone="success">Passed</Badge>
+          <Badge tone="success">{t('quizzes.passed')}</Badge>
         ) : assessment.attempts_completed > 0 ? (
-          <Badge tone="warning">Not passed yet</Badge>
+          <Badge tone="warning">{t('quizzes.notPassedYet')}</Badge>
         ) : null}
       </div>
       {assessment.description && <p className="text-sm text-fg-muted">{assessment.description}</p>}
       <p className="text-xs text-fg-muted">
-        {assessment.question_count} questions · pass at {assessment.pass_threshold}% ·{' '}
-        {assessment.completion_bonus_xp} XP bonus on first pass
-        {assessment.best_score_percent !== null && ` · best ${assessment.best_score_percent}%`}
+        {t('quizzes.meta', {
+          questions: assessment.question_count,
+          threshold: assessment.pass_threshold,
+          bonus: formatNumber(assessment.completion_bonus_xp),
+        })}
+        {assessment.best_score_percent !== null &&
+          t('quizzes.best', { score: assessment.best_score_percent })}
       </p>
       <Button
         type="button"
         onClick={() => onStart(assessment)}
         disabled={busy || assessment.question_count === 0}
-        aria-label={`${actionLabel(assessment)}: ${assessment.title}`}
+        aria-label={t('quizzes.actionLabel', { action, title: assessment.title })}
       >
-        {actionLabel(assessment)}
+        {action}
       </Button>
     </Card>
   )
@@ -65,6 +73,7 @@ export function QuizzesPage() {
   const list = usePagedList((page) => assessmentService.listAssessments(page))
   const navigate = useNavigate()
   const toast = useToast()
+  const t = useT()
   const [startingId, setStartingId] = useState<string | null>(null)
 
   async function start(assessment: Assessment) {
@@ -73,7 +82,7 @@ export function QuizzesPage() {
       const attempt = await assessmentService.startAttempt(assessment.id)
       navigate(`/quizzes/attempts/${attempt.id}`)
     } catch (err) {
-      toast.showError(err, 'Could not start the quiz')
+      toast.showError(err, t('quizzes.startError'))
       setStartingId(null)
     }
   }
@@ -82,14 +91,13 @@ export function QuizzesPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-heading">Quizzes</h1>
+          <h1 className="text-xl font-semibold text-heading">{t('quizzes.title')}</h1>
           <p className="mt-1 text-sm text-fg-muted">
-            Test what you know. XP is earned on the first pass; every attempt still counts for
-            mastery.
+            {t('quizzes.subtitle')}
           </p>
         </div>
         <Link to="/quizzes/history" className="text-sm text-accent-light hover:underline">
-          History &amp; stats
+          {t('quizzes.historyLink')}
         </Link>
       </div>
 
@@ -98,7 +106,7 @@ export function QuizzesPage() {
       ) : list.error ? (
         <ErrorAlert message={list.error} onRetry={list.reload} />
       ) : list.items.length === 0 ? (
-        <p className="text-sm text-fg-muted">No quizzes available yet.</p>
+        <p className="text-sm text-fg-muted">{t('quizzes.empty')}</p>
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2">

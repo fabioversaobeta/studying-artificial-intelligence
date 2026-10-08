@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SettingsPage } from '@/pages/settings-page'
 import { ToastProvider } from '@/features/feedback/toast-context'
+import { I18nProvider } from '@/i18n/provider'
 import { apiError, mockFetch } from '@/test/fetch-mock'
 
 const user = {
@@ -15,9 +16,11 @@ const user = {
 
 function renderPage() {
   return render(
-    <ToastProvider>
-      <SettingsPage />
-    </ToastProvider>,
+    <I18nProvider>
+      <ToastProvider>
+        <SettingsPage />
+      </ToastProvider>
+    </I18nProvider>,
   )
 }
 
@@ -28,7 +31,7 @@ describe('SettingsPage', () => {
     mockFetch({ 'GET /api/v1/auth/me': { body: { ...user, preferred_language: 'pt-BR' } } })
     renderPage()
     expect(await screen.findByDisplayValue('Ada')).toBe(screen.getByLabelText('Display name'))
-    expect(screen.getByLabelText('Content language')).toHaveValue('pt-BR')
+    expect(screen.getByLabelText('Language')).toHaveValue('pt-BR')
   })
 
   it('saves the chosen language through PATCH /users/me', async () => {
@@ -39,11 +42,14 @@ describe('SettingsPage', () => {
       }),
     })
     renderPage()
-    await screen.findByLabelText('Content language')
-    await userEvent.selectOptions(screen.getByLabelText('Content language'), 'pt-BR')
+    await screen.findByLabelText('Language')
+    await userEvent.selectOptions(screen.getByLabelText('Language'), 'pt-BR')
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
-    expect(await screen.findByText('Settings saved')).toBeInTheDocument()
+    // The interface switches to the chosen language right after saving, without a reload.
+    expect(await screen.findByText('Configurações salvas')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Configurações' })).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe('pt-BR')
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')
     expect(JSON.parse(String(patch?.[1]?.body))).toEqual({
       display_name: 'Ada',
@@ -57,7 +63,7 @@ describe('SettingsPage', () => {
       'PATCH /api/v1/users/me': apiError(422, 'validation_error', 'Invalid language'),
     })
     renderPage()
-    await screen.findByLabelText('Content language')
+    await screen.findByLabelText('Language')
     await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid language')
   })

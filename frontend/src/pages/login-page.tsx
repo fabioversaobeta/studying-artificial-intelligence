@@ -5,9 +5,11 @@ import { ApiError } from '@/services/api-client'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
 import { ErrorAlert } from '@/components/ui/alert'
+import { useT } from '@/i18n/use-i18n'
 
 export function LoginPage() {
   const { login } = useAuth()
+  const t = useT()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +24,7 @@ export function LoginPage() {
       await login(email, password)
       navigate('/')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Unable to log in')
+      setError(err instanceof ApiError ? err.message : t('login.error'))
     } finally {
       setIsSubmitting(false)
     }
@@ -30,10 +32,10 @@ export function LoginPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-heading">Log in</h2>
+      <h2 className="text-lg font-semibold text-heading">{t('login.title')}</h2>
       {error && <ErrorAlert message={error} />}
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t('login.email')}</Label>
         <Input
           id="email"
           type="email"
@@ -44,7 +46,7 @@ export function LoginPage() {
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t('login.password')}</Label>
         <Input
           id="password"
           type="password"
@@ -55,12 +57,12 @@ export function LoginPage() {
         />
       </div>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Logging in…' : 'Log in'}
+        {isSubmitting ? t('login.submitting') : t('login.submit')}
       </Button>
       <p className="text-center text-sm text-fg-muted">
-        No account yet?{' '}
+        {t('login.noAccount')}{' '}
         <Link to="/register" className="text-accent-light hover:underline">
-          Register
+          {t('login.registerLink')}
         </Link>
       </p>
     </form>

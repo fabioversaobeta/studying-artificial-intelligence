@@ -4,6 +4,7 @@ import { ApiError } from '@/services/api-client'
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/input'
 import { ErrorAlert } from '@/components/ui/alert'
+import { useT } from '@/i18n/use-i18n'
 
 export function LogSessionForm({
   competencyId,
@@ -12,6 +13,7 @@ export function LogSessionForm({
   competencyId: string
   onLogged: () => void
 }) {
+  const t = useT()
   const [duration, setDuration] = useState(30)
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +32,7 @@ export function LogSessionForm({
       setNotes('')
       onLogged()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not log session')
+      setError(err instanceof ApiError ? err.message : t('logSession.error'))
     } finally {
       setIsSubmitting(false)
     }
@@ -41,7 +43,7 @@ export function LogSessionForm({
       {error && <ErrorAlert message={error} />}
       <div className="flex items-end gap-3">
         <div className="w-28">
-          <Label htmlFor={`duration-${competencyId}`}>Minutes</Label>
+          <Label htmlFor={`duration-${competencyId}`}>{t('logSession.minutes')}</Label>
           <Input
             id={`duration-${competencyId}`}
             type="number"
@@ -53,17 +55,17 @@ export function LogSessionForm({
           />
         </div>
         <div className="flex-1">
-          <Label htmlFor={`notes-${competencyId}`}>Notes (optional)</Label>
+          <Label htmlFor={`notes-${competencyId}`}>{t('logSession.notes')}</Label>
           <Textarea
             id={`notes-${competencyId}`}
             rows={1}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="What did you study?"
+            placeholder={t('logSession.notesPlaceholder')}
           />
         </div>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Logging…' : 'Log session'}
+          {isSubmitting ? t('logSession.submitting') : t('logSession.submit')}
         </Button>
       </div>
     </form>

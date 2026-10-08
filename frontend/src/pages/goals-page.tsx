@@ -11,6 +11,7 @@ import { ErrorAlert } from '@/components/ui/alert'
 import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { GoalStatus } from '@/types/api'
+import { useT } from '@/i18n/use-i18n'
 
 const statusTone: Record<GoalStatus, 'accent' | 'success' | 'neutral'> = {
   active: 'accent',
@@ -22,6 +23,7 @@ export function GoalsPage() {
   const list = usePagedList((page) => learningService.listGoals(page))
   const { items: goals, error, isLoading, reload: refetch } = list
   const toast = useToast()
+  const t = useT()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export function GoalsPage() {
       setDescription('')
       refetch()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Could not create goal')
+      setFormError(err instanceof ApiError ? err.message : t('goals.createError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -51,32 +53,32 @@ export function GoalsPage() {
       await learningService.updateGoalStatus(goalId, status)
       refetch()
     } catch (err) {
-      toast.showError(err, 'Could not update goal')
+      toast.showError(err, t('goals.updateError'))
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-heading">Learning Goals</h1>
-        <p className="mt-1 text-sm text-fg-muted">What are you working toward?</p>
+        <h1 className="text-xl font-semibold text-heading">{t('goals.title')}</h1>
+        <p className="mt-1 text-sm text-fg-muted">{t('goals.subtitle')}</p>
       </div>
 
       <Card>
         <form onSubmit={handleCreate} className="space-y-3">
           {formError && <ErrorAlert message={formError} />}
           <div>
-            <Label htmlFor="goal-title">Title</Label>
+            <Label htmlFor="goal-title">{t('goals.titleLabel')}</Label>
             <Input
               id="goal-title"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Become interview-ready for senior backend roles"
+              placeholder={t('goals.titlePlaceholder')}
             />
           </div>
           <div>
-            <Label htmlFor="goal-description">Description (optional)</Label>
+            <Label htmlFor="goal-description">{t('goals.descriptionLabel')}</Label>
             <Textarea
               id="goal-description"
               rows={2}
@@ -85,7 +87,7 @@ export function GoalsPage() {
             />
           </div>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Adding…' : 'Add goal'}
+            {isSubmitting ? t('goals.adding') : t('goals.add')}
           </Button>
         </form>
       </Card>
@@ -102,7 +104,7 @@ export function GoalsPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-fg">{goal.title}</h3>
-                    <Badge tone={statusTone[goal.status]}>{goal.status}</Badge>
+                    <Badge tone={statusTone[goal.status]}>{t(`goals.status.${goal.status}`)}</Badge>
                   </div>
                   {goal.description && (
                     <p className="mt-1 text-sm text-fg-muted">{goal.description}</p>
@@ -111,10 +113,10 @@ export function GoalsPage() {
                 {goal.status === 'active' && (
                   <div className="flex shrink-0 gap-2">
                     <Button variant="secondary" onClick={() => updateStatus(goal.id, 'achieved')}>
-                      Mark achieved
+                      {t('goals.markAchieved')}
                     </Button>
                     <Button variant="ghost" onClick={() => updateStatus(goal.id, 'archived')}>
-                      Archive
+                      {t('goals.archive')}
                     </Button>
                   </div>
                 )}
@@ -122,7 +124,7 @@ export function GoalsPage() {
             </Card>
           ))}
           {goals.length === 0 && (
-            <p className="text-sm text-fg-muted">No goals yet — add your first one above.</p>
+            <p className="text-sm text-fg-muted">{t('goals.empty')}</p>
           )}
           <LoadMore
             shown={goals.length}

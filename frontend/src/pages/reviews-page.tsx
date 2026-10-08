@@ -10,20 +10,9 @@ import { Button } from '@/components/ui/button'
 import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import { ErrorAlert } from '@/components/ui/alert'
+import { useT } from '@/i18n/use-i18n'
 
-const RECALL_OPTIONS = [
-  { quality: 0, label: 'Blackout' },
-  { quality: 1, label: 'Wrong' },
-  { quality: 2, label: 'Almost' },
-  { quality: 3, label: 'Hard' },
-  { quality: 4, label: 'Good' },
-  { quality: 5, label: 'Easy' },
-] as const
-
-function formatInterval(days: number): string {
-  if (days <= 0) return 'later today'
-  return days === 1 ? 'in 1 day' : `in ${days} days`
-}
+const RECALL_QUALITIES = [0, 1, 2, 3, 4, 5] as const
 
 function ReviewCard({
   review,
@@ -34,6 +23,7 @@ function ReviewCard({
   result: Review | undefined
   onSubmitted: (updated: Review) => void
 }) {
+  const t = useT()
   const [pending, setPending] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const titleId = `review-${review.id}`
@@ -45,7 +35,7 @@ function ReviewCard({
       const updated = await learningService.submitRecall(review.competency_id, quality)
       onSubmitted(updated)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not save your answer')
+      setError(err instanceof ApiError ? err.message : t('reviews.saveError'))
     } finally {
       setPending(null)
     }
@@ -65,25 +55,30 @@ function ReviewCard({
             {review.subject_name}
           </Link>
         </div>
-        <Badge tone={result ? 'success' : 'warning'}>{result ? 'Reviewed' : 'Due'}</Badge>
+        <Badge tone={result ? 'success' : 'warning'}>{result ? t('reviews.badgeReviewed') : t('reviews.badgeDue')}</Badge>
       </div>
 
       {result ? (
         <p role="status" className="mt-4 text-sm text-success">
-          Saved. Next review {formatInterval(result.interval_days)}.
+          {t('reviews.saved', {
+            interval:
+              result.interval_days <= 0
+                ? t('reviews.laterToday')
+                : t('reviews.inDays', { count: result.interval_days }),
+          })}
         </p>
       ) : (
         <fieldset className="mt-4" disabled={pending !== null}>
-          <legend className="mb-2 text-sm text-fg-muted">How well did you recall it?</legend>
+          <legend className="mb-2 text-sm text-fg-muted">{t('reviews.recallQuestion')}</legend>
           <div className="flex flex-wrap gap-2">
-            {RECALL_OPTIONS.map((opt) => (
+            {RECALL_QUALITIES.map((quality) => (
               <Button
-                key={opt.quality}
+                key={quality}
                 type="button"
                 variant="secondary"
-                onClick={() => submit(opt.quality)}
+                onClick={() => submit(quality)}
               >
-                {opt.quality} · {opt.label}
+                {quality} · {t(`reviews.recall.${quality}`)}
               </Button>
             ))}
           </div>
@@ -102,6 +97,7 @@ export function ReviewsPage() {
   const list = usePagedList((page) => learningService.listDueReviews(page))
   const { items: data, error, isLoading, reload: refetch } = list
   const [results, setResults] = useState<Record<string, Review>>({})
+  const t = useT()
 
   if (isLoading) return <PageSpinner />
   if (error) return <ErrorAlert message={error} onRetry={refetch} />
@@ -112,24 +108,22 @@ export function ReviewsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-heading">Reviews</h1>
+        <h1 className="text-xl font-semibold text-heading">{t('reviews.title')}</h1>
         <p className="mt-1 text-sm text-fg-muted">
-          Spaced repetition: rate how well you remember each competency (0 = forgot, 5 = perfect).
+          {t('reviews.subtitle')}
         </p>
       </div>
 
       {data.length === 0 ? (
         <Card>
           <p className="text-sm text-fg-muted">
-            Nothing to review right now. Reviews appear here as competencies you studied come due.
+            {t('reviews.empty')}
           </p>
         </Card>
       ) : (
         <>
           <p className="text-sm text-fg-muted" aria-live="polite">
-            {remaining === 0
-              ? 'All caught up!'
-              : `${remaining} review${remaining === 1 ? '' : 's'} due`}
+            {remaining === 0 ? t('reviews.allCaughtUp') : t('reviews.due', { count: remaining })}
           </p>
           <div className="space-y-3">
             {data.map((review) => (

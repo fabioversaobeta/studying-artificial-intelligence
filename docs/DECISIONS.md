@@ -530,3 +530,35 @@ separate item if the owner wants it.
 `learning_service.competencies_with_state`) plus one query each for reviews,
 paths, goals, quizzes and quiz coverage; the count is constant in the amount of
 data (tested). `GET` never writes.
+
+## UI localisation: a plain typed dictionary, no i18n library (J7)
+
+**Decision**: the interface is localised (`en` default, `pt-BR`) with a small
+in-repo module, `frontend/src/i18n/`: one flat dictionary per language
+(`en.ts`, `pt-br.ts`), `translate()` with `{name}` interpolation and
+`Intl.PluralRules`-based plurals (`key_one` / `key_other`, requested with
+`t('key', { count })`), a React context (`I18nProvider`, `useI18n()`,
+`useT()`), and `Intl` formatters bound to the active locale. No new
+dependency.
+**Why not react-intl / i18next**: the app has ~300 short strings, two
+languages and no rich-text messages; a library would add tens of KB and a
+second API to learn for features we do not use (ICU message syntax, namespaces,
+lazy loading). The dictionary is typed: `ptBR` is declared as
+`Record<keyof typeof en, string>`, so a missing translation is a TypeScript
+error, and a Vitest test also checks key parity, non-empty values and equal
+`{placeholders}`. `t()` only accepts known keys. Revisit if we need ICU
+selects, three or more plural categories (ru, ar), or lazy-loaded bundles.
+**Language source**: signed in -> `user.preferred_language` (`AuthLanguageSync`
+inside `AuthProvider`); signed out (login/register) -> the last language kept in
+`localStorage` (`lp.language`, not sensitive, read/written in try/catch), else
+`en`. Saving the Settings form calls `setLanguage` so the UI switches at once,
+without a reload; `<html lang>` follows. Missing keys fall back to English.
+**Without a provider** (isolated component tests) `useT()` returns English, so
+tests need no wrapper unless they test localisation.
+**Not translated, on purpose**: text returned by the API (`ApiError.message`,
+question/lesson/recommendation content, which the backend already localises);
+content names (subjects, competencies, achievements) which are data;
+`api-client.ts` internal errors ("Session expired", "Request failed") which are
+not rendered through the i18n layer; the static `<title>` in `index.html`.
+**Same language for UI and content**: there is one preference
+(`preferred_language`), used for both, as decided in PROPOSAL_TRACK_I.md 3.1 (D3).

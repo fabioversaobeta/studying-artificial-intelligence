@@ -7,13 +7,11 @@ import { ErrorAlert } from '@/components/ui/alert'
 import { LoadMore } from '@/components/ui/load-more'
 import { PageSpinner } from '@/components/ui/spinner'
 import type { AttemptSummary, CompetencyAssessmentStats } from '@/types/api'
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-}
+import { useI18n } from '@/i18n/use-i18n'
 
 function StatsSection() {
   const stats = usePagedList((page) => assessmentService.competencyStats(page), 10)
+  const { t, formatNumber } = useI18n()
   if (stats.isLoading) return <PageSpinner />
   if (stats.error) return <ErrorAlert message={stats.error} onRetry={stats.reload} />
   if (stats.items.length === 0) return null
@@ -21,18 +19,18 @@ function StatsSection() {
   return (
     <section aria-labelledby="quiz-stats-title" className="space-y-3">
       <h2 id="quiz-stats-title" className="text-base font-semibold text-heading">
-        Progress by competency
+        {t('history.progressByCompetency')}
       </h2>
       <Card className="overflow-x-auto p-0">
         <table className="w-full text-left text-sm">
-          <caption className="sr-only">Quiz statistics per competency</caption>
+          <caption className="sr-only">{t('history.statsCaption')}</caption>
           <thead className="text-xs text-fg-muted">
             <tr>
-              <th scope="col" className="px-4 py-3 font-medium">Competency</th>
-              <th scope="col" className="px-4 py-3 font-medium">Coverage</th>
-              <th scope="col" className="px-4 py-3 font-medium">Accuracy</th>
-              <th scope="col" className="px-4 py-3 font-medium">Attempts</th>
-              <th scope="col" className="px-4 py-3 font-medium">XP</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t('history.col.competency')}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t('history.col.coverage')}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t('history.col.accuracy')}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t('history.col.attempts')}</th>
+              <th scope="col" className="px-4 py-3 font-medium">{t('history.col.xp')}</th>
             </tr>
           </thead>
           <tbody>
@@ -43,13 +41,13 @@ function StatsSection() {
                   <span className="block text-xs font-normal text-fg-muted">{row.subject_name}</span>
                 </th>
                 <td className="px-4 py-3 text-fg-muted">
-                  {row.questions_correct}/{row.questions_total} ({row.coverage_percent}%)
+                  {row.questions_correct}/{row.questions_total} ({formatNumber(row.coverage_percent)}%)
                 </td>
                 <td className="px-4 py-3 text-fg-muted">
-                  {row.accuracy_percent === null ? '—' : `${row.accuracy_percent}%`}
+                  {row.accuracy_percent === null ? '—' : `${formatNumber(row.accuracy_percent)}%`}
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{row.attempts_completed}</td>
-                <td className="px-4 py-3 text-fg-muted">{row.xp_earned}</td>
+                <td className="px-4 py-3 text-fg-muted">{formatNumber(row.xp_earned)}</td>
               </tr>
             ))}
           </tbody>
@@ -69,6 +67,7 @@ function StatsSection() {
 
 function AttemptRow({ attempt }: { attempt: AttemptSummary }) {
   const finished = attempt.status === 'completed'
+  const { t, formatDateTime, formatNumber } = useI18n()
   return (
     <li>
       <Link
@@ -77,21 +76,21 @@ function AttemptRow({ attempt }: { attempt: AttemptSummary }) {
       >
         <span>
           <span className="block font-medium text-heading">{attempt.assessment_title}</span>
-          <span className="text-xs text-fg-muted">{formatDate(attempt.started_at)}</span>
+          <span className="text-xs text-fg-muted">{formatDateTime(attempt.started_at)}</span>
         </span>
         <span className="flex items-center gap-2">
           {finished ? (
             <>
               <span className="text-sm text-fg-muted">
-                {attempt.correct_count}/{attempt.total_questions} · {attempt.score_percent}%
+                {attempt.correct_count}/{attempt.total_questions} · {formatNumber(attempt.score_percent ?? 0)}%
               </span>
               <Badge tone={attempt.passed ? 'success' : 'danger'}>
-                {attempt.passed ? 'Passed' : 'Not passed'}
+                {attempt.passed ? t('history.passed') : t('history.notPassed')}
               </Badge>
-              {attempt.xp_awarded > 0 && <Badge tone="accent">+{attempt.xp_awarded} XP</Badge>}
+              {attempt.xp_awarded > 0 && <Badge tone="accent">{t('common.xpGain', { value: formatNumber(attempt.xp_awarded) })}</Badge>}
             </>
           ) : (
-            <Badge tone="warning">In progress</Badge>
+            <Badge tone="warning">{t('history.inProgress')}</Badge>
           )}
         </span>
       </Link>
@@ -101,16 +100,17 @@ function AttemptRow({ attempt }: { attempt: AttemptSummary }) {
 
 export function QuizHistoryPage() {
   const list = usePagedList((page) => assessmentService.listAttempts(page))
+  const { t } = useI18n()
 
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-heading">Quiz history</h1>
-          <p className="mt-1 text-sm text-fg-muted">Your attempts, newest first.</p>
+          <h1 className="text-xl font-semibold text-heading">{t('history.title')}</h1>
+          <p className="mt-1 text-sm text-fg-muted">{t('history.subtitle')}</p>
         </div>
         <Link to="/quizzes" className="text-sm text-accent-light hover:underline">
-          All quizzes
+          {t('history.allQuizzes')}
         </Link>
       </div>
 
@@ -118,7 +118,7 @@ export function QuizHistoryPage() {
 
       <section aria-labelledby="quiz-attempts-title" className="space-y-3">
         <h2 id="quiz-attempts-title" className="text-base font-semibold text-heading">
-          Attempts
+          {t('history.attempts')}
         </h2>
         {list.isLoading ? (
           <PageSpinner />
@@ -126,7 +126,11 @@ export function QuizHistoryPage() {
           <ErrorAlert message={list.error} onRetry={list.reload} />
         ) : list.items.length === 0 ? (
           <p className="text-sm text-fg-muted">
-            No attempts yet. <Link to="/quizzes" className="text-accent-light hover:underline">Take a quiz</Link>.
+            {t('history.noAttempts')}{' '}
+            <Link to="/quizzes" className="text-accent-light hover:underline">
+              {t('history.takeQuiz')}
+            </Link>
+            .
           </p>
         ) : (
           <>

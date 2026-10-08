@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { ApiError } from '@/services/api-client'
+import { useT } from '@/i18n/use-i18n'
 
 type ToastTone = 'error' | 'success' | 'info'
 
@@ -36,6 +37,7 @@ const toneClasses: Record<ToastTone, string> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
   const nextId = useRef(1)
+  const t = useT()
 
   const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -51,9 +53,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 
   const showError = useCallback(
-    (err: unknown, fallback = 'Something went wrong') =>
+    (err: unknown, fallback = t('common.somethingWrong')) =>
       show(err instanceof ApiError ? err.message : fallback, 'error'),
-    [show],
+    [show, t],
   )
 
   const api = useMemo(() => ({ show, showError }), [show, showError])
@@ -62,17 +64,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={api}>
       {children}
       <div className="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">
-        {toasts.map((t) => (
+        {toasts.map((item) => (
           <div
-            key={t.id}
-            role={t.tone === 'error' ? 'alert' : 'status'}
-            className={`flex items-start justify-between gap-3 rounded-xl border bg-surface-raised px-4 py-3 text-sm shadow-lg ${toneClasses[t.tone]}`}
+            key={item.id}
+            role={item.tone === 'error' ? 'alert' : 'status'}
+            className={`flex items-start justify-between gap-3 rounded-xl border bg-surface-raised px-4 py-3 text-sm shadow-lg ${toneClasses[item.tone]}`}
           >
-            <span>{t.message}</span>
+            <span>{item.message}</span>
             <button
               type="button"
-              aria-label="Dismiss notification"
-              onClick={() => dismiss(t.id)}
+              aria-label={t('common.dismissNotification')}
+              onClick={() => dismiss(item.id)}
               className="text-fg-muted hover:text-fg"
             >
               <span aria-hidden="true">×</span>

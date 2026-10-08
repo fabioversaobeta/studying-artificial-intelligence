@@ -1,6 +1,8 @@
 import clsx from 'clsx'
+import { useT } from '@/i18n/use-i18n'
 
 export function Spinner({ className }: { className?: string }) {
+  const t = useT()
   return (
     <div
       className={clsx(
@@ -8,7 +10,7 @@ export function Spinner({ className }: { className?: string }) {
         className,
       )}
       role="status"
-      aria-label="Loading"
+      aria-label={t('common.loading')}
     />
   )
 }

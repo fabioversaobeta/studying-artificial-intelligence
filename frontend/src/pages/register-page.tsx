@@ -7,9 +7,11 @@ import type { RegistrationInfo } from '@/types/api'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
 import { ErrorAlert } from '@/components/ui/alert'
+import { useT } from '@/i18n/use-i18n'
 
 export function RegisterPage() {
   const { register } = useAuth()
+  const t = useT()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -35,7 +37,7 @@ export function RegisterPage() {
       await register(email, password, displayName, inviteCode.trim() || undefined)
       navigate('/')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Unable to register')
+      setError(err instanceof ApiError ? err.message : t('register.error'))
     } finally {
       setIsSubmitting(false)
     }
@@ -43,11 +45,11 @@ export function RegisterPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-heading">Create your account</h2>
+      <h2 className="text-lg font-semibold text-heading">{t('register.title')}</h2>
       {error && <ErrorAlert message={error} />}
-      {info && !info.enabled && <ErrorAlert message="Registration is currently closed." />}
+      {info && !info.enabled && <ErrorAlert message={t('register.closed')} />}
       <div>
-        <Label htmlFor="displayName">Name</Label>
+        <Label htmlFor="displayName">{t('register.name')}</Label>
         <Input
           id="displayName"
           required
@@ -57,7 +59,7 @@ export function RegisterPage() {
         />
       </div>
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t('register.email')}</Label>
         <Input
           id="email"
           type="email"
@@ -68,7 +70,7 @@ export function RegisterPage() {
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t('register.password')}</Label>
         <Input
           id="password"
           type="password"
@@ -78,11 +80,11 @@ export function RegisterPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <p className="mt-1 text-xs text-fg-muted">At least 8 characters.</p>
+        <p className="mt-1 text-xs text-fg-muted">{t('register.passwordHint')}</p>
       </div>
       {info?.invite_required && (
         <div>
-          <Label htmlFor="inviteCode">Invite code</Label>
+          <Label htmlFor="inviteCode">{t('register.inviteCode')}</Label>
           <Input
             id="inviteCode"
             required
@@ -93,12 +95,12 @@ export function RegisterPage() {
         </div>
       )}
       <Button type="submit" className="w-full" disabled={isSubmitting || info?.enabled === false}>
-        {isSubmitting ? 'Creating account…' : 'Create account'}
+        {isSubmitting ? t('register.submitting') : t('register.submit')}
       </Button>
       <p className="text-center text-sm text-fg-muted">
-        Already have an account?{' '}
+        {t('register.haveAccount')}{' '}
         <Link to="/login" className="text-accent-light hover:underline">
-          Log in
+          {t('register.loginLink')}
         </Link>
       </p>
     </form>

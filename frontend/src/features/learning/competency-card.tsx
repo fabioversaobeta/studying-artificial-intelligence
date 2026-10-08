@@ -6,19 +6,13 @@ import { Badge } from '@/components/ui/badge'
 import { LogSessionForm } from '@/features/learning/log-session-form'
 import { ChallengeList } from '@/features/learning/challenge-list'
 import { ResourceList } from '@/features/learning/resource-list'
+import { useI18n } from '@/i18n/use-i18n'
 
 const stateTone: Record<CompetencyWithState['state'], 'neutral' | 'accent' | 'success' | 'warning'> = {
   locked: 'neutral',
   available: 'accent',
   learning: 'warning',
   mastered: 'success',
-}
-
-const stateLabel: Record<CompetencyWithState['state'], string> = {
-  locked: 'Locked',
-  available: 'Available',
-  learning: 'Learning',
-  mastered: 'Mastered',
 }
 
 export function CompetencyCard({
@@ -29,6 +23,7 @@ export function CompetencyCard({
   onActivity: () => void
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { t, formatNumber } = useI18n()
   const { competency, mastery_score, state } = item
   const isLocked = state === 'locked'
 
@@ -44,18 +39,18 @@ export function CompetencyCard({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-fg">{competency.name}</h3>
-            <Badge tone={stateTone[state]}>{stateLabel[state]}</Badge>
+            <Badge tone={stateTone[state]}>{t(`competency.state.${state}`)}</Badge>
           </div>
           <p className="mt-1 text-sm text-fg-muted">{competency.description}</p>
         </div>
         <div className="shrink-0 text-right">
-          <span className="text-sm font-medium text-fg">{mastery_score.toFixed(0)}%</span>
+          <span className="text-sm font-medium text-fg">{t('common.percent', { value: formatNumber(mastery_score, { maximumFractionDigits: 0 }) })}</span>
         </div>
       </button>
 
       <div
         role="progressbar"
-        aria-label={`${competency.name} mastery`}
+        aria-label={t('competency.masteryLabel', { name: competency.name })}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(Math.min(100, mastery_score))}
@@ -71,21 +66,21 @@ export function CompetencyCard({
         <div className="mt-4 space-y-6 border-t border-border pt-4">
           <div>
             <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
-              Study
+              {t('competency.study')}
             </h4>
             <ResourceList competencyId={competency.id} />
           </div>
 
           <div>
             <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
-              Log a session
+              {t('competency.logSession')}
             </h4>
             <LogSessionForm competencyId={competency.id} onLogged={onActivity} />
           </div>
 
           <div>
             <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-fg-muted">
-              Challenges
+              {t('competency.challenges')}
             </h4>
             <ChallengeList competencyId={competency.id} onActivity={onActivity} />
           </div>
