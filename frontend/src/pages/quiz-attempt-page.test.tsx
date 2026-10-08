@@ -49,7 +49,8 @@ describe('QuizAttemptPage (in progress)', () => {
     renderPage()
 
     const heading = await screen.findByRole('heading', { name: 'Question 1 of 3' })
-    expect(heading).toHaveFocus()
+    // Focus is applied in a passive effect that can flush after findByRole resolves.
+    await waitFor(() => expect(heading).toHaveFocus())
     expect(screen.getByText('Prompt 1')).toBeInTheDocument()
     expect(screen.queryByText('Prompt 2')).not.toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Questions answered' })).toHaveAttribute(
@@ -78,7 +79,8 @@ describe('QuizAttemptPage (in progress)', () => {
     await userEvent.click(await screen.findByRole('radio', { name: /Q1 option B/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Next' }))
 
-    expect(await screen.findByRole('heading', { name: 'Question 2 of 3' })).toHaveFocus()
+    const next = await screen.findByRole('heading', { name: 'Question 2 of 3' })
+    await waitFor(() => expect(next).toHaveFocus())
     expect(svc.saveAnswer).toHaveBeenCalledWith('attempt-1', 'q1', {
       option_ids: ['b'],
       time_spent_seconds: expect.any(Number),
@@ -103,7 +105,8 @@ describe('QuizAttemptPage (in progress)', () => {
     await userEvent.keyboard('2')
     expect(screen.getByRole('radio', { name: /Q1 option B/ })).toBeChecked()
     await userEvent.keyboard('n')
-    expect(await screen.findByRole('heading', { name: 'Question 2 of 3' })).toHaveFocus()
+    const next = await screen.findByRole('heading', { name: 'Question 2 of 3' })
+    await waitFor(() => expect(next).toHaveFocus())
     expect(svc.saveAnswer).toHaveBeenCalledWith('attempt-1', 'q1', expect.objectContaining({
       option_ids: ['b'],
     }))
