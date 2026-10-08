@@ -281,7 +281,7 @@ def _single_answer_choices(sets: Iterable[SubjectQuestionSet]) -> dict[str, list
 
 
 def _correct_is_longest(q: QuestionSeed) -> bool:
-    options = q.text[DEFAULT_LANGUAGE].options or []
+    options = q.text[DEFAULT_LANGUAGE].options or ()
     lengths = {o.id: len(o.text.strip()) for o in options}
     assert q.correct is not None
     own = lengths[q.correct[0]]
@@ -292,7 +292,11 @@ def quality_warnings(sets: Iterable[SubjectQuestionSet]) -> list[str]:
     """Statistical bias warnings (correct answer is a length / position tell)."""
     warnings: list[str] = []
     for competency, questions in sorted(_single_answer_choices(sets).items()):
-        wide = [q for q in questions if len(q.text[DEFAULT_LANGUAGE].options or []) >= 3]
+        wide = [
+            q
+            for q in questions
+            if len(q.text[DEFAULT_LANGUAGE].options or ()) >= LENGTH_BIAS_MIN_OPTIONS
+        ]
         if len(wide) >= LENGTH_BIAS_MIN_QUESTIONS:
             longest = [q for q in wide if _correct_is_longest(q)]
             if len(longest) / len(wide) > LENGTH_BIAS_MAX_SHARE:
@@ -334,7 +338,7 @@ def run(sets: Sequence[SubjectQuestionSet], strict: bool = False) -> int:
     return 0
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(argv: Sequence[str] = ()) -> int:
     parser = argparse.ArgumentParser(description="Validate the question-bank seeds.")
     parser.add_argument("--strict", action="store_true", help="fail on quality warnings too")
     args = parser.parse_args(argv)
@@ -342,4 +346,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
