@@ -43,7 +43,7 @@ Várias sessões do Claude Code vão trabalhar em paralelo. Para não colidirem:
 |---|---|---|
 | P0 — Fazer agora | 9 | 9 |
 | P1 — Curto prazo | 17 | 15 |
-| P2 — Médio prazo | 25 | 17 |
+| P2 — Médio prazo | 25 | 18 |
 
 *(Atualize estes contadores quando concluir um item.)*
 
@@ -174,7 +174,7 @@ Surgiram nos relatórios das sessões (S5, S9, S11, S7). Mesmo formato das trilh
 | J5 | Rate limiter em memória é por processo (S7): se houver mais de 1 worker/réplica, mover o estado para Postgres/Redis. No deploy, definir `TRUST_PROXY_HEADERS=true` na Railway. | P2 | M | TODO | | H1 | `backend/app/core/rate_limit.py`, `docs/DEPLOYMENT.md` | | Só relevante se escalar para mais de 1 instância; o `TRUST_PROXY_HEADERS` entra no passo do deploy. |
 | J6 | **Preferência de idioma do usuário** (`en` padrão, `pt-BR`): campo no usuário, `PATCH /users/me`, seletor na UI; consumido por questões, mentor e entrevista. | P1 | S | DONE | S19 (`feat/s19-assessments-language`) | — | `backend/app/models/user.py`, `backend/app/schemas/user.py`, `backend/app/api/v1/`, migration, `frontend/src/pages/` | 88ebed6, 24590f9 | Entregue junto com o I2 (mesma migration). |
 | J7 | Localização (i18n) das strings da interface do frontend (en/pt-BR). | P2 | M | IN_PROGRESS | S29 (`feat/s29-ui-i18n`) | J6 | `frontend/src/**` | | Fora da Fase 1; decidir biblioteca (ou dicionário simples) depois. |
-| J8 | Validador de questões: checar distribuição da posição da resposta correta e viés de tamanho (a correta ser sempre a mais longa) e avisar. | P2 | S | IN_PROGRESS | S30 (`fix/s30-question-validator`) | — | `backend/app/seeds/questions/validate.py`, testes | | Sugestão da S27 (system-design-interviews q04/q09 têm esse viés). |
+| J8 | Validador de questões: checar distribuição da posição da resposta correta e viés de tamanho (a correta ser sempre a mais longa) e avisar. | P2 | S | DONE | S30 (`fix/s30-question-validator`) | cdd8518 | `backend/app/seeds/questions/validate.py`, testes | | Sugestão da S27 (system-design-interviews q04/q09 têm esse viés). |
 | J9 | Teste instável no frontend: `quiz-attempt-page.test.tsx` > "shows one question at a time with progress and an accessible question list" falhou 1 vez em 3 execuções completas da suíte (passa isolado 3/3). Investigar a causa (timing/`waitFor`/foco) em vez de só aumentar timeouts. | P2 | S | IN_PROGRESS | S31 (`fix/s31-flaky-quiz-test`) | — | `frontend/src/pages/quiz-attempt-page.test.tsx` | | Detectado pelo coordenador após o merge da S28; mensagem de erro completa não capturada — reproduzir em loop. |
 
 ## Mapa de conflitos (para quem coordena as sessões)
@@ -211,6 +211,7 @@ Arquivos com maior chance de edição simultânea. Se dois itens abaixo estivere
 *Uma linha por item concluído, do mais recente para o mais antigo. Formato:
 `AAAA-MM-DD — ID — resumo — commit/PR`*
 
+- 2026-10-08 — J8 — validador de questões: avisos de viés (correta sempre a mais longa; letra da correta concentrada) separados dos erros, flag `--strict`; hoje 24 avisos de tamanho, 0 de posição — cdd8518
 - 2026-10-08 — master enviada ao GitHub; CI verde (após corrigir 2 erros de mypy do Python 3.12). Iniciadas S29 (J7), S30 (J8), S31 (J9)
 - 2026-10-07 — I3 — `GET /recommendations/today` determinístico e explicável (6 tipos, pesos em DOMAIN.md, motivo em en/pt-BR, sem migrations/LLM, queries constantes) + card "Today's recommendations" no dashboard — `f2f17fe`, `391476c`, `c0a468b`, `b5e65d8`
 - 2026-10-06 — I2 — banco de questões traduzíveis (en/pt-BR), assessments, tentativas, correção determinística + autoavaliação de resposta curta, regra de XP anti-farm, Practice do mastery com quizzes, revisão espaçada em erro, UI `/quizzes`, seeds + validador (piloto de 12 questões) — `8a76ad7`, `85b7bbe`, `1722124`, `8163355`, `3b2f255`
