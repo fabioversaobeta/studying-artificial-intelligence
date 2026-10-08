@@ -41,7 +41,8 @@ real backend and database.**
 | Achievements / quests UI | DONE | `/achievements` page (G2) |
 | Learning paths UI | DONE | `/learning-paths` and `/learning-paths/:slug` (G3) |
 | Assessments / question bank (quizzes) | DONE | I2: translatable questions (en/pt-BR), deterministic grading, self-graded short answers, anti-farm XP, Practice mastery signal; `/quizzes` UI; pilot of 12 questions (bulk generation is I6) — docs/DOMAIN.md |
-| User content-language preference + Settings page | DONE | J6: `PATCH /users/me`, `/settings`; UI strings stay English until J7 |
+| User content-language preference + Settings page | DONE | J6: `PATCH /users/me`, `/settings` |
+| UI localisation (en / pt-BR) | DONE | J7: typed dictionaries in `frontend/src/i18n/`, no library; follows `preferred_language`, switches instantly from Settings — docs/DECISIONS.md |
 
 ## Explicitly deferred past v1
 

@@ -41,3 +41,21 @@ npm run test:watch # watch mode
 ```
 
 Test files live next to the code as `*.test.ts` / `*.test.tsx`.
+
+## Localisation (i18n)
+
+UI strings live in `src/i18n/en.ts` (source of truth, fallback) and
+`src/i18n/pt-br.ts`. Use them with `const t = useT()` (or `useI18n()` for
+`formatDate`, `formatDateTime`, `formatNumber`); never hardcode visible text,
+`aria-label`s or placeholders. Design: docs/DECISIONS.md, "UI localisation".
+
+- **New string**: add the key to `en.ts` and to `pt-br.ts` (TypeScript and
+  `src/i18n/i18n.test.ts` fail if one is missing or the `{placeholders}`
+  differ), then `t('area.key', { name })`.
+- **Plurals**: add `key_one` and `key_other` and call `t('key', { count })`.
+- **New language**: add it to `Language` in `src/types/api.ts` (and the backend
+  enum), create `src/i18n/<code>.ts` typed as `Dictionary`, register it in
+  `dictionaries`, `SUPPORTED_LANGUAGES` and `LOCALES` in `src/i18n/index.ts`,
+  and add it to `LANGUAGE_OPTIONS` in `src/pages/settings-page.tsx`.
+- **Tests** render in English with no provider; wrap in `I18nProvider` (and set
+  `localStorage['lp.language']`) to test another language.
