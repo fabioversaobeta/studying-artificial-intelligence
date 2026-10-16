@@ -1463,11 +1463,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "later, and a closed connection (C) or a duplicated write (D) would not produce "
             "this old-then-new pattern.",
             (
-                "The read was served by an asynchronous replica that had not applied the write "
-                "yet.",
-                "The primary rolled back the write and then applied it again.",
-                "The connection pool returned a closed connection.",
-                "The write was applied twice.",
+                "The read hit an asynchronous replica that had not applied the write.",
+                "The primary rolled back the write and then applied it again on retry.",
+                "The connection pool returned a closed connection that silently retried the "
+                "read.",
+                "The write was applied twice, so the first read saw a half-updated row.",
             ),
         ),
         _t(
@@ -1480,11 +1480,13 @@ _DB: tuple[QuestionSeed, ...] = (
             "novo depois, e uma conexão fechada (C) ou uma escrita duplicada (D) não produziria "
             "esse padrão de antigo e depois novo.",
             (
-                "A leitura foi atendida por uma réplica assíncrona que ainda não tinha aplicado "
-                "a escrita.",
-                "O primário reverteu a escrita e depois a aplicou de novo.",
-                "O pool de conexões devolveu uma conexão fechada.",
-                "A escrita foi aplicada duas vezes.",
+                "A leitura caiu em uma réplica assíncrona que ainda não tinha aplicado a "
+                "escrita.",
+                "O primário reverteu a escrita e depois a aplicou de novo na nova tentativa.",
+                "O pool de conexões devolveu uma conexão fechada, que refez a leitura "
+                "silenciosamente.",
+                "A escrita foi aplicada duas vezes, então a primeira leitura viu uma linha "
+                "pela metade.",
             ),
         ),
     ),
@@ -1503,11 +1505,13 @@ _DB: tuple[QuestionSeed, ...] = (
             "that does not matter, and they hold the same data as the primary (B, C are "
             "false).",
             (
-                "Replicas are read-only, so they cannot be restored.",
-                "Replicas can only store a fraction of the primary's data.",
-                "Replicas copy only the table schema, not the rows.",
-                "Replication propagates mistaken writes, such as a bad `DELETE`, to every "
-                "replica almost immediately.",
+                "Replicas are read-only, so they cannot be restored from or promoted to "
+                "primary.",
+                "Replicas can only store a fraction of the primary's data, chosen by key "
+                "range.",
+                "Replicas copy only the table schema, not the rows, to keep the network "
+                "traffic low.",
+                "Replication copies mistaken writes, such as a bad `DELETE`, to every replica.",
             ),
         ),
         _t(
@@ -1517,11 +1521,14 @@ _DB: tuple[QuestionSeed, ...] = (
             "restaurar o estado anterior ao erro. Ser somente leitura (A) não é o ponto, e as "
             "réplicas guardam os mesmos dados do primário (B e C são falsas).",
             (
-                "As réplicas são somente leitura, então não podem ser restauradas.",
-                "As réplicas só conseguem guardar uma fração dos dados do primário.",
-                "As réplicas copiam só o esquema das tabelas, não as linhas.",
-                "A replicação propaga escritas erradas, como um `DELETE` ruim, para todas as "
-                "réplicas quase imediatamente.",
+                "As réplicas são somente leitura, então não podem ser restauradas nem "
+                "promovidas a primário.",
+                "As réplicas só conseguem guardar uma fração dos dados do primário, definida "
+                "por faixa de chave.",
+                "As réplicas copiam só o esquema das tabelas, não as linhas, para reduzir o "
+                "tráfego de rede.",
+                "A replicação copia escritas erradas, como um `DELETE` ruim, para todas as "
+                "réplicas.",
             ),
         ),
     ),
@@ -1544,9 +1551,9 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Make replication synchronous for every replica so every write waits for all "
                 "of them.",
-                "Route that user's reads to the primary for a few seconds after a write, or "
-                "wait for the replica to reach the write's log position.",
-                "Add more replicas so that lag shrinks.",
+                "Route that user's reads to the primary for a few seconds after a write.",
+                "Add more replicas so that lag shrinks, because each replica receives fewer "
+                "queries.",
                 "Let browsers cache profile reads for five minutes.",
             ),
         ),
@@ -1564,8 +1571,9 @@ _DB: tuple[QuestionSeed, ...] = (
                 "Tornar a replicação síncrona em todas as réplicas, para que cada escrita "
                 "espere por todas.",
                 "Direcionar as leituras desse usuário ao primário por alguns segundos após a "
-                "escrita, ou esperar a réplica alcançar a posição de log da escrita.",
-                "Adicionar mais réplicas para que o lag diminua.",
+                "escrita.",
+                "Adicionar mais réplicas para que o lag diminua, já que cada réplica recebe "
+                "menos consultas.",
                 "Deixar os navegadores fazerem cache das leituras de perfil por cinco minutos.",
             ),
         ),
@@ -1626,11 +1634,12 @@ _DB: tuple[QuestionSeed, ...] = (
             "may therefore not exist in the next one. Multi-statement transactions, replica "
             "reads and parameterized queries all work normally.",
             (
-                "Wrapping several statements in one `BEGIN ... COMMIT` block.",
-                "Sending read-only queries to a replica.",
-                "Relying on a session-level `SET` from one transaction still being in effect in "
-                "the next one.",
-                "Using parameterized queries.",
+                "Wrapping several statements in one `BEGIN ... COMMIT` block with a savepoint "
+                "inside.",
+                "Sending read-only queries to a replica through a second pooler instance.",
+                "Relying on a session-level `SET` still being in effect in the next "
+                "transaction.",
+                "Using parameterized queries sent through the driver's standard interface.",
             ),
         ),
         _t(
@@ -1642,11 +1651,12 @@ _DB: tuple[QuestionSeed, ...] = (
             "não existir na seguinte. Transações com vários comandos, leituras em réplicas e "
             "consultas parametrizadas funcionam normalmente.",
             (
-                "Envolver vários comandos em um bloco `BEGIN ... COMMIT`.",
-                "Enviar consultas somente leitura a uma réplica.",
-                "Depender de um `SET` de sessão feito em uma transação continuar valendo na "
-                "seguinte.",
-                "Usar consultas parametrizadas.",
+                "Envolver vários comandos em um bloco `BEGIN ... COMMIT` com um savepoint "
+                "dentro.",
+                "Enviar consultas somente leitura a uma réplica por meio de uma segunda "
+                "instância do pooler.",
+                "Depender de um `SET` de sessão ainda valer na transação seguinte.",
+                "Usar consultas parametrizadas enviadas pela interface padrão do driver.",
             ),
         ),
     ),
@@ -1709,11 +1719,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "for sharding (D) would show up in the database's own metrics or elsewhere, not as "
             "waiting on a pool while the database is idle.",
             (
-                "Connections are held too long or leaked, so the pool is exhausted even though "
-                "the database is idle.",
-                "The database server has run out of disk space.",
-                "Replication lag has grown too large.",
-                "The table has grown enough that it must be sharded.",
+                "Connections are held too long or leaked, exhausting the pool.",
+                "The database server has run out of disk space and can no longer accept new "
+                "writes.",
+                "Replication lag has grown too large, so the replicas reject new connections.",
+                "The table has grown enough that it must be sharded across several servers.",
             ),
         ),
         _t(
@@ -1726,11 +1736,13 @@ _DB: tuple[QuestionSeed, ...] = (
             "métricas do próprio banco ou em outro lugar, não como espera por um pool com o "
             "banco ocioso.",
             (
-                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o pool "
-                "mesmo com o banco ocioso.",
-                "O servidor de banco ficou sem espaço em disco.",
-                "O lag de replicação ficou grande demais.",
-                "A tabela cresceu a ponto de precisar de sharding.",
+                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o "
+                "pool.",
+                "O servidor de banco ficou sem espaço em disco e não aceita mais novas "
+                "escritas.",
+                "O lag de replicação ficou grande demais, e as réplicas rejeitam novas "
+                "conexões.",
+                "A tabela cresceu a ponto de precisar de sharding em vários servidores.",
             ),
         ),
     ),
@@ -1754,8 +1766,7 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Wrapping both updates in a normal `BEGIN ... COMMIT` issued by the "
                 "application's router guarantees atomicity across shards.",
-                "Single-database ACID no longer covers it; options include co-locating data "
-                "that transacts together, a saga with compensating actions, or a costly "
+                "Single-database ACID no longer covers it; use co-location, a saga or "
                 "two-phase commit.",
                 "Giving each shard a read replica restores atomicity across shards.",
                 "Hash-based sharding guarantees that both users always land on the same shard.",
@@ -1774,9 +1785,8 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Envolver as duas atualizações em um `BEGIN ... COMMIT` normal emitido pelo "
                 "roteador da aplicação garante atomicidade entre shards.",
-                "O ACID de um único banco não cobre o caso; as opções incluem manter juntos os "
-                "dados que transacionam, uma saga com ações compensatórias ou um two-phase "
-                "commit custoso.",
+                "O ACID de um único banco não cobre o caso; use colocalização, uma saga ou "
+                "two-phase commit.",
                 "Dar a cada shard uma réplica de leitura restaura a atomicidade entre shards.",
                 "O sharding por hash garante que os dois usuários sempre caiam no mesmo shard.",
             ),
