@@ -970,10 +970,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             'as "orders from March 1 to 15" must be sent to every shard. Hash sharding does '
             "not create hot ranges (A), does not need a lookup service (B) and does not prevent "
             "lookups by key (C).",
-            "It concentrates recent writes on a single shard.",
-            "It requires a separate lookup service to find the shard of each key.",
-            "It makes lookups by `order_id` impossible.",
-            "Range scans must be sent to every shard, because hashing destroys key ordering.",
+            "It concentrates the most recent writes on a single shard, because new ids are "
+            "always the largest.",
+            "It requires a separate lookup service that maps each key to the shard storing it.",
+            "It makes lookups by `order_id` impossible, because the hash cannot be reversed.",
+            "Range scans must go to every shard, because hashing destroys key ordering.",
         ),
         _text(
             "Uma tabela é particionada (sharded) por `hash(order_id)`. Qual é a principal "
@@ -983,11 +984,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             'consulta por faixa como "pedidos de 1 a 15 de março" precisa ser enviada a todos '
             "os shards. O sharding por hash não cria faixas quentes (A), não precisa de um "
             "serviço de lookup (B) e não impede buscas por chave (C).",
-            "Concentra as escritas recentes em um único shard.",
-            "Exige um serviço de lookup separado para achar o shard de cada chave.",
-            "Torna impossíveis as buscas por `order_id`.",
-            "Consultas por faixa precisam ser enviadas a todos os shards, pois o hash destrói "
-            "a ordenação das chaves.",
+            "Concentra as escritas mais recentes em um único shard, pois os novos ids são "
+            "sempre os maiores.",
+            "Exige um serviço de lookup separado que mapeie cada chave ao shard que a guarda.",
+            "Torna impossíveis as buscas por `order_id`, porque o hash não pode ser revertido.",
+            "Consultas por faixa precisam ir a todos os shards, pois o hash destrói a "
+            "ordenação das chaves.",
         ),
     ),
     _q(
@@ -1003,11 +1005,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "capacity but does not help when the data or the write throughput no longer fits "
             "on one machine. Sharding splits the data so each node holds only a slice, letting "
             "total storage and write capacity grow with the number of shards.",
-            "It protects the data against the loss of a machine.",
-            "It lets the dataset and the write load exceed what a single machine can hold or "
-            "handle.",
-            "It makes every read return the latest write.",
-            "It removes the need for backups.",
+            "It protects the data against the loss of a single machine or an entire data "
+            "center.",
+            "It lets the dataset and write load exceed what a single machine can handle.",
+            "It makes every read return the latest write, even when replicas are lagging.",
+            "It removes the need for backups, because the data is already stored on several "
+            "nodes.",
         ),
         _text(
             "Que problema o sharding resolve e a replicação sozinha não resolve?",
@@ -1016,11 +1019,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "escrita não cabem mais em uma máquina. O sharding divide os dados para que cada nó "
             "guarde só uma fatia, permitindo que o armazenamento e a capacidade de escrita "
             "totais cresçam com o número de shards.",
-            "Protege os dados contra a perda de uma máquina.",
-            "Permite que o conjunto de dados e a carga de escrita excedam o que uma única "
-            "máquina comporta ou suporta.",
-            "Faz toda leitura retornar a última escrita.",
-            "Elimina a necessidade de backups.",
+            "Protege os dados contra a perda de uma única máquina ou de um data center "
+            "inteiro.",
+            "Permite que os dados e a carga de escrita excedam o que uma máquina suporta.",
+            "Faz toda leitura retornar a última escrita, mesmo com réplicas atrasadas.",
+            "Elimina a necessidade de backups, pois os dados já ficam em vários nós.",
         ),
     ),
     _q(
@@ -1038,10 +1041,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "shard. Option A describes hash sharding (range scans over time stay efficient "
             "here), and neither re-sharding (B) nor cross-shard joins (D) is the first thing "
             "to bite.",
-            "Time-range queries must be sent to every shard.",
-            "Adding a shard forces nearly all data to move.",
-            "All new writes land on the shard that owns the current month, creating a hot shard.",
-            "Joins between months become impossible.",
+            "Time-range queries must be sent to every shard, because range sharding scatters "
+            "adjacent times.",
+            "Adding a shard forces nearly all existing data to move to its new owner.",
+            "All new writes land on the shard of the current month, creating a hot shard.",
+            "Joins between rows of different months become impossible.",
         ),
         _text(
             "Uma tabela de séries temporais é particionada por faixa de timestamp, com um shard "
@@ -1051,10 +1055,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "ociosos: um hot shard. A opção A descreve o sharding por hash (aqui as consultas "
             "por faixa de tempo continuam eficientes), e nem o re-sharding (B) nem os joins "
             "entre shards (D) são o primeiro problema.",
-            "Consultas por faixa de tempo precisam ser enviadas a todos os shards.",
-            "Adicionar um shard força a movimentação de quase todos os dados.",
+            "Consultas por faixa de tempo precisam ser enviadas a todos os shards, pois o "
+            "sharding por faixa espalha tempos adjacentes.",
+            "Adicionar um shard força a movimentação de quase todos os dados existentes para "
+            "o novo dono.",
             "Todas as novas escritas caem no shard do mês atual, criando um hot shard.",
-            "Joins entre meses se tornam impossíveis.",
+            "Joins entre linhas de meses diferentes se tornam impossíveis.",
         ),
     ),
     _q(
@@ -1072,11 +1078,13 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "usually cached. It does not prevent range scans (B), it makes moving data easier, "
             "not harder (C), and it does not require uniformly distributed keys (D); that "
             "flexibility is its selling point.",
-            "The directory is an extra dependency on the request path and must itself be "
-            "highly available.",
-            "Range scans become impossible.",
-            "Data can only be rebalanced by taking the whole system offline.",
-            "Keys must be uniformly distributed for the directory to work.",
+            "The directory is an extra dependency on the request path and must be highly "
+            "available.",
+            "Range scans become impossible, because the lookup table has no notion of key "
+            "order.",
+            "Data can only be rebalanced by taking the whole system offline while the "
+            "directory is rebuilt.",
+            "Keys must be uniformly distributed for the directory to work, or it overloads.",
         ),
         _text(
             "O sharding baseado em diretório permite mover qualquer chave (ou tenant) para "
@@ -1088,9 +1096,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "distribuídas (D); essa flexibilidade é seu ponto forte.",
             "O diretório é uma dependência extra no caminho da requisição e precisa ser "
             "altamente disponível.",
-            "Consultas por faixa se tornam impossíveis.",
-            "Os dados só podem ser rebalanceados desligando o sistema inteiro.",
-            "As chaves precisam ser distribuídas uniformemente para o diretório funcionar.",
+            "Consultas por faixa se tornam impossíveis, pois a tabela de lookup não tem "
+            "noção da ordem das chaves.",
+            "Os dados só podem ser rebalanceados desligando o sistema inteiro enquanto o "
+            "diretório é reconstruído.",
+            "As chaves precisam ser distribuídas uniformemente para o diretório funcionar, "
+            "senão ele sobrecarrega.",
         ),
     ),
     _q(
@@ -1145,9 +1156,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "are usually very uneven in size (A is false and skew is the main risk), secondary "
             "indexes are still needed (C), and cross-tenant analytics become fan-out queries "
             "(D).",
-            "Tenants are normally similar in size, so the load is perfectly even.",
-            "Most queries and transactions touch a single tenant, so they stay within one shard.",
-            "It removes the need for secondary indexes.",
+            "Tenants are normally similar in size, so the load is spread perfectly evenly "
+            "across shards.",
+            "Most queries and transactions touch one tenant, so they stay in one shard.",
+            "It removes the need for secondary indexes, since every lookup is routed by tenant.",
             "It makes queries across all tenants cheap.",
         ),
         _text(
@@ -1160,10 +1172,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "secundários continuam necessários (C) e análises entre tenants viram consultas "
             "em todos os shards (D).",
             "Os tenants normalmente têm tamanho parecido, então a carga fica perfeitamente "
-            "uniforme.",
-            "A maioria das consultas e transações toca um único tenant, então ficam dentro "
-            "de um shard.",
-            "Elimina a necessidade de índices secundários.",
+            "uniforme entre os shards.",
+            "A maioria das consultas e transações toca um só tenant, então ficam em um único "
+            "shard.",
+            "Elimina a necessidade de índices secundários, pois toda busca é roteada por "
+            "tenant.",
             "Torna baratas as consultas que cruzam todos os tenants.",
         ),
     ),
@@ -1184,10 +1197,13 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "targeted lookup but must be kept in sync with the base data and may lag "
             "behind it. A is wrong because no single shard can be chosen, B because the lookup "
             "is possible, and D because a read needs no distributed transaction.",
-            "The query goes to one shard, picked by hashing `external_ticket_id`.",
-            "The query cannot be answered without changing the shard key.",
-            "The query is sent to every shard (scatter-gather) and the results are combined.",
-            "The query needs a distributed transaction across all shards.",
+            "The query goes to one shard, picked by hashing `external_ticket_id` with the same "
+            "function as the table.",
+            "The query cannot be answered at all unless the table is re-sharded by "
+            "`external_ticket_id`.",
+            "The query is sent to every shard (scatter-gather) and the results are merged.",
+            "The query needs a distributed transaction across all shards to give a consistent "
+            "result.",
         ),
         _text(
             "Uma tabela é particionada por `tenant_id` e tem um índice secundário **local** em "
@@ -1200,11 +1216,14 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "com os dados-base e pode ficar atrasado em relação a eles. A erra porque nenhum "
             "shard único pode ser escolhido, B porque a busca é possível, e D porque uma "
             "leitura não precisa de transação distribuída.",
-            "A consulta vai a um shard, escolhido pelo hash de `external_ticket_id`.",
-            "A consulta não pode ser respondida sem mudar a shard key.",
+            "A consulta vai a um shard, escolhido pelo hash de `external_ticket_id` com a "
+            "mesma função da tabela.",
+            "A consulta não pode ser respondida a menos que a tabela seja re-particionada por "
+            "`external_ticket_id`.",
             "A consulta é enviada a todos os shards (scatter-gather) e os resultados são "
-            "combinados.",
-            "A consulta exige uma transação distribuída entre todos os shards.",
+            "reunidos.",
+            "A consulta exige uma transação distribuída entre todos os shards para dar um "
+            "resultado consistente.",
         ),
     ),
     _q(
