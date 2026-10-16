@@ -111,11 +111,11 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`202 Accepted` means the work was only queued and is not finished, and `204` "
             "would hide server-generated fields such as the new `id`.",
             _options(
-                "`200 OK` with no further information.",
-                "`202 Accepted`, because creation is always asynchronous.",
-                "`201 Created`, with the new resource's URL in a `Location` header and "
-                "usually its representation in the body.",
-                "`204 No Content`, because the client already knows what it sent.",
+                "`200 OK` with no further information, since the request succeeded.",
+                "`202 Accepted`, because creating a resource is always asynchronous and may "
+                "still fail later.",
+                "`201 Created`, with the new resource's URL in a `Location` header.",
+                "`204 No Content`, because the client already knows everything it sent.",
             ),
         ),
         _t(
@@ -126,11 +126,11 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`202 Accepted` significa que o trabalho apenas foi enfileirado e não terminou; "
             "e `204` esconderia campos gerados pelo servidor, como o novo `id`.",
             _options(
-                "`200 OK` sem mais informações.",
-                "`202 Accepted`, porque a criação é sempre assíncrona.",
-                "`201 Created`, com a URL do novo recurso no header `Location` e, em geral, "
-                "sua representação no corpo.",
-                "`204 No Content`, porque o cliente já sabe o que enviou.",
+                "`200 OK` sem mais informações, já que a requisição deu certo.",
+                "`202 Accepted`, porque criar um recurso é sempre assíncrono e ainda pode "
+                "falhar depois.",
+                "`201 Created`, com a URL do novo recurso no header `Location`.",
+                "`204 No Content`, porque o cliente já sabe tudo o que enviou.",
             ),
         ),
     ),
@@ -150,10 +150,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "or triggers something (a payment, an email) is not idempotent, and a `PATCH` "
             "that applies a relative change such as an increment would be applied twice.",
             _options(
-                '`POST /payments` with `{"amount": 50}`',
+                '`POST /payments` with `{"amount": 50}` to charge the customer',
                 "`PUT /users/42` with the full new representation of the user",
-                "`POST /emails/send` with a recipient and a body",
-                '`PATCH /counters/7` with `{"increment": 1}`',
+                "`POST /emails/send` with a recipient, a subject and a body, to be delivered",
+                '`PATCH /counters/7` with `{"increment": 1}` to add one to the total',
             ),
         ),
         _t(
@@ -165,10 +165,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dispara algo (um pagamento, um e-mail) não é idempotente, e um `PATCH` que aplica "
             "uma mudança relativa, como um incremento, seria aplicado duas vezes.",
             _options(
-                '`POST /payments` com `{"amount": 50}`',
+                '`POST /payments` com `{"amount": 50}` para cobrar o cliente',
                 "`PUT /users/42` com a nova representação completa do usuário",
-                "`POST /emails/send` com destinatário e corpo",
-                '`PATCH /counters/7` com `{"increment": 1}`',
+                "`POST /emails/send` com destinatário, assunto e corpo, para ser entregue",
+                '`PATCH /counters/7` com `{"increment": 1}` para somar um ao total',
             ),
         ),
     ),
@@ -188,9 +188,9 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "missing resource, not a malformed field. A `400` is a legitimate choice in "
             "other designs, but it is not the framework default.",
             _options(
-                "`422 Unprocessable Entity`, with details about the invalid field.",
-                "`400 Bad Request` with a generic message.",
-                "`500 Internal Server Error`, because the handler crashes.",
+                "`422 Unprocessable Entity`, with details of the invalid field.",
+                "`400 Bad Request` with a generic message saying the request is invalid.",
+                "`500 Internal Server Error`, because the handler crashes on the value.",
                 "`404 Not Found`, because the body does not match the route.",
             ),
         ),
@@ -203,9 +203,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "recurso inexistente, não de campo malformado. Um `400` é uma escolha legítima em "
             "outros designs, mas não é o padrão do framework.",
             _options(
-                "`422 Unprocessable Entity`, com detalhes sobre o campo inválido.",
-                "`400 Bad Request` com uma mensagem genérica.",
-                "`500 Internal Server Error`, porque o handler quebra.",
+                "`422 Unprocessable Entity`, com detalhes do campo inválido.",
+                "`400 Bad Request` com uma mensagem genérica dizendo que a requisição é "
+                "inválida.",
+                "`500 Internal Server Error`, porque o handler quebra com o valor.",
                 "`404 Not Found`, porque o corpo não corresponde à rota.",
             ),
         ),
@@ -226,11 +227,13 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "Offset works fine with sorting, does not need a total count, and returns rows in "
             "the order requested.",
             _options(
-                "It cannot be combined with a sort order.",
-                "It forces the client to know the total number of rows first.",
-                "Inserts and deletes between requests can cause duplicated or skipped items, "
-                "and large offsets get slower because earlier rows must still be skipped.",
-                "It returns rows in a non-deterministic order even with `ORDER BY`.",
+                "It cannot be combined with a sort order, so the feed order is undefined.",
+                "It forces the client to know the total number of rows before asking for any "
+                "page.",
+                "Inserts and deletes between requests can duplicate or skip items, and large "
+                "offsets get slower.",
+                "It returns rows in a non-deterministic order even when the query has an "
+                "`ORDER BY` on a unique column.",
             ),
         ),
         _t(
@@ -243,12 +246,14 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "linhas ignoradas. O offset funciona bem com ordenação, não exige contagem total "
             "e devolve as linhas na ordem pedida.",
             _options(
-                "Não pode ser combinada com uma ordenação.",
-                "Obriga o cliente a conhecer antes o número total de linhas.",
+                "Não pode ser combinada com uma ordenação, então a ordem do feed fica "
+                "indefinida.",
+                "Obriga o cliente a conhecer o número total de linhas antes de pedir qualquer "
+                "página.",
                 "Inserções e remoções entre requisições podem duplicar ou pular itens, e "
-                "offsets grandes ficam mais lentos porque as linhas anteriores ainda precisam "
-                "ser ignoradas.",
-                "Devolve as linhas em ordem não determinística mesmo com `ORDER BY`.",
+                "offsets grandes ficam mais lentos.",
+                "Devolve as linhas em ordem não determinística mesmo quando a consulta tem "
+                "`ORDER BY` em uma coluna única.",
             ),
         ),
     ),
@@ -311,10 +316,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "is not inherently safer, `no-store` does not stop a client from editing the "
             "copy it already holds, and TLS protects transport, not concurrent writers.",
             _options(
-                "Return an `ETag` on `GET`, require it in an `If-Match` header on updates and "
-                "answer `412 Precondition Failed` when it no longer matches.",
+                "Return an `ETag` on `GET`, require it in an `If-Match` header on updates, and "
+                "answer `412 Precondition Failed` on a mismatch.",
                 "Use `PATCH` instead of `PUT`, because `PATCH` updates are atomic and can never "
-                "overwrite another client's change.",
+                "overwrite another client's change in the meantime.",
                 "Serve the API only over HTTPS, so concurrent requests are serialized.",
                 "Send `Cache-Control: no-store` on the `GET` response so clients never hold a "
                 "stale copy.",
@@ -332,9 +337,9 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "escritores concorrentes.",
             _options(
                 "Devolver um `ETag` no `GET`, exigi-lo em um header `If-Match` nas "
-                "atualizações e responder `412 Precondition Failed` quando ele não bater mais.",
+                "atualizações e responder `412 Precondition Failed` se divergir.",
                 "Usar `PATCH` em vez de `PUT`, porque atualizações `PATCH` são atômicas e "
-                "nunca sobrescrevem a mudança de outro cliente.",
+                "nunca sobrescrevem a mudança de outro cliente nesse meio-tempo.",
                 "Servir a API somente por HTTPS, de modo que requisições concorrentes sejam "
                 "serializadas.",
                 "Enviar `Cache-Control: no-store` na resposta do `GET` para que os clientes "
@@ -359,11 +364,13 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`GET` must be free of side effects, and processing later does not stop the "
             "retry from being enqueued twice.",
             _options(
-                "Rate-limit the endpoint so retries are rejected.",
-                "Change the endpoint to `GET`, because `GET` requests are safe to retry.",
-                "Return `200` immediately and process the transfer in the background.",
-                "Require a client-generated `Idempotency-Key`, store it with the result under a "
-                "unique constraint, and return the stored result when the key repeats.",
+                "Rate-limit the endpoint so that retries arriving too soon are rejected.",
+                "Change the endpoint to `GET` with query parameters, because `GET` requests "
+                "are always safe to retry.",
+                "Return `200` immediately and process the transfer in the background, so a "
+                "retry finds it already queued.",
+                "Require a client-generated `Idempotency-Key` and return the stored result "
+                "when the key repeats.",
             ),
         ),
         _t(
@@ -376,12 +383,14 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deve ser livre de efeitos colaterais, e processar depois não impede que a nova "
             "tentativa seja enfileirada duas vezes.",
             _options(
-                "Aplicar rate limit ao endpoint para que as novas tentativas sejam rejeitadas.",
-                "Trocar o endpoint para `GET`, porque requisições `GET` são seguras para repetir.",
-                "Retornar `200` imediatamente e processar a transferência em segundo plano.",
-                "Exigir uma `Idempotency-Key` gerada pelo cliente, guardá-la com o resultado "
-                "sob uma constraint de unicidade e devolver o resultado guardado quando a "
-                "chave se repetir.",
+                "Aplicar rate limit ao endpoint para que as novas tentativas que chegarem "
+                "cedo demais sejam rejeitadas.",
+                "Trocar o endpoint para `GET` com parâmetros de consulta, porque requisições "
+                "`GET` são sempre seguras para repetir.",
+                "Retornar `200` imediatamente e processar a transferência em segundo plano, "
+                "de modo que uma nova tentativa a encontre já enfileirada.",
+                "Exigir uma `Idempotency-Key` gerada pelo cliente e devolver o resultado "
+                "guardado quando a chave se repetir.",
             ),
         ),
     ),
