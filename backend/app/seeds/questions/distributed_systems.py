@@ -538,10 +538,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "that, if the leader crashes before followers receive the write, a write the client "
             "was told succeeded can be lost. A describes the synchronous trade-off, C and D "
             "describe benefits that asynchronous replication does not provide.",
-            "It guarantees that acknowledged writes survive a leader crash, but writes are slower.",
-            "It gives lower write latency, but a write acknowledged to the client can be lost "
-            "if the leader crashes before followers receive it.",
-            "It gives followers stronger consistency than the leader, but uses more storage.",
+            "It guarantees that acknowledged writes survive a leader crash, but every write "
+            "waits for follower acknowledgments and is slower.",
+            "It gives lower write latency, but an acknowledged write can be lost if the "
+            "leader crashes before followers get it.",
+            "It gives followers stronger consistency than the leader, but uses more storage "
+            "for the extra copies.",
             "It removes replication lag, because followers apply each write in parallel with "
             "the client's acknowledgment.",
         ),
@@ -553,11 +555,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "se o líder falhar antes de os seguidores receberem a escrita, uma escrita que o "
             "cliente foi informado que deu certo pode ser perdida. A descreve o trade-off da "
             "replicação síncrona; C e D descrevem benefícios que a assíncrona não oferece.",
-            "Garante que escritas confirmadas sobrevivem à queda do líder, mas as escritas são "
-            "mais lentas.",
-            "Dá menor latência de escrita, mas uma escrita confirmada ao cliente pode ser "
-            "perdida se o líder falhar antes de os seguidores a receberem.",
-            "Dá aos seguidores consistência mais forte que a do líder, mas usa mais armazenamento.",
+            "Garante que escritas confirmadas sobrevivem à queda do líder, mas cada escrita "
+            "espera a confirmação dos seguidores e fica mais lenta.",
+            "Dá menor latência de escrita, mas uma escrita confirmada pode ser perdida se o "
+            "líder falhar antes de os seguidores a receberem.",
+            "Dá aos seguidores consistência mais forte que a do líder, mas usa mais "
+            "armazenamento para as cópias extras.",
             "Elimina o replication lag, porque os seguidores aplicam cada escrita em paralelo "
             "com a confirmação ao cliente.",
         ),
@@ -578,10 +581,10 @@ _REPL: tuple[QuestionSeed, ...] = (
             "replication lag. Monotonic reads (A) concerns time moving backwards across "
             "successive reads, durability (B) is not at stake since the leader has the write, "
             "and atomicity (D) is about all-or-nothing transactions.",
-            "Monotonic reads",
-            "Durability",
-            "Read-your-writes",
-            "Atomicity",
+            "Monotonic reads (no going back in time)",
+            "Durability of acknowledged writes",
+            "Read-your-writes (seeing own writes)",
+            "Atomicity of multi-row transactions",
         ),
         _text(
             "Um usuário publica um comentário (a escrita vai para o líder) e a página recarrega. "
@@ -592,10 +595,10 @@ _REPL: tuple[QuestionSeed, ...] = (
             "escrita do usuário devido ao replication lag. Monotonic reads (A) trata do tempo "
             "andar para trás entre leituras sucessivas, durabilidade (B) não está em jogo, pois "
             "o líder tem a escrita, e atomicidade (D) trata de transações tudo-ou-nada.",
-            "Monotonic reads",
-            "Durabilidade",
-            "Read-your-writes",
-            "Atomicidade",
+            "Monotonic reads (sem voltar no tempo)",
+            "Durabilidade das escritas confirmadas",
+            "Read-your-writes (ver as próprias escritas)",
+            "Atomicidade de transações com várias linhas",
         ),
     ),
     _q(
@@ -646,11 +649,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "Reading from the leader after a write (A) addresses read-your-writes, and "
             "more followers (B) would make the lag differences worse, while split-brain (D) "
             "is about two leaders.",
-            "A read-your-writes violation; read from the leader after every write.",
-            "A monotonic-reads violation; add more followers so each one has less load.",
-            "A monotonic-reads violation; route each user's reads consistently to the same "
-            "replica.",
-            "Split-brain; require a quorum before promoting a follower.",
+            "A read-your-writes violation; read from the leader after every write the user "
+            "makes.",
+            "A monotonic-reads violation; add more followers so that each one carries less "
+            "read load.",
+            "A monotonic-reads violation; pin each user's reads to the same replica.",
+            "Split-brain; require a quorum before promoting a follower to leader.",
         ),
         _text(
             "As leituras são distribuídas entre vários seguidores assíncronos. Um usuário "
@@ -662,12 +666,11 @@ _REPL: tuple[QuestionSeed, ...] = (
             "avançar. Ler do líder após uma escrita (A) trata de read-your-writes, mais "
             "seguidores (B) aumentariam as diferenças de lag, e split-brain (D) trata de dois "
             "líderes.",
-            "Violação de read-your-writes; ler do líder após toda escrita.",
-            "Violação de monotonic reads; adicionar mais seguidores para que cada um tenha "
-            "menos carga.",
-            "Violação de monotonic reads; direcionar as leituras de cada usuário sempre para "
-            "a mesma réplica.",
-            "Split-brain; exigir um quórum antes de promover um seguidor.",
+            "Violação de read-your-writes; ler do líder após toda escrita feita pelo usuário.",
+            "Violação de monotonic reads; adicionar mais seguidores para que cada um receba "
+            "menos carga de leitura.",
+            "Violação de monotonic reads; fixar as leituras de cada usuário na mesma réplica.",
+            "Split-brain; exigir um quórum antes de promover um seguidor a líder.",
         ),
     ),
     _q(
@@ -764,10 +767,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "the cluster can have two leaders. B is the problem of a timeout that is too long, "
             "and C and D are unrelated to how failure is detected.",
             "A false-positive failover away from a leader that is only paused, possibly "
-            "leaving two nodes acting as leader.",
-            "A long write-unavailability window after a real crash.",
-            "Followers fall further behind the leader's replication log.",
-            "The replication log grows without bound on the leader.",
+            "creating two leaders.",
+            "A long write-unavailability window after a real crash, since the failure takes "
+            "too long to be detected.",
+            "Followers fall further behind the leader's replication log during every long "
+            "pause.",
+            "The replication log grows without bound on the leader until the next full backup.",
         ),
         _text(
             "Um cluster detecta a falha do líder com heartbeats e um timeout de 5 segundos. O "
@@ -778,10 +783,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "o cluster pode ficar com dois líderes. B é o problema de um timeout longo demais, "
             "e C e D não têm relação com a detecção de falhas.",
             "Um failover falso positivo, afastando um líder que só estava pausado e "
-            "possivelmente deixando dois nós agindo como líder.",
-            "Uma longa janela de indisponibilidade de escrita após uma queda real.",
-            "Os seguidores ficam ainda mais atrás no log de replicação do líder.",
-            "O log de replicação cresce sem limite no líder.",
+            "possivelmente criando dois líderes.",
+            "Uma longa janela de indisponibilidade de escrita após uma queda real, pois a "
+            "falha demora demais a ser detectada.",
+            "Os seguidores ficam ainda mais atrás no log de replicação do líder a cada pausa "
+            "longa.",
+            "O log de replicação cresce sem limite no líder até o próximo backup completo.",
         ),
     ),
     _q(
@@ -801,11 +808,14 @@ _REPL: tuple[QuestionSeed, ...] = (
             "last-write-wins (B) silently discards one side's writes, and a short DNS TTL (D) "
             "only helps clients find a leader, it does not stop the old one from accepting "
             "writes.",
-            "Promote a new leader as soon as any single follower misses a heartbeat.",
-            "Let both leaders accept writes and keep the one with the later wall-clock timestamp.",
+            "Promote a new leader as soon as any single follower misses one heartbeat from the "
+            "old leader.",
+            "Let both leaders keep accepting writes and, afterwards, keep whichever write "
+            "carries the later wall-clock timestamp.",
             "Require a majority quorum to authorize promotion, and make a leader that loses "
-            "contact with the majority step down.",
-            "Use a short DNS TTL so clients switch to the new leader quickly.",
+            "the majority step down.",
+            "Use a short DNS TTL so that clients switch to the new leader quickly after a "
+            "failover.",
         ),
         _text(
             "Uma partição isola o líder atual do resto do cluster, e o lado majoritário "
@@ -816,12 +826,14 @@ _REPL: tuple[QuestionSeed, ...] = (
             "last-write-wins por relógio (B) descarta silenciosamente as escritas de um lado, "
             "e um TTL de DNS curto (D) só ajuda os clientes a achar um líder, não impede o "
             "antigo de aceitar escritas.",
-            "Promover um novo líder assim que qualquer seguidor perder um heartbeat.",
-            "Deixar ambos os líderes aceitarem escritas e manter a de timestamp de relógio "
-            "mais recente.",
+            "Promover um novo líder assim que qualquer seguidor perder um heartbeat do líder "
+            "antigo.",
+            "Deixar ambos os líderes continuarem aceitando escritas e, depois, manter a de "
+            "timestamp de relógio mais recente.",
             "Exigir um quórum de maioria para autorizar a promoção e fazer o líder que perde "
-            "contato com a maioria renunciar.",
-            "Usar um TTL de DNS curto para os clientes migrarem rápido para o novo líder.",
+            "a maioria renunciar.",
+            "Usar um TTL de DNS curto para os clientes migrarem rápido para o novo líder "
+            "após o failover.",
         ),
     ),
     _q(
