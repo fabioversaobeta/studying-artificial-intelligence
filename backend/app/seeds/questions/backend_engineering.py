@@ -1138,11 +1138,13 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "on disk, do not make the table read-only and do not prevent duplicates (only "
             "`UNIQUE` indexes do that, by design).",
             _options(
-                "Reads on that table become slower.",
-                "Extra storage, plus every write must also update the index, which makes "
-                "writes slower.",
-                "The table can no longer contain duplicate rows.",
-                "The table becomes read-only while the index exists.",
+                "Reads on that table become slower, because the database must now check the "
+                "index first.",
+                "Extra storage, plus every write must also update the index, so writes slow "
+                "down.",
+                "The table can no longer contain duplicate rows, because every index enforces "
+                "uniqueness.",
+                "The table becomes read-only while the index exists, until it is dropped.",
             ),
         ),
         _t(
@@ -1155,11 +1157,13 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "somente leitura e não impedem duplicatas (só índices `UNIQUE` fazem isso, "
             "por definição).",
             _options(
-                "As leituras nessa tabela ficam mais lentas.",
+                "As leituras nessa tabela ficam mais lentas, pois o banco agora precisa "
+                "consultar o índice primeiro.",
                 "Espaço extra de armazenamento, e toda escrita também precisa atualizar o "
-                "índice, o que a deixa mais lenta.",
-                "A tabela não pode mais conter linhas duplicadas.",
-                "A tabela fica somente leitura enquanto o índice existir.",
+                "índice, ficando mais lenta.",
+                "A tabela não pode mais conter linhas duplicadas, pois todo índice impõe "
+                "unicidade.",
+                "A tabela fica somente leitura enquanto o índice existir, até ser removido.",
             ),
         ),
     ),
@@ -1326,11 +1330,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`citext`). Unique indexes do serve equality lookups, text columns are indexable, "
             "and `EXPLAIN` does not need any special data type.",
             _options(
-                "`UNIQUE` indexes cannot be used for equality lookups.",
-                "PostgreSQL never uses indexes on `text` columns.",
-                "`EXPLAIN` disables index usage; the real query would use the index.",
-                "The filter applies `lower()` to the column, so the index on `email` cannot "
-                "be used; create an expression index on `lower(email)`.",
+                "`UNIQUE` indexes cannot be used for equality lookups, only to enforce the "
+                "constraint.",
+                "PostgreSQL never uses indexes on `text` columns, because comparing text "
+                "depends on the active collation and locale.",
+                "`EXPLAIN` disables index usage on its own; the real query would use the "
+                "index once executed.",
+                "`lower()` is applied to the column, so the index on `email` can't match; "
+                "create an index on `lower(email)`.",
             ),
         ),
         _t(
@@ -1343,11 +1350,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "de igualdade, colunas `text` podem ser indexadas, e o `EXPLAIN` não exige "
             "nenhum tipo de dado especial.",
             _options(
-                "Índices `UNIQUE` não podem ser usados em buscas de igualdade.",
-                "O PostgreSQL nunca usa índices em colunas `text`.",
-                "O `EXPLAIN` desativa o uso de índices; a consulta real usaria o índice.",
-                "O filtro aplica `lower()` à coluna, então o índice em `email` não pode ser "
-                "usado; crie um índice de expressão em `lower(email)`.",
+                "Índices `UNIQUE` não podem ser usados em buscas de igualdade, só para impor "
+                "a constraint.",
+                "O PostgreSQL nunca usa índices em colunas `text`, porque a comparação de "
+                "texto depende da collation e do locale ativos.",
+                "O `EXPLAIN` desativa o uso de índices por conta própria; a consulta real "
+                "usaria o índice ao executar.",
+                "O `lower()` é aplicado à coluna, então o índice em `email` não casa; crie "
+                "um índice em `lower(email)`.",
             ),
         ),
     ),
@@ -1366,11 +1376,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "orders. The robust forms are `NOT EXISTS (SELECT 1 FROM orders o WHERE "
             "o.user_id = u.id)` or a `LEFT JOIN ... IS NULL` anti-join.",
             _options(
-                "The users that have no orders; the `NULL` row is simply ignored.",
-                "Every user, since `NULL` matches nothing.",
-                "No rows at all, because the comparison with `NULL` makes the condition "
-                "unknown for every user.",
-                "An error, because `NOT IN` does not accept subqueries with `NULL`.",
+                "The users that have no orders; the guest-order `NULL` row is simply ignored "
+                "by the `NOT IN` comparison.",
+                "Every user, since `NULL` matches nothing and so excludes nobody from the "
+                "result.",
+                "No rows at all, because comparing with `NULL` makes the condition unknown "
+                "for every user.",
+                "An error, because `NOT IN` does not accept subqueries that can return `NULL` "
+                "values.",
             ),
         ),
         _t(
@@ -1381,11 +1394,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sem pedidos. As formas robustas são `NOT EXISTS (SELECT 1 FROM orders o WHERE "
             "o.user_id = u.id)` ou um anti-join com `LEFT JOIN ... IS NULL`.",
             _options(
-                "Os usuários sem pedidos; a linha com `NULL` é simplesmente ignorada.",
-                "Todos os usuários, pois `NULL` não casa com nada.",
+                "Os usuários sem pedidos; a linha de pedido de convidado com `NULL` é "
+                "simplesmente ignorada na comparação do `NOT IN`.",
+                "Todos os usuários, pois `NULL` não casa com nada e portanto não exclui "
+                "ninguém do resultado.",
                 "Nenhuma linha, pois a comparação com `NULL` torna a condição desconhecida "
-                "para todos os usuários.",
-                "Um erro, pois `NOT IN` não aceita subconsultas com `NULL`.",
+                "para todos.",
+                "Um erro, pois `NOT IN` não aceita subconsultas que possam devolver valores "
+                "`NULL`.",
             ),
         ),
     ),
@@ -1459,7 +1475,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "One transaction is aborted with a deadlock error and the other continues; "
                 "prevent it by always locking rows in the same order.",
                 "Both wait forever, because PostgreSQL has no deadlock detection; prevent it "
-                "with a longer `statement_timeout`.",
+                "with a longer `statement_timeout` and a larger connection pool.",
                 "Both succeed, since MVCC lets writers update the same rows without "
                 "blocking each other.",
                 "Each `UPDATE` silently skips the row locked by the other transaction.",
@@ -1481,7 +1497,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Uma transação é abortada com erro de deadlock e a outra continua; evita-se "
                 "isso bloqueando sempre as linhas na mesma ordem.",
                 "Ambas esperam para sempre, pois o PostgreSQL não detecta deadlocks; evita-se "
-                "com um `statement_timeout` maior.",
+                "com um `statement_timeout` maior e um pool de conexões maior.",
                 "Ambas têm sucesso, pois o MVCC permite que escritores atualizem as mesmas "
                 "linhas sem bloquear uns aos outros.",
                 "Cada `UPDATE` ignora silenciosamente a linha bloqueada pela outra transação.",
