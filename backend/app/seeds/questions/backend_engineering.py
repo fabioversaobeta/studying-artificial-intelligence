@@ -647,11 +647,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "verification can be done locally with the key, with no call to the issuer on "
             "every request.",
             _options(
-                "The payload is encrypted, so the client cannot read the claims.",
-                "The payload is only encoded: anyone holding the token can read it, and the "
-                "signature only protects against tampering.",
-                "The signature makes the claims confidential.",
-                "A server must call the issuer on every request to verify the token.",
+                "The payload is encrypted, so the client cannot read the claims inside the "
+                "token.",
+                "The payload is only encoded, so anyone holding the token can read it.",
+                "The signature makes the claims confidential from anyone who intercepts the "
+                "token.",
+                "A server must call the issuer on every single request to check that the "
+                "token is valid.",
             ),
         ),
         _t(
@@ -663,11 +665,12 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "assinatura não esconde nada, e a verificação pode ser feita localmente com a "
             "chave, sem consultar o emissor a cada requisição.",
             _options(
-                "O payload é criptografado, então o cliente não consegue ler as claims.",
-                "O payload é apenas codificado: qualquer um com o token pode lê-lo, e a "
-                "assinatura só protege contra adulteração.",
-                "A assinatura torna as claims confidenciais.",
-                "O servidor precisa consultar o emissor a cada requisição para verificar o token.",
+                "O payload é criptografado, então o cliente não consegue ler as claims dentro "
+                "do token.",
+                "O payload é apenas codificado, então qualquer um com o token pode lê-lo.",
+                "A assinatura torna as claims confidenciais para quem interceptar o token.",
+                "O servidor precisa consultar o emissor a cada requisição para checar se o "
+                "token é válido.",
             ),
         ),
     ),
@@ -689,11 +692,11 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "need extra machinery (short expiry plus revocable refresh tokens, or a "
             "denylist) to approximate this.",
             _options(
-                "Stateless JWT access tokens valid for 24 hours, with no server-side state.",
-                "Stateless JWTs with longer lifetimes, so users rarely need to log in.",
-                "Stateless JWTs signed with a stronger algorithm.",
-                "Server-side sessions kept in a database or cache: delete all of the user's "
-                "session records.",
+                "Stateless JWT access tokens valid for 24 hours, with no server-side state to "
+                "revoke.",
+                "Stateless JWTs with longer lifetimes, so users rarely need to log in again.",
+                "Stateless JWTs signed with a stronger algorithm and a longer signing key.",
+                "Server-side sessions in a database: delete all of the user's session records.",
             ),
         ),
         _t(
@@ -708,12 +711,14 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "exigem mecanismos extras (expiração curta com refresh tokens revogáveis, ou "
             "uma denylist) para aproximar isso.",
             _options(
-                "Access tokens JWT stateless válidos por 24 horas, sem estado no servidor.",
+                "Access tokens JWT stateless válidos por 24 horas, sem estado no servidor para "
+                "revogar.",
                 "JWTs stateless com vida mais longa, para que os usuários raramente precisem "
-                "fazer login.",
-                "JWTs stateless assinados com um algoritmo mais forte.",
-                "Sessões no servidor guardadas em banco ou cache: apagar todos os registros "
-                "de sessão do usuário.",
+                "logar de novo.",
+                "JWTs stateless assinados com um algoritmo mais forte e uma chave de assinatura "
+                "maior.",
+                "Sessões no servidor, em um banco: apagar todos os registros de sessão do "
+                "usuário.",
             ),
         ),
     ),
@@ -775,11 +780,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "user) and a standard userinfo endpoint. It does not replace the authorization "
             "code flow, and refresh tokens already exist in OAuth 2.0.",
             _options(
-                "Encryption of all access tokens in transit and at rest.",
-                "A new flow that replaces the authorization code flow.",
-                "An identity layer: an ID token with claims about the authenticated user, "
-                "the `openid` scope and a userinfo endpoint.",
-                "Refresh tokens, which OAuth 2.0 does not support.",
+                "Encryption of all access tokens in transit and at rest, plus mandatory "
+                "signing of every request.",
+                "A new flow that replaces the authorization code flow for browser-based apps.",
+                "An identity layer: an ID token about the user, the `openid` scope and a "
+                "userinfo endpoint.",
+                "Refresh tokens, which OAuth 2.0 does not support, so sessions can be "
+                "extended.",
             ),
         ),
         _t(
@@ -790,11 +797,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "usuário) e um endpoint userinfo padronizado. Ele não substitui o fluxo "
             "authorization code, e refresh tokens já existem no OAuth 2.0.",
             _options(
-                "Criptografia de todos os access tokens em trânsito e em repouso.",
-                "Um novo fluxo que substitui o fluxo authorization code.",
-                "Uma camada de identidade: um ID token com claims sobre o usuário "
-                "autenticado, o scope `openid` e um endpoint userinfo.",
-                "Refresh tokens, que o OAuth 2.0 não suporta.",
+                "Criptografia de todos os access tokens em trânsito e em repouso, além de "
+                "assinatura obrigatória de toda requisição.",
+                "Um novo fluxo que substitui o fluxo authorization code em aplicações de "
+                "navegador.",
+                "Uma camada de identidade: um ID token sobre o usuário, o scope `openid` e um "
+                "endpoint userinfo.",
+                "Refresh tokens, que o OAuth 2.0 não suporta, para poder estender as sessões.",
             ),
         ),
     ),
@@ -864,11 +873,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "authorization control. There is no SQL injection here, and CSRF concerns "
             "state-changing requests.",
             _options(
-                "None: because login is required, only legitimate users can reach it.",
+                "None: because the endpoint requires login, only legitimate users can ever "
+                "reach the invoices.",
                 "Broken object-level authorization (IDOR): any logged-in user can fetch any "
-                "invoice by id, since ownership is never checked.",
-                "SQL injection through `invoice_id`.",
-                "CSRF, because the endpoint answers a `GET` request.",
+                "invoice by id.",
+                "SQL injection through `invoice_id`, which is concatenated into the query.",
+                "CSRF, because the endpoint answers a `GET` request without an anti-forgery "
+                "token.",
             ),
         ),
         _t(
@@ -881,11 +892,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "aleatórios dificultam o palpite, mas não são um controle de autorização. Não há "
             "SQL injection aqui, e CSRF diz respeito a requisições que alteram estado.",
             _options(
-                "Nenhuma: como o login é exigido, só usuários legítimos chegam a ele.",
+                "Nenhuma: como o endpoint exige login, só usuários legítimos chegam às "
+                "faturas.",
                 "Autorização quebrada em nível de objeto (IDOR): qualquer usuário logado "
-                "pode buscar qualquer fatura pelo id, pois a propriedade nunca é verificada.",
-                "SQL injection por meio de `invoice_id`.",
-                "CSRF, porque o endpoint responde a uma requisição `GET`.",
+                "pode buscar qualquer fatura pelo id.",
+                "SQL injection por meio de `invoice_id`, que é concatenado na consulta.",
+                "CSRF, porque o endpoint responde a uma requisição `GET` sem token "
+                "anti-forgery.",
             ),
         ),
     ),
