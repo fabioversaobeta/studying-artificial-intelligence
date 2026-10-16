@@ -383,10 +383,8 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "depender de uma abstração como `OrderRepository`, pertencente à camada de alto "
             "nível, que a classe do Postgres implementa.",
             (
-                "Sim, porque a dependência é injetada pelo construtor em vez de criada com "
-                "`new`.",
-                "Não, porque o `OrderService` ainda cita uma classe concreta, não uma "
-                "abstração.",
+                "Sim, porque a dependência é injetada pelo construtor em vez de criada com `new`.",
+                "Não, porque o `OrderService` ainda cita uma classe concreta, não uma abstração.",
                 "Sim, porque há um contêiner em uso e contêineres sempre invertem dependências.",
                 "Não, porque o DIP proíbe injeção por construtor e exige injeção por setter.",
             ),
@@ -1229,8 +1227,7 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "camada web (C) ou em um pacote compartilhado que todos importam (D) acopla "
             "camadas que não têm relação.",
             (
-                "Ao lado da implementação Postgres, na camada de infraestrutura, no mesmo "
-                "módulo.",
+                "Ao lado da implementação Postgres, na camada de infraestrutura, no mesmo módulo.",
                 "Na camada de domínio ou de aplicação; a classe Postgres a implementa.",
                 "Na camada web, ao lado dos controllers que chamam o caso de uso e mapeiam "
                 "seus resultados.",
@@ -1705,8 +1702,7 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Qualquer serviço atualiza registros de `OrderLine` diretamente por seu "
                 "próprio repositório.",
-                "`Order` é a raiz; seu `add_line()` verifica o limite e o repositório o "
-                "salva.",
+                "`Order` é a raiz; seu `add_line()` verifica o limite e o repositório o salva.",
                 "Cada `OrderLine` guarda referências aos grafos completos de `Customer` e "
                 "`Product`, por conveniência.",
                 "Um único aggregate grande contém todos os pedidos, clientes e produtos.",
@@ -1731,8 +1727,7 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Because the database requires foreign keys to be integers rather than objects.",
                 "Because comparing ids is always faster than comparing whole objects in memory.",
-                "So that both aggregates can always be updated together in the same "
-                "transaction.",
+                "So that both aggregates can always be updated together in the same transaction.",
                 "To keep each aggregate a small consistency boundary.",
             ),
         ),
@@ -1857,8 +1852,7 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Always update both aggregates in one database transaction so that stock never "
                 "drifts.",
                 "Make `Inventory` a child entity of `Order` so they share a boundary.",
-                "Commit the order, publish an `OrderPlaced` event, and let a handler reduce "
-                "stock.",
+                "Commit the order, publish an `OrderPlaced` event, and let a handler reduce stock.",
                 "Skip the stock update and reconcile manually at the end of the month.",
             ),
         ),
@@ -2061,8 +2055,7 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "does not make tests faster (A), and it has nothing to do with code coverage "
             "(C) or with the framework's license (D).",
             (
-                "They make the suite run faster because failed tests stop early and skip "
-                "setup.",
+                "They make the suite run faster because failed tests stop early and skip setup.",
                 "They erode trust, so real failures get ignored or rerun.",
                 "They reduce code coverage until the failures are fixed.",
                 "They violate the license of most test frameworks.",
@@ -2103,8 +2096,7 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "The `assert` should compare the list with `is` instead of `==` to avoid a "
                 "deep comparison.",
-                "The global list should be replaced with a `Mock` so the worker can be "
-                "verified.",
+                "The global list should be replaced with a `Mock` so the worker can be verified.",
                 "The thread should be a daemon thread so that it never blocks the test run.",
                 "It races on `sleep` timing; it should use `join()` or an `Event`.",
             ),
@@ -2120,8 +2112,7 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "O `assert` deveria comparar a lista com `is` em vez de `==` para evitar uma "
                 "comparação profunda.",
-                "A lista global deveria ser substituída por um `Mock` para verificar o "
-                "worker.",
+                "A lista global deveria ser substituída por um `Mock` para verificar o worker.",
                 "A thread deveria ser daemon para nunca bloquear a execução dos testes.",
                 "Ele corre contra o tempo do `sleep`; deveria usar `join()` ou um `Event`.",
             ),
@@ -2187,8 +2178,7 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "make the test runner outdated (D).",
             (
                 "The tests assert on implementation details, such as private methods.",
-                "The tests were too independent of each other, so none of them caught the "
-                "change.",
+                "The tests were too independent of each other, so none of them caught the change.",
                 "There were too few tests in the suite to describe the behavior.",
                 "The test runner is out of date and cannot parse the refactored modules.",
             ),

@@ -582,8 +582,7 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "read-heavy and tolerate staleness.",
             (
                 "A remaining-stock counter decremented on every sale and checked at checkout.",
-                "Product descriptions that are edited by the merchandising team about once a "
-                "week.",
+                "Product descriptions that are edited by the merchandising team about once a week.",
                 "Users' display names shown next to comments on articles and product pages.",
                 "Static JavaScript and CSS bundles that are versioned and rebuilt only on "
                 "each release.",
@@ -760,8 +759,7 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "com uma única chave quente. Um pool maior (B) só deixa mais consultas idênticas "
             "chegarem ao banco, e um TTL menor (D) torna as expirações mais frequentes.",
             (
-                "Adicionar jitter aleatório ao TTL de todas as chaves para que não expirem "
-                "juntas.",
+                "Adicionar jitter aleatório ao TTL de todas as chaves para que não expirem juntas.",
                 "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas "
                 "em paralelo.",
                 "Obter um lock de curta duração com SET-if-not-exists para que só uma "
@@ -829,8 +827,7 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "needed (B). Each access also pays one extra read to resolve the current version "
             "(C), and the approach replaces values rather than updating them in place (D).",
             (
-                "When many related entries must be invalidated at once without listing every "
-                "key.",
+                "When many related entries must be invalidated at once without listing every key.",
                 "When you want to drop TTLs entirely, since old versions disappear on their "
                 "own after a while.",
                 "When you need the cheapest possible read path, with no extra cache lookups.",
@@ -1017,12 +1014,10 @@ _LB: tuple[QuestionSeed, ...] = (
             "with fewer in-flight ones. The other options describe behaviors round robin does "
             "not have.",
             (
-                "It balances by count, so a server stuck on slow requests keeps getting new "
-                "work.",
+                "It balances by count, so a server stuck on slow requests keeps getting new work.",
                 "It sends all traffic to the first server until that server fails, then "
                 "switches over.",
-                "It requires the balancer to parse the HTTP request body before choosing a "
-                "server.",
+                "It requires the balancer to parse the HTTP request body before choosing a server.",
                 "It cannot be used with more than two servers because it alternates between a "
                 "pair.",
             ),
@@ -1042,8 +1037,7 @@ _LB: tuple[QuestionSeed, ...] = (
                 "troca de servidor.",
                 "Ele exige que o balanceador interprete o corpo da requisição HTTP antes de "
                 "escolher um servidor.",
-                "Ele não pode ser usado com mais de dois servidores porque alterna entre um "
-                "par.",
+                "Ele não pode ser usado com mais de dois servidores porque alterna entre um par.",
             ),
         ),
     ),
@@ -1208,8 +1202,7 @@ _LB: tuple[QuestionSeed, ...] = (
                 "uma instância.",
                 "Aumentar o tempo de vida do cookie de sessão para que as sessões durem mais "
                 "entre visitas.",
-                "Voltar a 3 instâncias para que o comportamento original das sessões "
-                "retorne.",
+                "Voltar a 3 instâncias para que o comportamento original das sessões retorne.",
             ),
         ),
     ),
@@ -1322,8 +1315,7 @@ _LB: tuple[QuestionSeed, ...] = (
                 "The balancer's CPU; add a second balancer next to it and split the traffic "
                 "between both by DNS.",
                 "The app servers' CPU; move to larger instance types with more cores.",
-                "DNS resolution of the instances; raise the DNS TTL so lookups are cached "
-                "longer.",
+                "DNS resolution of the instances; raise the DNS TTL so lookups are cached longer.",
                 "The database connection limit (about 300 connections against 100); cap pools, "
                 "add a pooler.",
             ),
@@ -1465,8 +1457,7 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "The read hit an asynchronous replica that had not applied the write.",
                 "The primary rolled back the write and then applied it again on retry.",
-                "The connection pool returned a closed connection that silently retried the "
-                "read.",
+                "The connection pool returned a closed connection that silently retried the read.",
                 "The write was applied twice, so the first read saw a half-updated row.",
             ),
         ),
@@ -1480,8 +1471,7 @@ _DB: tuple[QuestionSeed, ...] = (
             "novo depois, e uma conexão fechada (C) ou uma escrita duplicada (D) não produziria "
             "esse padrão de antigo e depois novo.",
             (
-                "A leitura caiu em uma réplica assíncrona que ainda não tinha aplicado a "
-                "escrita.",
+                "A leitura caiu em uma réplica assíncrona que ainda não tinha aplicado a escrita.",
                 "O primário reverteu a escrita e depois a aplicou de novo na nova tentativa.",
                 "O pool de conexões devolveu uma conexão fechada, que refez a leitura "
                 "silenciosamente.",
@@ -1505,10 +1495,8 @@ _DB: tuple[QuestionSeed, ...] = (
             "that does not matter, and they hold the same data as the primary (B, C are "
             "false).",
             (
-                "Replicas are read-only, so they cannot be restored from or promoted to "
-                "primary.",
-                "Replicas can only store a fraction of the primary's data, chosen by key "
-                "range.",
+                "Replicas are read-only, so they cannot be restored from or promoted to primary.",
+                "Replicas can only store a fraction of the primary's data, chosen by key range.",
                 "Replicas copy only the table schema, not the rows, to keep the network "
                 "traffic low.",
                 "Replication copies mistaken writes, such as a bad `DELETE`, to every replica.",
@@ -1637,8 +1625,7 @@ _DB: tuple[QuestionSeed, ...] = (
                 "Wrapping several statements in one `BEGIN ... COMMIT` block with a savepoint "
                 "inside.",
                 "Sending read-only queries to a replica through a second pooler instance.",
-                "Relying on a session-level `SET` still being in effect in the next "
-                "transaction.",
+                "Relying on a session-level `SET` still being in effect in the next transaction.",
                 "Using parameterized queries sent through the driver's standard interface.",
             ),
         ),
@@ -1651,8 +1638,7 @@ _DB: tuple[QuestionSeed, ...] = (
             "não existir na seguinte. Transações com vários comandos, leituras em réplicas e "
             "consultas parametrizadas funcionam normalmente.",
             (
-                "Envolver vários comandos em um bloco `BEGIN ... COMMIT` com um savepoint "
-                "dentro.",
+                "Envolver vários comandos em um bloco `BEGIN ... COMMIT` com um savepoint dentro.",
                 "Enviar consultas somente leitura a uma réplica por meio de uma segunda "
                 "instância do pooler.",
                 "Depender de um `SET` de sessão ainda valer na transação seguinte.",
@@ -1736,12 +1722,9 @@ _DB: tuple[QuestionSeed, ...] = (
             "métricas do próprio banco ou em outro lugar, não como espera por um pool com o "
             "banco ocioso.",
             (
-                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o "
-                "pool.",
-                "O servidor de banco ficou sem espaço em disco e não aceita mais novas "
-                "escritas.",
-                "O lag de replicação ficou grande demais, e as réplicas rejeitam novas "
-                "conexões.",
+                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o pool.",
+                "O servidor de banco ficou sem espaço em disco e não aceita mais novas escritas.",
+                "O lag de replicação ficou grande demais, e as réplicas rejeitam novas conexões.",
                 "A tabela cresceu a ponto de precisar de sharding em vários servidores.",
             ),
         ),
