@@ -581,11 +581,12 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "means overselling. Product descriptions, display names and static bundles are "
             "read-heavy and tolerate staleness.",
             (
-                "A remaining-stock counter that is decremented on every sale and checked at "
-                "checkout.",
-                "Product descriptions that are edited about once a week.",
-                "Users' display names shown next to comments.",
-                "Static JavaScript and CSS bundles.",
+                "A remaining-stock counter decremented on every sale and checked at checkout.",
+                "Product descriptions that are edited by the merchandising team about once a "
+                "week.",
+                "Users' display names shown next to comments on articles and product pages.",
+                "Static JavaScript and CSS bundles that are versioned and rebuilt only on "
+                "each release.",
             ),
         ),
         _t(
@@ -596,11 +597,14 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "exato; um valor defasado significa vender o que não existe. Descrições de produto, "
             "nomes de exibição e bundles estáticos são de leitura intensa e toleram defasagem.",
             (
-                "Um contador de estoque restante que é decrementado a cada venda e conferido no "
+                "Um contador de estoque restante decrementado a cada venda e conferido no "
                 "checkout.",
-                "Descrições de produto editadas cerca de uma vez por semana.",
-                "Nomes de exibição de usuários mostrados ao lado de comentários.",
-                "Bundles estáticos de JavaScript e CSS.",
+                "Descrições de produto editadas pela equipe de merchandising cerca de uma vez "
+                "por semana.",
+                "Nomes de exibição de usuários mostrados ao lado de comentários em artigos e "
+                "páginas de produto.",
+                "Bundles estáticos de JavaScript e CSS, versionados e reconstruídos apenas a "
+                "cada release.",
             ),
         ),
     ),
@@ -662,8 +666,7 @@ _CACHE: tuple[QuestionSeed, ...] = (
                 "Only the first read after the script is stale; later reads refresh the entry "
                 "automatically.",
                 "The next read raises an error because the cached value no longer matches the row.",
-                "The old prices keep being served until each entry expires or is evicted; "
-                "always keep a TTL as a backstop, and make bulk jobs invalidate too.",
+                "Old prices keep being served until entries expire; keep a TTL as a backstop.",
             ),
         ),
         _t(
@@ -682,9 +685,8 @@ _CACHE: tuple[QuestionSeed, ...] = (
                 "entrada automaticamente.",
                 "A próxima leitura gera um erro, porque o valor em cache não bate mais com a "
                 "linha.",
-                "Os preços antigos continuam sendo servidos até cada entrada expirar ou ser "
-                "removida; mantenha sempre um TTL como rede de segurança e faça os jobs em lote "
-                "também invalidarem.",
+                "Os preços antigos continuam sendo servidos até as entradas expirarem; "
+                "mantenha um TTL como rede de segurança.",
             ),
         ),
     ),
@@ -741,11 +743,11 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "bigger pool (B) just lets more identical queries hit the database, and a shorter "
             "TTL (D) makes the expiry events more frequent.",
             (
-                "Add random jitter to the TTL of every key.",
-                "Increase the database connection pool so it can run all 1,200 queries.",
-                "Take a short-lived SET-if-not-exists lock so one request recomputes while the "
-                "others wait or serve stale data.",
-                "Lower the TTL so the key is refreshed more often.",
+                "Add random jitter to the TTL of every key so that they do not expire together.",
+                "Increase the database connection pool so it can run all 1,200 queries in "
+                "parallel.",
+                "Take a short-lived SET-if-not-exists lock so only one request recomputes.",
+                "Lower the TTL so the key is refreshed more often and never grows stale.",
             ),
         ),
         _t(
@@ -758,11 +760,14 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "com uma única chave quente. Um pool maior (B) só deixa mais consultas idênticas "
             "chegarem ao banco, e um TTL menor (D) torna as expirações mais frequentes.",
             (
-                "Adicionar jitter aleatório ao TTL de todas as chaves.",
-                "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas.",
-                "Obter um lock de curta duração com SET-if-not-exists para que uma requisição "
-                "recompute enquanto as outras esperam ou servem dados defasados.",
-                "Reduzir o TTL para que a chave seja atualizada com mais frequência.",
+                "Adicionar jitter aleatório ao TTL de todas as chaves para que não expirem "
+                "juntas.",
+                "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas "
+                "em paralelo.",
+                "Obter um lock de curta duração com SET-if-not-exists para que só uma "
+                "requisição recompute.",
+                "Reduzir o TTL para que a chave seja atualizada com mais frequência e nunca "
+                "fique defasada.",
             ),
         ),
     ),
@@ -824,9 +829,10 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "needed (B). Each access also pays one extra read to resolve the current version "
             "(C), and the approach replaces values rather than updating them in place (D).",
             (
-                "When many related entries must be invalidated at once and enumerating every "
-                "key would be error-prone.",
-                "When you want to drop TTLs entirely, since old versions disappear on their own.",
+                "When many related entries must be invalidated at once without listing every "
+                "key.",
+                "When you want to drop TTLs entirely, since old versions disappear on their "
+                "own after a while.",
                 "When you need the cheapest possible read path, with no extra cache lookups.",
                 "When cached values must be modified in place instead of being replaced.",
             ),
@@ -841,9 +847,10 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "uma leitura extra para resolver a versão atual (C), e a abordagem substitui valores "
             "em vez de atualizá-los no lugar (D).",
             (
-                "Quando muitas entradas relacionadas precisam ser invalidadas de uma vez e "
-                "enumerar cada chave seria propenso a erros.",
-                "Quando se quer abandonar os TTLs, já que as versões antigas somem sozinhas.",
+                "Quando muitas entradas relacionadas precisam ser invalidadas de uma vez, sem "
+                "listar cada chave.",
+                "Quando se quer abandonar os TTLs, já que as versões antigas somem sozinhas "
+                "depois de um tempo.",
                 "Quando se precisa do caminho de leitura mais barato possível, sem consultas "
                 "extras ao cache.",
                 "Quando os valores em cache precisam ser modificados no lugar em vez de "
@@ -869,11 +876,11 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "is harmless: the next read simply reloads it.",
             (
                 "Deleting from the cache is slower than writing to the database, so it "
-                "belongs last.",
+                "belongs last in the sequence.",
                 "A delete issued before the commit blocks all readers until the commit finishes.",
                 "If the write is rolled back after the delete, the cache stays permanently empty.",
-                "A concurrent reader could repopulate the cache with the old value between the "
-                "delete and the commit, leaving stale data until the TTL.",
+                "A concurrent reader could repopulate the cache with the old value before the "
+                "commit.",
             ),
         ),
         _t(
@@ -887,12 +894,13 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "cache vazio após uma escrita revertida (C) é inofensivo: a próxima leitura o "
             "recarrega.",
             (
-                "Apagar do cache é mais lento do que gravar no banco, então deve vir por último.",
+                "Apagar do cache é mais lento do que gravar no banco, então deve vir por "
+                "último na sequência.",
                 "Um delete emitido antes do commit bloqueia todos os leitores até o commit "
                 "terminar.",
                 "Se a escrita for revertida depois do delete, o cache fica vazio para sempre.",
-                "Um leitor concorrente poderia repopular o cache com o valor antigo entre o "
-                "delete e o commit, deixando dados defasados até o TTL.",
+                "Um leitor concorrente poderia repopular o cache com o valor antigo antes do "
+                "commit.",
             ),
         ),
     ),
