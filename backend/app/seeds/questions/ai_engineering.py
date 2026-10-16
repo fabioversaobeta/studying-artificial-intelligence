@@ -530,11 +530,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "picking a model, not managing what it sees. D (fine-tuning) changes the model, "
             "not its inputs.",
             _options(
-                "Writing the cleverest possible wording for a single prompt.",
-                "Choosing the model with the largest context window.",
-                "Deciding, for each model call, what information (instructions, history, "
-                "retrieved documents, tool results) enters the context and in what form.",
-                "Fine-tuning the model on the application's data.",
+                "Writing the cleverest possible wording for a single prompt and polishing "
+                "it until it works.",
+                "Choosing the model with the largest context window and sending it as much "
+                "text as it accepts.",
+                "Deciding, for each model call, what information enters the context and in "
+                "what form.",
+                "Fine-tuning the model on the application's data so that it no longer needs "
+                "instructions or retrieved documents.",
             ),
         ),
         _t(
@@ -545,12 +548,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "parte. B trata da escolha do modelo, não de gerenciar o que ele vê. D (fine-tuning) "
             "altera o modelo, não suas entradas.",
             _options(
-                "Escrever a redação mais engenhosa possível para um único prompt.",
-                "Escolher o modelo com a maior janela de contexto.",
-                "Decidir, a cada chamada ao modelo, quais informações (instruções, histórico, "
-                "documentos recuperados, resultados de ferramentas) entram no contexto e em "
-                "que forma.",
-                "Fazer fine-tuning do modelo com os dados da aplicação.",
+                "Escrever a redação mais engenhosa possível para um único prompt e lapidá-la "
+                "até funcionar.",
+                "Escolher o modelo com a maior janela de contexto e enviar a ele todo o "
+                "texto que ele aceitar.",
+                "Decidir, a cada chamada ao modelo, quais informações entram no contexto e "
+                "em que forma.",
+                "Fazer fine-tuning do modelo com os dados da aplicação para que ele não "
+                "precise mais de instruções nem de documentos recuperados.",
             ),
         ),
     ),
@@ -568,11 +573,13 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "far more than the first thousand tokens. C and D invent restrictions that do not "
             "exist.",
             _options(
-                "The model ignores everything after the first thousand tokens.",
+                "The model ignores everything after the first thousand tokens, however "
+                "large the window is.",
                 "More input raises cost and latency, and irrelevant material can degrade the "
-                "answer even when it fits in the window.",
-                "Users are not allowed to fill the context window.",
-                "Longer prompts disable the sampling parameters.",
+                "answer.",
+                "Users are not allowed to fill the context window beyond a fixed share of "
+                "its size.",
+                "Longer prompts disable sampling parameters such as temperature and top-p.",
             ),
         ),
         _t(
@@ -583,11 +590,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "falsa: modelos usam muito mais do que os primeiros mil tokens. C e D inventam "
             "restrições que não existem.",
             _options(
-                "O modelo ignora tudo depois dos primeiros mil tokens.",
+                "O modelo ignora tudo depois dos primeiros mil tokens, por maior que seja a "
+                "janela.",
                 "Mais entrada aumenta custo e latência, e material irrelevante pode piorar a "
-                "resposta mesmo quando cabe na janela.",
-                "Usuários não têm permissão para encher a janela de contexto.",
-                "Prompts mais longos desativam os parâmetros de amostragem.",
+                "resposta.",
+                "Usuários não têm permissão para encher a janela de contexto além de uma "
+                "fração fixa do seu tamanho.",
+                "Prompts mais longos desativam parâmetros de amostragem como temperatura e "
+                "top-p.",
             ),
         ),
     ),
@@ -606,9 +616,10 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the safety/policy rules are small and needed on every call, so they belong "
             "permanently in context.",
             _options(
-                "The user's current question.",
-                "The output-format instructions.",
-                "The safety and policy rules the assistant must always follow.",
+                "The user's current question, which the model needs to answer on this call.",
+                "The output-format instructions that every response has to follow.",
+                "The safety and policy rules the assistant must always follow, in every "
+                "single response.",
                 "A 500-page reference manual that is consulted only occasionally.",
             ),
         ),
@@ -620,9 +631,11 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "formato de saída e as regras de segurança/política são pequenas e necessárias em "
             "toda chamada, então ficam permanentemente no contexto.",
             _options(
-                "A pergunta atual do usuário.",
-                "As instruções de formato de saída.",
-                "As regras de segurança e política que o assistente deve sempre seguir.",
+                "A pergunta atual do usuário, de que o modelo precisa para responder nesta "
+                "chamada.",
+                "As instruções de formato de saída que toda resposta precisa seguir.",
+                "As regras de segurança e política que o assistente deve sempre seguir, em "
+                "toda e qualquer resposta.",
                 "Um manual de referência de 500 páginas, consultado apenas ocasionalmente.",
             ),
         ),
@@ -799,11 +812,13 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the summary. B makes the loss worse. C is irrelevant: temperature does not decide "
             "what a summary keeps. D throws away far more than it saves.",
             _options(
-                "Keep exact critical facts (IDs, constraints) in a structured note carried "
-                "verbatim next to the summary.",
-                "Summarize more aggressively so there is less detail to lose.",
-                "Raise the temperature when generating the summary.",
-                "Drop the summary and keep only the last user message.",
+                "Keep exact critical facts (IDs, constraints) verbatim in a structured note "
+                "next to the summary.",
+                "Summarize more aggressively, compressing the whole history into a single "
+                "sentence so less can go missing.",
+                "Raise the temperature when generating the summary so it explores more "
+                "details.",
+                "Drop the summary and keep only the last user message plus the system prompt.",
             ),
         ),
         _t(
@@ -815,11 +830,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "estruturada, ao lado do resumo. B piora a perda. C é irrelevante: a temperatura "
             "não define o que um resumo preserva. D descarta muito mais do que economiza.",
             _options(
-                "Manter os fatos críticos exatos (IDs, restrições) em uma nota estruturada, "
-                "literal, ao lado do resumo.",
-                "Resumir de forma mais agressiva para haver menos detalhes a perder.",
-                "Aumentar a temperatura ao gerar o resumo.",
-                "Descartar o resumo e manter apenas a última mensagem do usuário.",
+                "Manter os fatos críticos exatos (IDs, restrições) literalmente em uma nota "
+                "estruturada ao lado do resumo.",
+                "Resumir de forma mais agressiva, comprimindo todo o histórico em uma só "
+                "frase para haver menos a perder.",
+                "Aumentar a temperatura ao gerar o resumo para que ele explore mais "
+                "detalhes.",
+                "Descartar o resumo e manter apenas a última mensagem do usuário e o system "
+                "prompt.",
             ),
         ),
     ),
