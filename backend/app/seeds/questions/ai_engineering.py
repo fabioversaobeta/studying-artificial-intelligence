@@ -104,11 +104,10 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "word count and token count differ. Options A and B describe special cases at best, "
             "and D (a whole sentence) is not how tokenizers work.",
             _options(
-                "Exactly one word of the input text.",
-                "Exactly one character of the input text.",
-                "A unit of text produced by the model's tokenizer, often a word or a piece of a "
-                "word.",
-                "One whole sentence of the input text.",
+                "Exactly one word of the input text, as separated by spaces and punctuation.",
+                "Exactly one character of the input text, including spaces and punctuation marks.",
+                "A unit of text from the model's tokenizer, often a word or part of a word.",
+                "One whole sentence of the input text, up to the next full stop.",
             ),
         ),
         _t(
@@ -119,11 +118,11 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "e B descrevem, no máximo, casos particulares, e a D (uma frase inteira) não "
             "corresponde ao funcionamento de um tokenizer.",
             _options(
-                "Exatamente uma palavra do texto de entrada.",
-                "Exatamente um caractere do texto de entrada.",
-                "Uma unidade de texto produzida pelo tokenizer do modelo, geralmente uma "
-                "palavra ou um pedaço de palavra.",
-                "Uma frase inteira do texto de entrada.",
+                "Exatamente uma palavra do texto de entrada, separada por espaços e pontuação.",
+                "Exatamente um caractere do texto de entrada, incluindo espaços e sinais de "
+                "pontuação.",
+                "Uma unidade de texto do tokenizer do modelo, em geral uma palavra ou parte dela.",
+                "Uma frase inteira do texto de entrada, até o próximo ponto final.",
             ),
         ),
     ),
@@ -142,11 +141,14 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "C is false: determinism says nothing about correctness, and a model can "
             "consistently repeat a wrong answer. D confuses sampling with the context window.",
             _options(
-                "It flattens the distribution so the model becomes more creative.",
-                "It concentrates probability on the highest-ranked tokens, so output approaches "
-                "greedy decoding and becomes more repeatable.",
-                "It guarantees that the answer is factually correct.",
-                "It reduces the number of tokens that fit in the context window.",
+                "It flattens the distribution so the model becomes more creative and varied "
+                "in its wording.",
+                "It concentrates probability on the top-ranked tokens, so output becomes "
+                "more repeatable.",
+                "It guarantees that the answer is factually correct, since the model stops "
+                "guessing.",
+                "It reduces the number of tokens that fit in the context window and "
+                "shortens each reply.",
             ),
         ),
         _t(
@@ -159,11 +161,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "modelo pode repetir consistentemente uma resposta errada. A D confunde amostragem "
             "com janela de contexto.",
             _options(
-                "A distribuição fica mais plana e o modelo se torna mais criativo.",
-                "A probabilidade se concentra nos tokens mais bem ranqueados, então a saída se "
-                "aproxima do greedy decoding e fica mais repetível.",
-                "Garante que a resposta seja factualmente correta.",
-                "Reduz o número de tokens que cabem na janela de contexto.",
+                "A distribuição fica mais plana e o modelo se torna mais criativo e variado "
+                "na redação.",
+                "A probabilidade se concentra nos tokens mais bem ranqueados, então a saída "
+                "fica mais repetível.",
+                "Garante que a resposta seja factualmente correta, já que o modelo deixa de "
+                "chutar.",
+                "Reduz o número de tokens que cabem na janela de contexto e encurta cada resposta.",
             ),
         ),
     ),
@@ -181,11 +185,12 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "training data size, B to model size, and C to API rate limits; none of these is "
             "the context window.",
             _options(
-                "How many tokens the model saw during training.",
-                "How many parameters the model has.",
-                "How many requests per minute you may send.",
-                "The maximum number of tokens the model can handle in a single request, "
-                "counting both the input and the generated output.",
+                "How many tokens the model saw during training, which determines how much it "
+                "can remember at once.",
+                "How many parameters the model has, which sets how large its memory is.",
+                "How many requests per minute you may send before the API throttles you.",
+                "The maximum number of tokens the model can handle in one request, input and "
+                "output together.",
             ),
         ),
         _t(
@@ -195,11 +200,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "tamanho dos dados de treinamento, B ao tamanho do modelo e C aos limites de taxa "
             "da API; nenhuma delas é a janela de contexto.",
             _options(
-                "Quantos tokens o modelo viu durante o treinamento.",
-                "Quantos parâmetros o modelo possui.",
-                "Quantas requisições por minuto você pode enviar.",
-                "O número máximo de tokens que o modelo consegue processar em uma única "
-                "requisição, contando a entrada e a saída gerada.",
+                "Quantos tokens o modelo viu durante o treinamento, o que determina quanto "
+                "ele consegue lembrar de uma vez.",
+                "Quantos parâmetros o modelo possui, o que define o tamanho da sua memória.",
+                "Quantas requisições por minuto você pode enviar antes de a API limitar o "
+                "seu acesso.",
+                "O número máximo de tokens que o modelo consegue processar em uma "
+                "requisição, entrada e saída juntas.",
             ),
         ),
     ),
@@ -346,8 +353,10 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "outputs vary.",
             _options(
                 "A low temperature (near 0), plus validation of the output against a schema.",
-                "A high temperature with top-p 1.0 so the model explores every phrasing.",
-                "A temperature well above 1 with a large top-k to avoid repetitive output.",
+                "A high temperature with top-p 1.0 so the model explores every phrasing and "
+                "never repeats itself.",
+                "A temperature well above 1 with a large top-k to avoid repetitive output "
+                "across runs.",
                 "Any setting works, because sampling parameters never affect extraction.",
             ),
         ),
@@ -362,8 +371,10 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "diretamente o quanto as saídas variam.",
             _options(
                 "Temperatura baixa (perto de 0), mais validação da saída contra um schema.",
-                "Temperatura alta com top-p 1,0 para o modelo explorar todas as formulações.",
-                "Temperatura bem acima de 1 com top-k grande para evitar saídas repetitivas.",
+                "Temperatura alta com top-p 1,0 para o modelo explorar todas as formulações "
+                "e nunca se repetir.",
+                "Temperatura bem acima de 1 com top-k grande para evitar saídas repetitivas "
+                "entre execuções.",
                 "Qualquer configuração serve, pois parâmetros de amostragem nunca afetam a "
                 "extração.",
             ),
@@ -384,13 +395,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "A and B describe lexical matching, which is what sparse methods such as BM25 do. "
             "C is invented: text length does not decide where a vector lands.",
             _options(
-                "Embedding models match on shared letters, and both strings contain similar "
-                "letters.",
+                "Embedding models match on shared letters, and both strings contain a "
+                "similar mix of letters and spaces.",
                 "Embeddings store the exact words, and a synonym dictionary links them at "
-                "query time.",
+                "query time, as in lexical search.",
                 "Short texts always map to the same region of the vector space.",
                 "The model learns to place texts with similar meaning near each other, so "
-                "distance reflects semantics rather than word overlap.",
+                "distance reflects semantics.",
             ),
         ),
         _t(
@@ -401,13 +412,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "em comum. A e B descrevem casamento lexical, que é o que métodos esparsos como o "
             "BM25 fazem. C é inventada: o tamanho do texto não define onde o vetor cai.",
             _options(
-                "Modelos de embedding casam por letras em comum, e as duas frases têm letras "
-                "parecidas.",
+                "Modelos de embedding casam por letras em comum, e as duas frases têm uma "
+                "mistura parecida de letras e espaços.",
                 "Embeddings guardam as palavras exatas, e um dicionário de sinônimos as liga "
-                "no momento da consulta.",
+                "no momento da consulta, como em uma busca lexical.",
                 "Textos curtos sempre caem na mesma região do espaço vetorial.",
                 "O modelo aprende a posicionar textos de significado parecido perto uns dos "
-                "outros, então a distância reflete semântica e não sobreposição de palavras.",
+                "outros, então a distância reflete semântica.",
             ),
         ),
     ),
@@ -530,11 +541,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "picking a model, not managing what it sees. D (fine-tuning) changes the model, "
             "not its inputs.",
             _options(
-                "Writing the cleverest possible wording for a single prompt.",
-                "Choosing the model with the largest context window.",
-                "Deciding, for each model call, what information (instructions, history, "
-                "retrieved documents, tool results) enters the context and in what form.",
-                "Fine-tuning the model on the application's data.",
+                "Writing the cleverest possible wording for a single prompt and polishing "
+                "it until it works.",
+                "Choosing the model with the largest context window and sending it as much "
+                "text as it accepts.",
+                "Deciding, for each model call, what information enters the context and in "
+                "what form.",
+                "Fine-tuning the model on the application's data so that it no longer needs "
+                "instructions or retrieved documents.",
             ),
         ),
         _t(
@@ -545,12 +559,14 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "parte. B trata da escolha do modelo, não de gerenciar o que ele vê. D (fine-tuning) "
             "altera o modelo, não suas entradas.",
             _options(
-                "Escrever a redação mais engenhosa possível para um único prompt.",
-                "Escolher o modelo com a maior janela de contexto.",
-                "Decidir, a cada chamada ao modelo, quais informações (instruções, histórico, "
-                "documentos recuperados, resultados de ferramentas) entram no contexto e em "
-                "que forma.",
-                "Fazer fine-tuning do modelo com os dados da aplicação.",
+                "Escrever a redação mais engenhosa possível para um único prompt e lapidá-la "
+                "até funcionar.",
+                "Escolher o modelo com a maior janela de contexto e enviar a ele todo o "
+                "texto que ele aceitar.",
+                "Decidir, a cada chamada ao modelo, quais informações entram no contexto e "
+                "em que forma.",
+                "Fazer fine-tuning do modelo com os dados da aplicação para que ele não "
+                "precise mais de instruções nem de documentos recuperados.",
             ),
         ),
     ),
@@ -568,11 +584,13 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "far more than the first thousand tokens. C and D invent restrictions that do not "
             "exist.",
             _options(
-                "The model ignores everything after the first thousand tokens.",
+                "The model ignores everything after the first thousand tokens, however "
+                "large the window is.",
                 "More input raises cost and latency, and irrelevant material can degrade the "
-                "answer even when it fits in the window.",
-                "Users are not allowed to fill the context window.",
-                "Longer prompts disable the sampling parameters.",
+                "answer.",
+                "Users are not allowed to fill the context window beyond a fixed share of "
+                "its size.",
+                "Longer prompts disable sampling parameters such as temperature and top-p.",
             ),
         ),
         _t(
@@ -583,11 +601,13 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "falsa: modelos usam muito mais do que os primeiros mil tokens. C e D inventam "
             "restrições que não existem.",
             _options(
-                "O modelo ignora tudo depois dos primeiros mil tokens.",
+                "O modelo ignora tudo depois dos primeiros mil tokens, por maior que seja a "
+                "janela.",
                 "Mais entrada aumenta custo e latência, e material irrelevante pode piorar a "
-                "resposta mesmo quando cabe na janela.",
-                "Usuários não têm permissão para encher a janela de contexto.",
-                "Prompts mais longos desativam os parâmetros de amostragem.",
+                "resposta.",
+                "Usuários não têm permissão para encher a janela de contexto além de uma "
+                "fração fixa do seu tamanho.",
+                "Prompts mais longos desativam parâmetros de amostragem como temperatura e top-p.",
             ),
         ),
     ),
@@ -606,9 +626,10 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the safety/policy rules are small and needed on every call, so they belong "
             "permanently in context.",
             _options(
-                "The user's current question.",
-                "The output-format instructions.",
-                "The safety and policy rules the assistant must always follow.",
+                "The user's current question, which the model needs to answer on this call.",
+                "The output-format instructions that every response has to follow.",
+                "The safety and policy rules the assistant must always follow, in every "
+                "single response.",
                 "A 500-page reference manual that is consulted only occasionally.",
             ),
         ),
@@ -620,9 +641,11 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "formato de saída e as regras de segurança/política são pequenas e necessárias em "
             "toda chamada, então ficam permanentemente no contexto.",
             _options(
-                "A pergunta atual do usuário.",
-                "As instruções de formato de saída.",
-                "As regras de segurança e política que o assistente deve sempre seguir.",
+                "A pergunta atual do usuário, de que o modelo precisa para responder nesta "
+                "chamada.",
+                "As instruções de formato de saída que toda resposta precisa seguir.",
+                "As regras de segurança e política que o assistente deve sempre seguir, em "
+                "toda e qualquer resposta.",
                 "Um manual de referência de 500 páginas, consultado apenas ocasionalmente.",
             ),
         ),
@@ -799,11 +822,12 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the summary. B makes the loss worse. C is irrelevant: temperature does not decide "
             "what a summary keeps. D throws away far more than it saves.",
             _options(
-                "Keep exact critical facts (IDs, constraints) in a structured note carried "
-                "verbatim next to the summary.",
-                "Summarize more aggressively so there is less detail to lose.",
-                "Raise the temperature when generating the summary.",
-                "Drop the summary and keep only the last user message.",
+                "Keep exact critical facts (IDs, constraints) verbatim in a structured note "
+                "next to the summary.",
+                "Summarize more aggressively, compressing the whole history into a single "
+                "sentence so less can go missing.",
+                "Raise the temperature when generating the summary so it explores more details.",
+                "Drop the summary and keep only the last user message plus the system prompt.",
             ),
         ),
         _t(
@@ -815,11 +839,13 @@ CONTEXT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "estruturada, ao lado do resumo. B piora a perda. C é irrelevante: a temperatura "
             "não define o que um resumo preserva. D descarta muito mais do que economiza.",
             _options(
-                "Manter os fatos críticos exatos (IDs, restrições) em uma nota estruturada, "
-                "literal, ao lado do resumo.",
-                "Resumir de forma mais agressiva para haver menos detalhes a perder.",
-                "Aumentar a temperatura ao gerar o resumo.",
-                "Descartar o resumo e manter apenas a última mensagem do usuário.",
+                "Manter os fatos críticos exatos (IDs, restrições) literalmente em uma nota "
+                "estruturada ao lado do resumo.",
+                "Resumir de forma mais agressiva, comprimindo todo o histórico em uma só "
+                "frase para haver menos a perder.",
+                "Aumentar a temperatura ao gerar o resumo para que ele explore mais detalhes.",
+                "Descartar o resumo e manter apenas a última mensagem do usuário e o system "
+                "prompt.",
             ),
         ),
     ),
@@ -936,11 +962,12 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "unrelated to RAG. C is backwards: retrieved text consumes context window. D "
             "overstates it: grounding reduces hallucination but does not guarantee its absence.",
             _options(
-                "It makes the model train faster.",
-                "It lets the model answer using current or private knowledge supplied at "
-                "query time, without retraining.",
-                "It removes the context window limit.",
-                "It guarantees that the model never hallucinates.",
+                "It makes the model train faster by shrinking the training set it needs to see.",
+                "It lets the model answer from current or private knowledge supplied at "
+                "query time.",
+                "It removes the context window limit by moving the prompt into an external index.",
+                "It guarantees that the model never hallucinates, because every answer is "
+                "checked against sources.",
             ),
         ),
         _t(
@@ -951,11 +978,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "janela de contexto. D exagera: o grounding reduz a alucinação, mas não garante "
             "sua ausência.",
             _options(
-                "Faz o modelo treinar mais rápido.",
-                "Permite que o modelo responda com conhecimento atual ou privado fornecido no "
-                "momento da consulta, sem retreinar.",
-                "Remove o limite da janela de contexto.",
-                "Garante que o modelo nunca alucine.",
+                "Faz o modelo treinar mais rápido ao reduzir o conjunto de treino que ele "
+                "precisa ver.",
+                "Permite que o modelo responda com conhecimento atual ou privado fornecido "
+                "na consulta.",
+                "Remove o limite da janela de contexto ao mover o prompt para um índice externo.",
+                "Garante que o modelo nunca alucine, pois toda resposta é conferida contra "
+                "as fontes recuperadas.",
             ),
         ),
     ),
@@ -973,9 +1002,12 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "orders are impossible: you cannot embed before you have chunks, nor chunk text "
             "that has not been parsed yet.",
             _options(
-                "Embed, then chunk, then parse, then store.",
-                "Store, then chunk, then embed, then parse.",
-                "Chunk, then store, then parse, then embed.",
+                "Embed each document, then chunk the embeddings, then parse them into text, "
+                "then store the results.",
+                "Store the raw files, then chunk them, then embed each chunk, then finally "
+                "parse the vectors into text.",
+                "Chunk the raw files, then store the chunks, then parse them into text, then "
+                "embed each chunk.",
                 "Load and parse documents, split into chunks, embed each chunk, store the "
                 "vectors with metadata.",
             ),
@@ -987,12 +1019,12 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "metadados. As outras ordens são impossíveis: não dá para gerar embeddings antes de "
             "ter chunks, nem dividir um texto que ainda não foi extraído.",
             _options(
-                "Gerar embeddings, depois dividir em chunks, depois extrair o texto, depois "
-                "armazenar.",
-                "Armazenar, depois dividir em chunks, depois gerar embeddings, depois extrair "
-                "o texto.",
-                "Dividir em chunks, depois armazenar, depois extrair o texto, depois gerar "
-                "embeddings.",
+                "Gerar o embedding de cada documento, dividir os embeddings em chunks, "
+                "extrair o texto deles e por fim armazenar o resultado.",
+                "Armazenar os arquivos brutos, dividi-los em chunks, gerar o embedding de "
+                "cada chunk e só então extrair o texto dos vetores.",
+                "Dividir os arquivos brutos em chunks, armazenar os chunks, extrair o texto "
+                "deles e depois gerar o embedding de cada chunk.",
                 "Carregar e extrair o texto dos documentos, dividir em chunks, gerar o "
                 "embedding de cada chunk e armazenar os vetores com metadados.",
             ),
@@ -1086,11 +1118,14 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "produce diluted embeddings and waste context, not missing neighbors. C and D do "
             "not affect which text is retrieved.",
             _options(
-                "Chunks are too large; make them smaller.",
-                "Chunks are too small and split related information; use larger chunks, more "
-                "overlap, or expand hits with neighboring text.",
-                "The embedding vectors have too many dimensions; reduce them.",
-                "The generation temperature is too low; raise it.",
+                "Chunks are too large and dilute each embedding; make them smaller so each "
+                "one is more focused.",
+                "Chunks are too small and split related information; use larger chunks or "
+                "more overlap.",
+                "The embedding vectors have too many dimensions; reduce them to speed up the "
+                "search.",
+                "The generation temperature is too low; raise it so the answer includes more "
+                "details.",
             ),
         ),
         _t(
@@ -1103,11 +1138,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "problema oposto: chunks grandes demais geram embeddings diluídos e desperdiçam "
             "contexto, não perdem vizinhos. C e D não afetam qual texto é recuperado.",
             _options(
-                "Os chunks são grandes demais; torná-los menores.",
-                "Os chunks são pequenos demais e separam informações relacionadas; usar chunks "
-                "maiores, mais sobreposição ou expandir os resultados com o texto vizinho.",
-                "Os vetores de embedding têm dimensões demais; reduzi-las.",
-                "A temperatura de geração está baixa demais; aumentá-la.",
+                "Os chunks são grandes demais e diluem cada embedding; torná-los menores "
+                "para ficarem mais focados.",
+                "Os chunks são pequenos demais e separam informações relacionadas; usar "
+                "chunks maiores ou mais sobreposição.",
+                "Os vetores de embedding têm dimensões demais; reduzi-las para acelerar a busca.",
+                "A temperatura de geração está baixa demais; aumentá-la para a resposta "
+                "trazer mais detalhes.",
             ),
         ),
     ),
@@ -1127,11 +1164,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "joint scoring is usually more accurate than comparing precomputed vectors. C and "
             "D invent restrictions.",
             _options(
-                "Scoring every chunk jointly with the query is too expensive per request, so "
-                "it runs only on a shortlist from a fast first stage.",
-                "Cross-encoders are less accurate than comparing precomputed vectors.",
-                "Cross-encoders only work on keyword indexes.",
-                "Vector databases forbid reranking.",
+                "Scoring each chunk jointly with the query is too costly per request, so it "
+                "runs on a shortlist.",
+                "Cross-encoders are less accurate than comparing precomputed vectors, which "
+                "is why they are used last.",
+                "Cross-encoders only work on keyword indexes, so they cannot rerank vector "
+                "search results.",
+                "Vector databases forbid reranking, so it has to happen outside the index.",
             ),
         ),
         _t(
@@ -1144,10 +1183,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "pré-calculados. C e D inventam restrições.",
             _options(
                 "Avaliar cada chunk em conjunto com a consulta é caro demais por requisição, "
-                "então ele roda só em uma lista curta vinda de uma primeira etapa rápida.",
-                "Cross-encoders são menos precisos do que comparar vetores pré-calculados.",
-                "Cross-encoders só funcionam em índices de palavras-chave.",
-                "Bancos de dados vetoriais proíbem reranking.",
+                "então ele roda só em uma lista curta.",
+                "Cross-encoders são menos precisos do que comparar vetores pré-calculados, e "
+                "por isso são usados por último.",
+                "Cross-encoders só funcionam em índices de palavras-chave, então não "
+                "reordenam resultados de busca vetorial.",
+                "Bancos de dados vetoriais proíbem reranking, então ele precisa ocorrer fora "
+                "do índice.",
             ),
         ),
     ),
@@ -1251,11 +1293,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "system abstain more gracefully, but the question is still unanswerable because "
             "the evidence is missing.",
             _options(
-                "Lower the generation temperature to 0.",
-                "Add an instruction to say 'I don't know' when unsure.",
-                "Switch to a larger generation model.",
-                "Improve retrieval, for example with hybrid search, better chunking or a "
-                "reranker over a wider candidate pool, and re-measure recall.",
+                "Lower the generation temperature to 0 so the model sticks to the most "
+                "likely answer.",
+                "Add an instruction telling the model to say 'I don't know' whenever it is "
+                "unsure about the evidence it was given.",
+                "Switch to a larger generation model with a stronger grasp of the subject.",
+                "Improve retrieval (hybrid search, better chunking, a reranker) and "
+                "re-measure recall.",
             ),
         ),
         _t(
@@ -1269,11 +1313,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "B pode fazer o sistema se abster com mais elegância, mas a pergunta continua sem "
             "resposta porque falta a evidência.",
             _options(
-                "Reduzir a temperatura de geração para 0.",
-                "Adicionar uma instrução para dizer 'não sei' quando estiver em dúvida.",
-                "Trocar por um modelo de geração maior.",
-                "Melhorar a recuperação, por exemplo com busca híbrida, chunking melhor ou um "
-                "reranker sobre um conjunto maior de candidatos, e medir o recall novamente.",
+                "Reduzir a temperatura de geração para 0, para o modelo se ater à resposta "
+                "mais provável.",
+                "Adicionar uma instrução mandando o modelo dizer 'não sei' sempre que estiver "
+                "em dúvida sobre a evidência recebida.",
+                "Trocar por um modelo de geração maior, com domínio mais forte do assunto.",
+                "Melhorar a recuperação (busca híbrida, chunking melhor, um reranker) e "
+                "medir o recall novamente.",
             ),
         ),
     ),
@@ -1369,11 +1415,13 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "itself, which it cannot. D is wrong: tools are defined at request time, not "
             "baked into the weights.",
             _options(
-                "The model runs the function inside its own process.",
-                "The model opens network connections to the tool's API directly.",
-                "The model emits a structured request (tool name and arguments), your "
-                "application runs it and returns the result to the model.",
-                "Tools are compiled into the model's weights during training.",
+                "The model runs the function inside its own process and reports the return value.",
+                "The model opens network connections to the tool's API directly, using "
+                "credentials stored in its context window.",
+                "The model emits a request (tool name and arguments); your application runs "
+                "it and returns the result.",
+                "Tools are compiled into the model's weights during training, so no "
+                "definition is needed per request.",
             ),
         ),
         _t(
@@ -1384,11 +1432,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "código ou chamadas de rede por conta própria, o que ele não faz. D está errada: "
             "as ferramentas são definidas na requisição, não embutidas nos pesos.",
             _options(
-                "O modelo executa a função dentro do próprio processo.",
-                "O modelo abre conexões de rede diretamente com a API da ferramenta.",
-                "O modelo emite uma requisição estruturada (nome da ferramenta e argumentos), "
-                "sua aplicação a executa e devolve o resultado ao modelo.",
-                "As ferramentas são compiladas nos pesos do modelo durante o treinamento.",
+                "O modelo executa a função dentro do próprio processo e informa o valor de "
+                "retorno.",
+                "O modelo abre conexões de rede diretamente com a API da ferramenta, usando "
+                "credenciais guardadas em sua janela de contexto.",
+                "O modelo emite uma requisição (nome da ferramenta e argumentos); sua "
+                "aplicação a executa e devolve o resultado.",
+                "As ferramentas são compiladas nos pesos do modelo durante o treinamento, sem "
+                "precisar de definição a cada requisição.",
             ),
         ),
     ),
@@ -1406,11 +1457,13 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "limit is reached. A confuses agents with prompt length, C with model size, and D "
             "describes a fixed workflow, where code rather than the model decides the steps.",
             _options(
-                "It is any LLM call with a long prompt.",
-                "It runs a loop where the model picks its next action based on earlier "
-                "results until it finishes or hits a limit.",
-                "It is a model with more parameters.",
-                "It is a fixed pipeline where code decides every step in advance.",
+                "It is any LLM call with a long prompt that packs in many instructions and "
+                "examples.",
+                "It loops: the model picks each next action from earlier results until it "
+                "is done or hits a limit.",
+                "It is a model with more parameters and a larger context window.",
+                "It is a fixed pipeline where code decides every step in advance and calls "
+                "the model only to fill in text.",
             ),
         ),
         _t(
@@ -1421,11 +1474,12 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "tamanho do modelo, e D descreve um workflow fixo, em que o código, e não o "
             "modelo, decide as etapas.",
             _options(
-                "É qualquer chamada a um LLM com um prompt longo.",
-                "Executa um laço em que o modelo escolhe a próxima ação com base nos "
-                "resultados anteriores até terminar ou atingir um limite.",
-                "É um modelo com mais parâmetros.",
-                "É um pipeline fixo em que o código decide cada etapa de antemão.",
+                "É qualquer chamada a um LLM com um prompt longo, cheio de instruções e exemplos.",
+                "Roda em laço: o modelo escolhe cada próxima ação pelos resultados "
+                "anteriores até terminar ou bater num limite.",
+                "É um modelo com mais parâmetros e uma janela de contexto maior.",
+                "É um pipeline fixo em que o código decide cada etapa de antemão e só chama "
+                "o modelo para preencher trechos de texto.",
             ),
         ),
     ),
@@ -1443,11 +1497,11 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "are wrong because the model is not given the tool's source code, and C is wrong "
             "because descriptions do not change the context window size.",
             _options(
-                "The model reads the tool's source code to understand what it does.",
+                "The model reads the tool's source code to understand what it does before "
+                "deciding to call it.",
                 "They are only for human documentation and are ignored by the model.",
                 "They enlarge the context window available to the model.",
-                "The model decides which tool to call and how to fill the arguments mostly "
-                "from them.",
+                "The model decides which tool to call and how to fill the arguments from them.",
             ),
         ),
         _t(
@@ -1459,11 +1513,12 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "da ferramenta, e C está errada porque descrições não alteram o tamanho da janela "
             "de contexto.",
             _options(
-                "O modelo lê o código-fonte da ferramenta para entender o que ela faz.",
+                "O modelo lê o código-fonte da ferramenta para entender o que ela faz antes "
+                "de decidir se a chama.",
                 "Servem só como documentação para humanos e são ignorados pelo modelo.",
                 "Ampliam a janela de contexto disponível para o modelo.",
                 "O modelo decide qual ferramenta chamar e como preencher os argumentos "
-                "principalmente a partir delas.",
+                "sobretudo a partir delas.",
             ),
         ),
     ),
@@ -1602,11 +1657,12 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the model no chance to recover. C leads it to assume success and build on a "
             "false premise. D invents data, which is worse than failing.",
             _options(
-                "Return a clear error message as the tool result so the model can adjust, with "
-                "a cap on retries.",
-                "Abort the entire run on any tool error.",
-                "Ignore the error silently and let the model assume the call worked.",
-                "Generate a plausible fake result in code so the loop can continue.",
+                "Return a clear error as the tool result so the model can adjust, with a "
+                "retry cap.",
+                "Abort the entire run on any tool error, even one the model could easily correct.",
+                "Ignore the error silently and let the model assume the call worked as intended.",
+                "Generate a plausible fake result in code so the loop can continue without "
+                "interruption.",
             ),
         ),
         _t(
@@ -1618,11 +1674,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sucesso e construir sobre uma premissa falsa. D inventa dados, o que é pior do "
             "que falhar.",
             _options(
-                "Devolver uma mensagem de erro clara como resultado da ferramenta para o "
-                "modelo se ajustar, com um limite de tentativas.",
-                "Abortar a execução inteira a qualquer erro de ferramenta.",
-                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada funcionou.",
-                "Gerar em código um resultado falso plausível para o laço continuar.",
+                "Devolver um erro claro como resultado da ferramenta para o modelo se "
+                "ajustar, com limite de tentativas.",
+                "Abortar a execução inteira a qualquer erro de ferramenta, mesmo um que o "
+                "modelo corrigiria com facilidade.",
+                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada "
+                "funcionou como esperado.",
+                "Gerar em código um resultado falso, mas plausível, para o laço continuar "
+                "sem nenhuma interrupção.",
             ),
         ),
     ),
@@ -1641,10 +1700,11 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "describes voting among several agents, and C a single retrieval step followed "
             "by one answer.",
             _options(
-                "Planning the full sequence of actions up front and never revising it.",
+                "Planning the full sequence of actions up front and never revising it, "
+                "whatever the tool results show.",
                 "Running several agents and taking a majority vote.",
                 "Retrieving documents once and then producing a single answer.",
-                "Interleaving reasoning with actions, feeding each observation back to guide "
+                "Interleaving reasoning with actions, feeding each observation back into "
                 "the next step.",
             ),
         ),
@@ -1656,7 +1716,8 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deliberadamente. B descreve votação entre vários agentes, e C uma única etapa de "
             "recuperação seguida de uma resposta.",
             _options(
-                "Planejar toda a sequência de ações de antemão e nunca revisá-la.",
+                "Planejar toda a sequência de ações de antemão e nunca revisá-la, não "
+                "importa o que as ferramentas devolvam.",
                 "Executar vários agentes e adotar o voto da maioria.",
                 "Recuperar documentos uma vez e então produzir uma única resposta.",
                 "Intercalar raciocínio e ação, realimentando cada observação para guiar o "
@@ -1785,11 +1846,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deterministic. C is wrong because evaluation and monitoring complement each "
             "other.",
             _options(
-                "Evaluation is only needed once, right before launch.",
-                "LLM outputs are deterministic, so tests are unnecessary.",
-                "Evaluation replaces the need for production monitoring.",
+                "Evaluation is only needed once, right before launch, since quality stays "
+                "fixed afterwards.",
+                "LLM outputs are deterministic, so a handful of manual checks is enough and "
+                "tests are unnecessary.",
+                "Evaluation replaces the need for production monitoring, since the dataset "
+                "already covers real traffic.",
                 "A few examples cannot reveal failure rates or regressions; you need "
-                "systematic measurement on a representative dataset.",
+                "systematic measurement.",
             ),
         ),
         _t(
@@ -1802,11 +1866,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "têm garantia de serem determinísticas. C está errada porque avaliação e "
             "monitoramento se complementam.",
             _options(
-                "A avaliação só é necessária uma vez, logo antes do lançamento.",
-                "As saídas de LLMs são determinísticas, então testes são desnecessários.",
-                "A avaliação substitui a necessidade de monitoramento em produção.",
+                "A avaliação só é necessária uma vez, logo antes do lançamento, pois a "
+                "qualidade não muda depois.",
+                "As saídas de LLMs são determinísticas, então algumas checagens manuais "
+                "bastam e testes são desnecessários.",
+                "A avaliação substitui a necessidade de monitoramento em produção, pois o "
+                "dataset já cobre o tráfego real.",
                 "Poucos exemplos não revelam taxas de falha nem regressões; é preciso medir "
-                "de forma sistemática em um dataset representativo.",
+                "de forma sistemática.",
             ),
         ),
     ),
@@ -1824,11 +1891,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "quality over time. A (raw, unreviewed logs) lacks expected answers, C confuses "
             "evaluation data with training data, and D is not a real concept.",
             _options(
-                "All production logs, stored without any review.",
+                "All production logs from the last quarter, stored exactly as they arrived, "
+                "with no review or filtering.",
                 "A curated set of representative inputs with expected outputs or grading "
-                "criteria, including edge cases, reused to measure quality over time.",
-                "The data the model was originally trained on.",
-                "A set of prompts run only at the highest temperature.",
+                "criteria, reused over time.",
+                "The data the model was originally trained on, kept for later comparison.",
+                "A set of prompts run only at the highest temperature, to stress-test the "
+                "model's randomness.",
             ),
         ),
         _t(
@@ -1839,12 +1908,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "revisão) não tem respostas esperadas, C confunde dados de avaliação com dados de "
             "treinamento, e D não é um conceito real.",
             _options(
-                "Todos os logs de produção, armazenados sem nenhuma revisão.",
+                "Todos os logs de produção do último trimestre, armazenados exatamente como "
+                "chegaram, sem revisão nem filtragem.",
                 "Um conjunto curado de entradas representativas, com saídas esperadas ou "
-                "critérios de avaliação, incluindo casos extremos, reutilizado para medir a "
-                "qualidade ao longo do tempo.",
-                "Os dados com os quais o modelo foi originalmente treinado.",
-                "Um conjunto de prompts executados apenas na temperatura mais alta.",
+                "critérios de avaliação, reutilizado ao longo do tempo.",
+                "Os dados com os quais o modelo foi originalmente treinado, guardados para "
+                "comparação posterior.",
+                "Um conjunto de prompts executados apenas na temperatura mais alta, para "
+                "testar a aleatoriedade do modelo.",
             ),
         ),
     ),
@@ -1863,10 +1934,11 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "clarity for a beginner are subjective and need rubric-based human or LLM "
             "evaluation.",
             _options(
-                "Whether the tone is empathetic.",
-                "Whether a summary captures the key ideas.",
+                "Whether the tone of the reply is empathetic and appropriate for an upset "
+                "customer.",
+                "Whether a summary captures the key ideas without leaving out important caveats.",
                 "Whether the output is valid JSON containing all required fields.",
-                "Whether an explanation is clear to a beginner.",
+                "Whether an explanation of the concept is clear to a beginner with no background.",
             ),
         ),
         _t(
@@ -1877,10 +1949,12 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "qualidade de um resumo e clareza para um iniciante são subjetivos e exigem "
             "avaliação humana ou por LLM com base em uma rubrica.",
             _options(
-                "Se o tom é empático.",
-                "Se um resumo captura as ideias principais.",
+                "Se o tom da resposta é empático e adequado para um cliente irritado.",
+                "Se um resumo captura as ideias principais sem deixar de fora ressalvas "
+                "importantes.",
                 "Se a saída é um JSON válido contendo todos os campos obrigatórios.",
-                "Se uma explicação é clara para um iniciante.",
+                "Se uma explicação do conceito é clara para um iniciante sem nenhuma bagagem "
+                "prévia.",
             ),
         ),
     ),
@@ -1937,11 +2011,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "authorship. D is not a fix: raising the temperature adds noise instead of "
             "removing bias.",
             _options(
-                "Verbosity bias; ask the candidate models for shorter answers.",
-                "Self-preference; replace the judge with a larger model and keep one order.",
-                "Position bias; run each comparison in both orders and count only consistent "
+                "Verbosity bias; ask the candidate models for shorter answers so length "
+                "stops mattering.",
+                "Self-preference; replace the judge with a larger model from another vendor "
+                "and keep one order.",
+                "Position bias; run each comparison in both orders and keep only consistent "
                 "verdicts.",
-                "Calibration drift; raise the judge's temperature.",
+                "Calibration drift; raise the judge's temperature so verdicts vary more.",
             ),
         ),
         _t(
@@ -1955,11 +2031,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "a autoria. D não é correção: aumentar a temperatura adiciona ruído em vez de "
             "remover o viés.",
             _options(
-                "Viés de verbosidade; pedir respostas mais curtas aos modelos candidatos.",
-                "Autopreferência; trocar o juiz por um modelo maior e manter uma única ordem.",
-                "Viés de posição; executar cada comparação nas duas ordens e contar apenas os "
+                "Viés de verbosidade; pedir respostas mais curtas aos modelos candidatos "
+                "para o tamanho deixar de pesar.",
+                "Autopreferência; trocar o juiz por um modelo maior, de outro fornecedor, e "
+                "manter uma única ordem.",
+                "Viés de posição; executar cada comparação nas duas ordens e contar só os "
                 "vereditos consistentes.",
-                "Deriva de calibração; aumentar a temperatura do juiz.",
+                "Deriva de calibração; aumentar a temperatura do juiz para os vereditos "
+                "variarem mais.",
             ),
         ),
     ),
@@ -2020,11 +2099,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dismisses a clear signal as noise without evidence. C is unrelated, since a "
             "judge's temperature does not explain a category drop.",
             _options(
-                "Ship it, because the overall score improved.",
-                "Discard the results, assuming the eval is too noisy to trust.",
-                "Raise the judge's temperature and re-run until the category recovers.",
-                "Inspect the per-category results and investigate the refund regression "
-                "before deciding whether to ship.",
+                "Ship it, because the overall score improved and the average is what users "
+                "will feel.",
+                "Discard the results, assuming the eval is too noisy to trust, and rely on "
+                "manual spot checks.",
+                "Raise the judge's temperature and re-run until the refund category "
+                "recovers to its old level.",
+                "Inspect the per-category results and investigate the refund drop before "
+                "deciding to ship.",
             ),
         ),
         _t(
@@ -2037,10 +2119,12 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "descarta um sinal claro como ruído sem evidência. C não tem relação, pois a "
             "temperatura do juiz não explica a queda de uma categoria.",
             _options(
-                "Publicar, porque a nota geral melhorou.",
-                "Descartar os resultados, supondo que a avaliação é ruidosa demais para confiar.",
-                "Aumentar a temperatura do juiz e reexecutar até a categoria se recuperar.",
-                "Examinar os resultados por categoria e investigar a regressão de reembolso "
+                "Publicar, porque a nota geral melhorou e é a média que os usuários vão sentir.",
+                "Descartar os resultados, supondo que a avaliação é ruidosa demais para "
+                "confiar, e usar só checagens manuais.",
+                "Aumentar a temperatura do juiz e reexecutar até a categoria de reembolso "
+                "voltar ao nível antigo.",
+                "Examinar os resultados por categoria e investigar a queda de reembolso "
                 "antes de decidir se publica.",
             ),
         ),
