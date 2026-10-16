@@ -1563,11 +1563,13 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "programming language (B), a translation layer (C), or a glossary kept only "
             "by business analysts (D).",
             (
-                "A common vocabulary shared by developers and domain experts, used in "
-                "conversation and in the code of a bounded context.",
-                "A programming language that every team in the company must use.",
-                "A layer that translates database column names into English.",
-                "A glossary maintained by business analysts and not reflected in the code.",
+                "A shared vocabulary of developers and experts, used in conversation and code.",
+                "A programming language that every team in the company must adopt for new "
+                "services.",
+                "A layer that translates database column names into English for the "
+                "reporting tools.",
+                "A glossary maintained by business analysts and not reflected in the code or "
+                "the tests.",
             ),
         ),
         _t(
@@ -1578,11 +1580,14 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "classes e métodos). Não é uma linguagem de programação (B), uma camada de "
             "tradução (C) nem um glossário mantido só por analistas de negócio (D).",
             (
-                "Um vocabulário comum entre desenvolvedores e especialistas de domínio, "
-                "usado nas conversas e no código de um bounded context.",
-                "Uma linguagem de programação que todos os times da empresa devem usar.",
-                "Uma camada que traduz nomes de colunas do banco para o inglês.",
-                "Um glossário mantido por analistas de negócio e que não aparece no código.",
+                "Um vocabulário compartilhado por desenvolvedores e especialistas, usado na "
+                "conversa e no código.",
+                "Uma linguagem de programação que todos os times da empresa devem adotar para "
+                "novos serviços.",
+                "Uma camada que traduz nomes de colunas do banco para o inglês, para as "
+                "ferramentas de relatório.",
+                "Um glossário mantido por analistas de negócio e que não aparece no código "
+                "nem nos testes.",
             ),
         ),
     ),
@@ -1602,9 +1607,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "between them. Renaming one of them to something unrelated (C) would break each "
             "team's ubiquitous language.",
             (
-                "Build one universal `Customer` class with every field either team needs.",
-                "Treat Accounting and Marketing as separate bounded contexts, each with its "
-                "own `Customer` model, and map between them explicitly.",
+                "Build one universal `Customer` class holding every field that Accounting and "
+                "Marketing need.",
+                "Use separate bounded contexts, each with its own `Customer`, and map between "
+                "them.",
                 'Rename "Customer" in Marketing to a term the business never uses.',
                 "Share a single database table so both models stay identical.",
             ),
@@ -1619,10 +1625,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "explícitas entre eles. Renomear um deles para algo sem relação (C) quebraria "
             "a ubiquitous language de cada time.",
             (
-                "Construir uma única classe `Customer` universal com todos os campos de que "
-                "os dois times precisam.",
-                "Tratar Contabilidade e Marketing como bounded contexts separados, cada um "
-                "com seu próprio modelo de `Customer`, e mapear entre eles explicitamente.",
+                "Construir uma única classe `Customer` universal com todos os campos de que a "
+                "Contabilidade e o Marketing precisam.",
+                "Usar bounded contexts separados, cada um com seu próprio `Customer`, e "
+                "mapear entre eles.",
                 'Renomear "Cliente" no Marketing para um termo que o negócio nunca usa.',
                 "Compartilhar uma única tabela de banco para que os dois modelos sejam idênticos.",
             ),
@@ -1681,10 +1687,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "and one giant aggregate (D) causes contention and huge loads.",
             (
                 "Any service updates `OrderLine` records directly through its own repository.",
-                "`Order` is the root with an `add_line()` method that checks the limit, and "
-                "the repository saves the whole `Order`.",
+                "`Order` is the root; its `add_line()` checks the limit and the repository "
+                "saves it.",
                 "Each `OrderLine` holds references to the full `Customer` and `Product` "
-                "object graphs.",
+                "object graphs for convenience.",
                 "One large aggregate holds all orders, customers and products together.",
             ),
         ),
@@ -1699,10 +1705,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Qualquer serviço atualiza registros de `OrderLine` diretamente por seu "
                 "próprio repositório.",
-                "`Order` é a raiz, com um método `add_line()` que verifica o limite, e o "
-                "repositório salva o `Order` inteiro.",
+                "`Order` é a raiz; seu `add_line()` verifica o limite e o repositório o "
+                "salva.",
                 "Cada `OrderLine` guarda referências aos grafos completos de `Customer` e "
-                "`Product`.",
+                "`Product`, por conveniência.",
                 "Um único aggregate grande contém todos os pedidos, clientes e produtos.",
             ),
         ),
@@ -1723,11 +1729,11 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(A), identity is not always faster (B), and referencing by id does not make "
             "two aggregates share one transaction (C); the guidance is the opposite.",
             (
-                "Because the database requires foreign keys to be integers.",
-                "Because comparing ids is always faster than comparing objects.",
-                "So that both aggregates can be updated in the same transaction.",
-                "To keep each aggregate a small consistency boundary and avoid loading or "
-                "changing another aggregate by accident.",
+                "Because the database requires foreign keys to be integers rather than objects.",
+                "Because comparing ids is always faster than comparing whole objects in memory.",
+                "So that both aggregates can always be updated together in the same "
+                "transaction.",
+                "To keep each aggregate a small consistency boundary.",
             ),
         ),
         _t(
@@ -1740,11 +1746,13 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "rápida (B) e referenciar por id não faz dois aggregates compartilharem uma "
             "transação (C); a orientação é a oposta.",
             (
-                "Porque o banco de dados exige que chaves estrangeiras sejam inteiros.",
-                "Porque comparar ids é sempre mais rápido que comparar objetos.",
-                "Para que os dois aggregates possam ser atualizados na mesma transação.",
-                "Para manter cada aggregate como uma pequena fronteira de consistência e "
-                "evitar carregar ou alterar outro aggregate por acidente.",
+                "Porque o banco de dados exige que chaves estrangeiras sejam inteiros e não "
+                "objetos.",
+                "Porque comparar ids é sempre mais rápido que comparar objetos inteiros na "
+                "memória.",
+                "Para que os dois aggregates possam ser sempre atualizados juntos na mesma "
+                "transação.",
+                "Para manter cada aggregate como uma pequena fronteira de consistência.",
             ),
         ),
     ),
@@ -1846,10 +1854,11 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "Inventory in Order (B) creates an oversized aggregate, and ignoring the stock "
             "change (D) breaks the business rule.",
             (
-                "Always update both aggregates in one database transaction.",
+                "Always update both aggregates in one database transaction so that stock never "
+                "drifts.",
                 "Make `Inventory` a child entity of `Order` so they share a boundary.",
                 "Commit the order, publish an `OrderPlaced` event, and let a handler reduce "
-                "stock in its own idempotent transaction.",
+                "stock.",
                 "Skip the stock update and reconcile manually at the end of the month.",
             ),
         ),
@@ -1865,10 +1874,11 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "embutir Inventory em Order (B) cria um aggregate grande demais e ignorar a "
             "baixa de estoque (D) quebra a regra de negócio.",
             (
-                "Sempre atualizar os dois aggregates em uma única transação de banco.",
+                "Sempre atualizar os dois aggregates em uma única transação de banco, para o "
+                "estoque nunca divergir.",
                 "Tornar `Inventory` uma entidade filha de `Order` para compartilharem a fronteira.",
                 "Confirmar o pedido, publicar um evento `OrderPlaced` e deixar um handler "
-                "reduzir o estoque em sua própria transação idempotente.",
+                "reduzir o estoque.",
                 "Pular a atualização de estoque e reconciliar manualmente no fim do mês.",
             ),
         ),
