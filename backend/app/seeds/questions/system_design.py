@@ -977,11 +977,11 @@ _LB: tuple[QuestionSeed, ...] = (
             "IP addresses and ports, whatever algorithm it uses, and DNS round robin just "
             "hands out different addresses without ever looking at the request path.",
             (
-                "An L4 (TCP) balancer, because it is faster and sees every packet.",
+                "An L4 (TCP) balancer, because it is faster and sees every packet of every "
+                "connection.",
                 "An L4 balancer configured with consistent hashing.",
                 "DNS round robin with one record per pool.",
-                "An L7 (HTTP) balancer, which parses requests and can route on path, host or "
-                "headers.",
+                "An L7 (HTTP) balancer, which parses requests and routes on path.",
             ),
         ),
         _t(
@@ -993,11 +993,11 @@ _LB: tuple[QuestionSeed, ...] = (
             "DNS round robin só entrega endereços diferentes sem nunca olhar o caminho da "
             "requisição.",
             (
-                "Um balanceador L4 (TCP), porque é mais rápido e vê todos os pacotes.",
+                "Um balanceador L4 (TCP), porque é mais rápido e vê todos os pacotes de cada "
+                "conexão.",
                 "Um balanceador L4 configurado com consistent hashing.",
                 "DNS round robin com um registro por pool.",
-                "Um balanceador L7 (HTTP), que interpreta requisições e pode rotear por "
-                "caminho, host ou headers.",
+                "Um balanceador L7 (HTTP), que interpreta requisições e roteia por caminho.",
             ),
         ),
     ),
@@ -1017,11 +1017,14 @@ _LB: tuple[QuestionSeed, ...] = (
             "with fewer in-flight ones. The other options describe behaviors round robin does "
             "not have.",
             (
-                "It spreads requests evenly by count, so a server stuck on slow requests keeps "
-                "receiving new work at the same rate.",
-                "It sends all traffic to the first server until that server fails.",
-                "It requires the balancer to parse the HTTP request body.",
-                "It cannot be used with more than two servers.",
+                "It balances by count, so a server stuck on slow requests keeps getting new "
+                "work.",
+                "It sends all traffic to the first server until that server fails, then "
+                "switches over.",
+                "It requires the balancer to parse the HTTP request body before choosing a "
+                "server.",
+                "It cannot be used with more than two servers because it alternates between a "
+                "pair.",
             ),
         ),
         _t(
@@ -1033,11 +1036,14 @@ _LB: tuple[QuestionSeed, ...] = (
             "requisições a servidores com menos requisições em andamento. As demais opções "
             "descrevem comportamentos que o round robin não tem.",
             (
-                "Ele distribui as requisições igualmente por quantidade, então um servidor "
-                "preso em requisições lentas continua recebendo trabalho novo no mesmo ritmo.",
-                "Ele envia todo o tráfego ao primeiro servidor até que este falhe.",
-                "Ele exige que o balanceador interprete o corpo da requisição HTTP.",
-                "Ele não pode ser usado com mais de dois servidores.",
+                "Ele equilibra por quantidade, então um servidor preso em requisições lentas "
+                "continua recebendo trabalho novo.",
+                "Ele envia todo o tráfego ao primeiro servidor até que este falhe, e então "
+                "troca de servidor.",
+                "Ele exige que o balanceador interprete o corpo da requisição HTTP antes de "
+                "escolher um servidor.",
+                "Ele não pode ser usado com mais de dois servidores porque alterna entre um "
+                "par.",
             ),
         ),
     ),
@@ -1178,11 +1184,12 @@ _LB: tuple[QuestionSeed, ...] = (
             "not change where the session data lives, and scaling back (D) gives up the "
             "capacity you needed.",
             (
-                "Move the session data to a shared store such as Redis, so any instance can "
-                "serve any user.",
-                "Enable sticky sessions and keep them permanently.",
-                "Increase the session cookie's lifetime.",
-                "Scale back down to 3 instances.",
+                "Move the session data to a shared store such as Redis.",
+                "Enable sticky sessions and keep them permanently, pinning each user to one "
+                "instance.",
+                "Increase the session cookie's lifetime so that sessions last longer between "
+                "visits.",
+                "Scale back down to 3 instances so that the original session behavior returns.",
             ),
         ),
         _t(
@@ -1196,11 +1203,13 @@ _LB: tuple[QuestionSeed, ...] = (
             "vida mais longa (C) não muda onde os dados da sessão ficam, e voltar para 3 (D) "
             "abre mão da capacidade de que você precisava.",
             (
-                "Mover os dados de sessão para um armazenamento compartilhado, como o Redis, "
-                "para que qualquer instância atenda qualquer usuário.",
-                "Ativar sticky sessions e mantê-las permanentemente.",
-                "Aumentar o tempo de vida do cookie de sessão.",
-                "Voltar a 3 instâncias.",
+                "Mover os dados de sessão para um armazenamento compartilhado, como o Redis.",
+                "Ativar sticky sessions e mantê-las permanentemente, fixando cada usuário em "
+                "uma instância.",
+                "Aumentar o tempo de vida do cookie de sessão para que as sessões durem mais "
+                "entre visitas.",
+                "Voltar a 3 instâncias para que o comportamento original das sessões "
+                "retorne.",
             ),
         ),
     ),
@@ -1310,12 +1319,13 @@ _LB: tuple[QuestionSeed, ...] = (
             "read load with caching or replicas. Scaling stateless servers is the easy part, "
             "and a balancer node is rarely the first limit.",
             (
-                "The balancer's CPU; add a second balancer in front of it.",
-                "The app servers' CPU; move to larger instance types.",
-                "DNS resolution of the instances; raise the DNS TTL.",
-                "The database connection limit (about 300 potential connections against 100); "
-                "cap the pools and add an external pooler, plus caching or replicas for read "
-                "load.",
+                "The balancer's CPU; add a second balancer next to it and split the traffic "
+                "between both by DNS.",
+                "The app servers' CPU; move to larger instance types with more cores.",
+                "DNS resolution of the instances; raise the DNS TTL so lookups are cached "
+                "longer.",
+                "The database connection limit (about 300 connections against 100); cap pools, "
+                "add a pooler.",
             ),
         ),
         _t(
@@ -1331,12 +1341,14 @@ _LB: tuple[QuestionSeed, ...] = (
             "banco, aliviando a leitura com cache ou réplicas. Escalar servidores stateless é "
             "a parte fácil, e um nó de balanceador raramente é o primeiro limite.",
             (
-                "A CPU do balanceador; adicionar um segundo balanceador na frente.",
-                "A CPU dos servidores de aplicação; migrar para instâncias maiores.",
-                "A resolução DNS das instâncias; aumentar o TTL do DNS.",
-                "O limite de conexões do banco (cerca de 300 conexões potenciais contra 100); "
-                "limitar os pools e adicionar um pooler externo, além de cache ou réplicas para "
-                "a carga de leitura.",
+                "A CPU do balanceador; adicionar um segundo balanceador ao lado e dividir o "
+                "tráfego entre os dois por DNS.",
+                "A CPU dos servidores de aplicação; migrar para instâncias maiores com mais "
+                "núcleos.",
+                "A resolução DNS das instâncias; aumentar o TTL do DNS para que as consultas "
+                "fiquem mais tempo em cache.",
+                "O limite de conexões do banco (cerca de 300 conexões contra 100); limitar os "
+                "pools e adicionar um pooler.",
             ),
         ),
     ),
