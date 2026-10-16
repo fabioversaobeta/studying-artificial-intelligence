@@ -1046,9 +1046,9 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "layers in both directions through interfaces, C describes strict layering that "
             "is not required, and D would break the rule for the innermost layer.",
             (
-                "Outer layers must never call inner layers at runtime.",
-                "Source-code dependencies must point inward, toward the higher-level "
-                "business policy.",
+                "Outer layers must never call inner layers at runtime, not even through "
+                "interfaces.",
+                "Source-code dependencies must point inward, toward business policy.",
                 "Every layer must depend on the layer directly below it and no other.",
                 "Entities may depend on frameworks as long as use cases do not.",
             ),
@@ -1062,9 +1062,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dois sentidos via interfaces, C descreve uma divisão estrita em camadas que "
             "não é exigida e D quebraria a regra para a camada mais interna.",
             (
-                "Camadas externas nunca devem chamar camadas internas em tempo de execução.",
+                "Camadas externas nunca devem chamar camadas internas em tempo de execução, "
+                "nem por interfaces.",
                 "As dependências de código-fonte devem apontar para dentro, em direção à "
-                "política de negócio de mais alto nível.",
+                "política de negócio.",
                 "Toda camada deve depender da camada imediatamente abaixo e de nenhuma outra.",
                 "Entidades podem depender de frameworks, desde que os casos de uso não dependam.",
             ),
@@ -1086,10 +1087,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "controller (B), a database trigger (C) or a UI component (D) ties them to a "
             "detail and duplicates them whenever another entry point appears.",
             (
-                "In the domain layer (the order entity or a use case), independent of frameworks.",
-                "In the HTTP controller that handles the shipping request.",
-                "In a database trigger that rejects the update.",
-                'In a front-end component that disables the "Ship" button.',
+                "In the domain layer (the order entity or a use case).",
+                "In the HTTP controller that handles the shipping request and returns the error.",
+                "In a database trigger that rejects the update when the status is not paid.",
+                'In a front-end component that disables the "Ship" button until payment arrives.',
             ),
         ),
         _t(
@@ -1102,11 +1103,12 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "componente de interface (D) as prende a um detalhe e as duplica sempre que "
             "surge outro ponto de entrada.",
             (
-                "Na camada de domínio (na entidade pedido ou em um caso de uso), "
-                "independente de frameworks.",
-                "No controller HTTP que trata a requisição de envio.",
-                "Em um trigger de banco de dados que rejeita a atualização.",
-                'Em um componente de front-end que desabilita o botão "Enviar".',
+                "Na camada de domínio (na entidade pedido ou em um caso de uso).",
+                "No controller HTTP que trata a requisição de envio e devolve o erro.",
+                "Em um trigger de banco de dados que rejeita a atualização se o status não "
+                "for pago.",
+                'Em um componente de front-end que desabilita o botão "Enviar" até o '
+                "pagamento chegar.",
             ),
         ),
     ),
@@ -1128,8 +1130,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "A port is a network port number, and an adapter is a database driver.",
                 "A port is a concrete class in the infrastructure layer, and an adapter is an "
                 "interface in the domain.",
-                "A port is an interface owned by the application core, and an adapter is "
-                "technology-specific code that implements or calls it.",
+                "A port is an interface owned by the core; an adapter is technology-specific "
+                "code behind it.",
                 "A port and an adapter are two names for the same class.",
             ),
         ),
@@ -1145,8 +1147,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Uma port é um número de porta de rede e um adapter é um driver de banco de dados.",
                 "Uma port é uma classe concreta da camada de infraestrutura e um adapter é "
                 "uma interface do domínio.",
-                "Uma port é uma interface pertencente ao núcleo da aplicação e um adapter é "
-                "código específico de tecnologia que a implementa ou a chama.",
+                "Uma port é uma interface do núcleo; um adapter é código específico de "
+                "tecnologia por trás dela.",
                 "Port e adapter são dois nomes para a mesma classe.",
             ),
         ),
@@ -1209,10 +1211,11 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "putting it in the web layer (C) or in a shared package everyone imports (D) "
             "couples unrelated layers.",
             (
-                "Next to the Postgres implementation in the infrastructure layer.",
-                "In the domain or application layer, with the Postgres class implementing it "
-                "from the infrastructure layer.",
-                "In the web layer, next to the controllers that call the use case.",
+                "Next to the Postgres implementation in the infrastructure layer, in the same "
+                "module.",
+                "In the domain or application layer; the Postgres class implements it.",
+                "In the web layer, next to the controllers that call the use case and map "
+                "its results.",
                 "In a shared `common` package imported by every layer.",
             ),
         ),
@@ -1226,10 +1229,11 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "camada web (C) ou em um pacote compartilhado que todos importam (D) acopla "
             "camadas que não têm relação.",
             (
-                "Ao lado da implementação Postgres, na camada de infraestrutura.",
-                "Na camada de domínio ou de aplicação, com a classe Postgres da camada de "
-                "infraestrutura implementando-a.",
-                "Na camada web, ao lado dos controllers que chamam o caso de uso.",
+                "Ao lado da implementação Postgres, na camada de infraestrutura, no mesmo "
+                "módulo.",
+                "Na camada de domínio ou de aplicação; a classe Postgres a implementa.",
+                "Na camada web, ao lado dos controllers que chamam o caso de uso e mapeiam "
+                "seus resultados.",
                 "Em um pacote compartilhado `common` importado por todas as camadas.",
             ),
         ),
@@ -1250,10 +1254,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "simple output data structures keeps both sides free to change. The ORM does not "
             "forbid serialization (A), and speed (B) is not the concern here.",
             (
-                "ORM models cannot be serialized to JSON.",
-                "It is slower than returning dictionaries in every case.",
-                "It couples the API contract to the persistence schema and lets the outer "
-                "layer trigger database access.",
+                "ORM models cannot be serialized to JSON by any web framework or serializer.",
+                "It is slower than returning dictionaries in every case, which hurts response "
+                "times.",
+                "It couples the API contract to the persistence schema.",
                 "It violates the rule that use cases must return primitive integers.",
             ),
         ),
@@ -1267,10 +1271,11 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "lados livres para mudar. O ORM não impede a serialização (A) e velocidade (B) "
             "não é a preocupação aqui.",
             (
-                "Modelos do ORM não podem ser serializados para JSON.",
-                "É mais lento que retornar dicionários em todos os casos.",
-                "Acopla o contrato da API ao esquema de persistência e permite que a camada "
-                "externa dispare acesso ao banco.",
+                "Modelos do ORM não podem ser serializados para JSON por nenhum framework web "
+                "ou serializador.",
+                "É mais lento que retornar dicionários em todos os casos, o que prejudica o "
+                "tempo de resposta.",
+                "Acopla o contrato da API ao esquema de persistência.",
                 "Viola a regra de que casos de uso devem retornar inteiros primitivos.",
             ),
         ),
@@ -1331,7 +1336,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "reintroduces a dependency on a concrete class, and doing it inside the domain "
             "package (C) makes the innermost layer depend on infrastructure.",
             (
-                "Inside the use case's constructor, with `PostgresOrderRepository()`.",
+                "Inside the use case's constructor, by calling `PostgresOrderRepository()` "
+                "directly.",
                 "Inside the entities, so each entity can load its own data.",
                 "In the domain package's `__init__` module, so it is ready everywhere.",
                 "In a composition root at the application's entry point, outside the core.",
@@ -1346,7 +1352,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(B) reintroduz a dependência de uma classe concreta, e fazê-lo no pacote de "
             "domínio (C) faz a camada mais interna depender da infraestrutura.",
             (
-                "Dentro do construtor do caso de uso, com `PostgresOrderRepository()`.",
+                "Dentro do construtor do caso de uso, chamando `PostgresOrderRepository()` "
+                "diretamente.",
                 "Dentro das entidades, para que cada uma carregue seus próprios dados.",
                 "No módulo `__init__` do pacote de domínio, para estar pronto em todo lugar.",
                 "Em uma composition root no ponto de entrada da aplicação, fora do núcleo.",
