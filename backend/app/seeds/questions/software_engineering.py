@@ -118,7 +118,7 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "about creating new instances (D).",
             (
                 "A class should expose only one public method.",
-                "A class should have only one reason to change: it serves a single concern.",
+                "A class should have a single reason to change: one concern.",
                 "A class should be split until each class is only a few lines long.",
                 "A class should be instantiated only once during the program's lifetime.",
             ),
@@ -131,8 +131,7 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "objetivo (C) e o SRP não diz nada sobre quantas instâncias são criadas (D).",
             (
                 "Uma classe deve expor apenas um método público.",
-                "Uma classe deve ter apenas um motivo para mudar, pois atende a uma única "
-                "preocupação.",
+                "Uma classe deve ter um único motivo para mudar: uma só preocupação.",
                 "Uma classe deve ser dividida até que cada uma tenha poucas linhas.",
                 "Uma classe deve ser instanciada uma única vez durante a vida do programa.",
             ),
@@ -152,11 +151,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "already tested and in use. Editing the existing branches (A), copying code (B) "
             "and making fields public (C) all increase the risk of breaking what works.",
             (
-                "Adding a new `elif` branch to a long conditional every time a new case appears.",
-                "Copy-pasting a class and tweaking the copy for each new customer.",
+                "Adding a new `elif` branch to the long conditional in `checkout()` each time a "
+                "new payment method appears.",
+                "Copy-pasting the checkout class and tweaking the copy for each new customer.",
                 "Making every field public so other code can extend the object freely.",
-                "Supporting a new payment method by adding a new class that implements an "
-                "existing `PaymentMethod` interface.",
+                "Supporting a new payment method with a new class implementing the existing "
+                "`PaymentMethod` interface.",
             ),
         ),
         _t(
@@ -166,12 +166,13 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "testado e em uso. Editar os ramos existentes (A), copiar código (B) e tornar "
             "campos públicos (C) aumentam o risco de quebrar o que já funciona.",
             (
-                "Adicionar um novo `elif` a uma condicional longa sempre que surge um caso novo.",
-                "Copiar e colar uma classe e ajustar a cópia para cada novo cliente.",
+                "Adicionar um novo `elif` à condicional longa em `checkout()` sempre que surge "
+                "um novo meio de pagamento.",
+                "Copiar e colar a classe de checkout e ajustar a cópia para cada novo cliente.",
                 "Tornar todos os campos públicos para que outro código possa estender o objeto "
                 "livremente.",
-                "Suportar um novo meio de pagamento criando uma nova classe que implementa a "
-                "interface `PaymentMethod` já existente.",
+                "Suportar um novo meio de pagamento com uma nova classe que implementa a "
+                "interface `PaymentMethod` existente.",
             ),
         ),
     ),
@@ -268,11 +269,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "change of a class, OCP (A) is not about interface width, and DIP (C) would not "
             "remove the unused methods.",
             (
-                "OCP; add a subclass for every device type.",
-                "SRP; split `LaserPrinter` into several concrete classes.",
-                "DIP; make the interface depend on the concrete `LaserPrinter`.",
+                "OCP; keep the wide interface and add a subclass for every new device type that "
+                "is released.",
+                "SRP; split `LaserPrinter` into several concrete classes, one per method.",
+                "DIP; make the interface depend on the concrete `LaserPrinter` class.",
                 "ISP; split the interface into small role interfaces (`Printer`, `Scanner`, "
-                "`Fax`) that each class picks from.",
+                "`Fax`).",
             ),
         ),
         _t(
@@ -287,11 +289,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "mudança de uma classe, o OCP (A) não é sobre a largura da interface e o DIP (C) "
             "não removeria os métodos sem uso.",
             (
-                "OCP; criar uma subclasse para cada tipo de dispositivo.",
-                "SRP; dividir `LaserPrinter` em várias classes concretas.",
-                "DIP; fazer a interface depender da `LaserPrinter` concreta.",
+                "OCP; manter a interface larga e criar uma subclasse para cada novo tipo de "
+                "dispositivo lançado.",
+                "SRP; dividir `LaserPrinter` em várias classes concretas, uma por método.",
+                "DIP; fazer a interface depender da classe concreta `LaserPrinter`.",
                 "ISP; dividir a interface em interfaces de papel pequenas (`Printer`, "
-                "`Scanner`, `Fax`) das quais cada classe escolhe o que precisa.",
+                "`Scanner`, `Fax`).",
             ),
         ),
     ),
@@ -362,11 +365,11 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "abstraction such as `OrderRepository`, owned by the high-level layer, which the "
             "Postgres class implements.",
             (
-                "Yes, because the dependency is injected rather than created with `new`.",
-                "No, because `OrderService` still depends on a concrete class; it should "
-                "depend on an `OrderRepository` abstraction.",
+                "Yes, because the dependency is injected through the constructor rather than "
+                "created with `new`.",
+                "No, because `OrderService` still names a concrete class, not an abstraction.",
                 "Yes, because a container is in use and containers always invert dependencies.",
-                "No, because DIP forbids constructor injection and requires setters.",
+                "No, because DIP forbids constructor injection and requires setter injection.",
             ),
         ),
         _t(
@@ -380,11 +383,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "depender de uma abstração como `OrderRepository`, pertencente à camada de alto "
             "nível, que a classe do Postgres implementa.",
             (
-                "Sim, porque a dependência é injetada em vez de criada com `new`.",
-                "Não, porque o `OrderService` ainda depende de uma classe concreta; deveria "
-                "depender de uma abstração `OrderRepository`.",
+                "Sim, porque a dependência é injetada pelo construtor em vez de criada com "
+                "`new`.",
+                "Não, porque o `OrderService` ainda cita uma classe concreta, não uma "
+                "abstração.",
                 "Sim, porque há um contêiner em uso e contêineres sempre invertem dependências.",
-                "Não, porque o DIP proíbe injeção por construtor e exige setters.",
+                "Não, porque o DIP proíbe injeção por construtor e exige injeção por setter.",
             ),
         ),
     ),
