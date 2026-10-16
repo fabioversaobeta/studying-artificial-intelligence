@@ -104,11 +104,11 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "word count and token count differ. Options A and B describe special cases at best, "
             "and D (a whole sentence) is not how tokenizers work.",
             _options(
-                "Exactly one word of the input text.",
-                "Exactly one character of the input text.",
-                "A unit of text produced by the model's tokenizer, often a word or a piece of a "
-                "word.",
-                "One whole sentence of the input text.",
+                "Exactly one word of the input text, as separated by spaces and punctuation.",
+                "Exactly one character of the input text, including spaces and punctuation "
+                "marks.",
+                "A unit of text from the model's tokenizer, often a word or part of a word.",
+                "One whole sentence of the input text, up to the next full stop.",
             ),
         ),
         _t(
@@ -119,11 +119,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "e B descrevem, no máximo, casos particulares, e a D (uma frase inteira) não "
             "corresponde ao funcionamento de um tokenizer.",
             _options(
-                "Exatamente uma palavra do texto de entrada.",
-                "Exatamente um caractere do texto de entrada.",
-                "Uma unidade de texto produzida pelo tokenizer do modelo, geralmente uma "
-                "palavra ou um pedaço de palavra.",
-                "Uma frase inteira do texto de entrada.",
+                "Exatamente uma palavra do texto de entrada, separada por espaços e "
+                "pontuação.",
+                "Exatamente um caractere do texto de entrada, incluindo espaços e sinais de "
+                "pontuação.",
+                "Uma unidade de texto do tokenizer do modelo, em geral uma palavra ou parte "
+                "dela.",
+                "Uma frase inteira do texto de entrada, até o próximo ponto final.",
             ),
         ),
     ),
@@ -142,11 +144,14 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "C is false: determinism says nothing about correctness, and a model can "
             "consistently repeat a wrong answer. D confuses sampling with the context window.",
             _options(
-                "It flattens the distribution so the model becomes more creative.",
-                "It concentrates probability on the highest-ranked tokens, so output approaches "
-                "greedy decoding and becomes more repeatable.",
-                "It guarantees that the answer is factually correct.",
-                "It reduces the number of tokens that fit in the context window.",
+                "It flattens the distribution so the model becomes more creative and varied "
+                "in its wording.",
+                "It concentrates probability on the top-ranked tokens, so output becomes "
+                "more repeatable.",
+                "It guarantees that the answer is factually correct, since the model stops "
+                "guessing.",
+                "It reduces the number of tokens that fit in the context window and "
+                "shortens each reply.",
             ),
         ),
         _t(
@@ -159,11 +164,14 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "modelo pode repetir consistentemente uma resposta errada. A D confunde amostragem "
             "com janela de contexto.",
             _options(
-                "A distribuição fica mais plana e o modelo se torna mais criativo.",
-                "A probabilidade se concentra nos tokens mais bem ranqueados, então a saída se "
-                "aproxima do greedy decoding e fica mais repetível.",
-                "Garante que a resposta seja factualmente correta.",
-                "Reduz o número de tokens que cabem na janela de contexto.",
+                "A distribuição fica mais plana e o modelo se torna mais criativo e variado "
+                "na redação.",
+                "A probabilidade se concentra nos tokens mais bem ranqueados, então a saída "
+                "fica mais repetível.",
+                "Garante que a resposta seja factualmente correta, já que o modelo deixa de "
+                "chutar.",
+                "Reduz o número de tokens que cabem na janela de contexto e encurta cada "
+                "resposta.",
             ),
         ),
     ),
@@ -181,11 +189,12 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "training data size, B to model size, and C to API rate limits; none of these is "
             "the context window.",
             _options(
-                "How many tokens the model saw during training.",
-                "How many parameters the model has.",
-                "How many requests per minute you may send.",
-                "The maximum number of tokens the model can handle in a single request, "
-                "counting both the input and the generated output.",
+                "How many tokens the model saw during training, which determines how much it "
+                "can remember at once.",
+                "How many parameters the model has, which sets how large its memory is.",
+                "How many requests per minute you may send before the API throttles you.",
+                "The maximum number of tokens the model can handle in one request, input and "
+                "output together.",
             ),
         ),
         _t(
@@ -195,11 +204,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "tamanho dos dados de treinamento, B ao tamanho do modelo e C aos limites de taxa "
             "da API; nenhuma delas é a janela de contexto.",
             _options(
-                "Quantos tokens o modelo viu durante o treinamento.",
-                "Quantos parâmetros o modelo possui.",
-                "Quantas requisições por minuto você pode enviar.",
-                "O número máximo de tokens que o modelo consegue processar em uma única "
-                "requisição, contando a entrada e a saída gerada.",
+                "Quantos tokens o modelo viu durante o treinamento, o que determina quanto "
+                "ele consegue lembrar de uma vez.",
+                "Quantos parâmetros o modelo possui, o que define o tamanho da sua memória.",
+                "Quantas requisições por minuto você pode enviar antes de a API limitar o "
+                "seu acesso.",
+                "O número máximo de tokens que o modelo consegue processar em uma "
+                "requisição, entrada e saída juntas.",
             ),
         ),
     ),
@@ -346,8 +357,10 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "outputs vary.",
             _options(
                 "A low temperature (near 0), plus validation of the output against a schema.",
-                "A high temperature with top-p 1.0 so the model explores every phrasing.",
-                "A temperature well above 1 with a large top-k to avoid repetitive output.",
+                "A high temperature with top-p 1.0 so the model explores every phrasing and "
+                "never repeats itself.",
+                "A temperature well above 1 with a large top-k to avoid repetitive output "
+                "across runs.",
                 "Any setting works, because sampling parameters never affect extraction.",
             ),
         ),
@@ -362,8 +375,10 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "diretamente o quanto as saídas variam.",
             _options(
                 "Temperatura baixa (perto de 0), mais validação da saída contra um schema.",
-                "Temperatura alta com top-p 1,0 para o modelo explorar todas as formulações.",
-                "Temperatura bem acima de 1 com top-k grande para evitar saídas repetitivas.",
+                "Temperatura alta com top-p 1,0 para o modelo explorar todas as formulações "
+                "e nunca se repetir.",
+                "Temperatura bem acima de 1 com top-k grande para evitar saídas repetitivas "
+                "entre execuções.",
                 "Qualquer configuração serve, pois parâmetros de amostragem nunca afetam a "
                 "extração.",
             ),
@@ -384,13 +399,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "A and B describe lexical matching, which is what sparse methods such as BM25 do. "
             "C is invented: text length does not decide where a vector lands.",
             _options(
-                "Embedding models match on shared letters, and both strings contain similar "
-                "letters.",
+                "Embedding models match on shared letters, and both strings contain a "
+                "similar mix of letters and spaces.",
                 "Embeddings store the exact words, and a synonym dictionary links them at "
-                "query time.",
+                "query time, as in lexical search.",
                 "Short texts always map to the same region of the vector space.",
                 "The model learns to place texts with similar meaning near each other, so "
-                "distance reflects semantics rather than word overlap.",
+                "distance reflects semantics.",
             ),
         ),
         _t(
@@ -401,13 +416,13 @@ LLM_QUESTIONS: tuple[QuestionSeed, ...] = (
             "em comum. A e B descrevem casamento lexical, que é o que métodos esparsos como o "
             "BM25 fazem. C é inventada: o tamanho do texto não define onde o vetor cai.",
             _options(
-                "Modelos de embedding casam por letras em comum, e as duas frases têm letras "
-                "parecidas.",
+                "Modelos de embedding casam por letras em comum, e as duas frases têm uma "
+                "mistura parecida de letras e espaços.",
                 "Embeddings guardam as palavras exatas, e um dicionário de sinônimos as liga "
-                "no momento da consulta.",
+                "no momento da consulta, como em uma busca lexical.",
                 "Textos curtos sempre caem na mesma região do espaço vetorial.",
                 "O modelo aprende a posicionar textos de significado parecido perto uns dos "
-                "outros, então a distância reflete semântica e não sobreposição de palavras.",
+                "outros, então a distância reflete semântica.",
             ),
         ),
     ),
