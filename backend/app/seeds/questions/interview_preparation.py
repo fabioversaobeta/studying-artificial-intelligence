@@ -1578,11 +1578,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="An interviewer asks why you chose a particular approach. What is the "
                 "clearest way to start your answer?",
                 options=_options(
-                    "Walk through the history of how you arrived at it, step by step.",
-                    "State the choice and the main reason in one sentence, then give the "
-                    "supporting details.",
-                    "List every alternative you considered before saying what you chose.",
-                    "Say it was obvious and move on to the next topic.",
+                    "Walk through the history of how you arrived at it, step by step, "
+                    "starting from the first idea you had.",
+                    "State the choice and main reason in one sentence, then give supporting "
+                    "details.",
+                    "List every alternative you considered, with its pros and cons, before "
+                    "saying what you chose.",
+                    "Say it was obvious to anyone with experience and move on to the next "
+                    "topic.",
                 ),
                 explanation="Leading with the conclusion lets the listener follow everything "
                 "that comes after it and lets them interrupt early if they disagree. A "
@@ -1593,11 +1596,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="Um entrevistador pergunta por que você escolheu determinada "
                 "abordagem. Qual é a forma mais clara de começar a resposta?",
                 options=_options(
-                    "Contar a história de como chegou nela, passo a passo.",
+                    "Contar a história de como chegou nela, passo a passo, a partir da "
+                    "primeira ideia que teve.",
                     "Dizer a escolha e o motivo principal em uma frase e depois dar os "
                     "detalhes de apoio.",
-                    "Listar todas as alternativas consideradas antes de dizer qual escolheu.",
-                    "Dizer que era óbvio e passar para o próximo assunto.",
+                    "Listar todas as alternativas consideradas, com prós e contras, antes de "
+                    "dizer qual escolheu.",
+                    "Dizer que era óbvio para qualquer pessoa experiente e passar para o "
+                    "próximo assunto.",
                 ),
                 explanation="Começar pela conclusão permite que o ouvinte acompanhe tudo o "
                 "que vem depois e o interrompa cedo se discordar. Uma história cronológica ou "
@@ -1619,11 +1625,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="A coding problem statement is ambiguous: it does not say whether the "
                 "input can be empty or contain duplicates. What should you do?",
                 options=_options(
-                    "Start coding right away and assume the simplest case.",
-                    "Wait silently until the interviewer notices your confusion.",
-                    "Ask about the edge cases, or state your assumptions explicitly and "
-                    "check that they are acceptable.",
-                    "Ask the interviewer to rewrite the problem so it is clearer.",
+                    "Start coding right away and assume the simplest case, then handle the "
+                    "rest if tests fail.",
+                    "Wait silently until the interviewer notices your confusion and offers to "
+                    "clarify the statement.",
+                    "Ask about the edge cases, or state your assumptions and check that they "
+                    "are acceptable.",
+                    "Ask the interviewer to rewrite the problem so it is clearer and removes "
+                    "every ambiguity.",
                 ),
                 explanation="Handling ambiguity is part of the job and part of the "
                 "evaluation. Asking or stating assumptions out loud shows you think about edge "
@@ -1635,11 +1644,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="O enunciado de um problema de código é ambíguo: não diz se a entrada "
                 "pode ser vazia nem se pode ter duplicatas. O que fazer?",
                 options=_options(
-                    "Começar a codificar logo e assumir o caso mais simples.",
-                    "Esperar em silêncio até o entrevistador notar sua dúvida.",
-                    "Perguntar sobre os casos de borda, ou declarar suas premissas "
-                    "explicitamente e verificar se são aceitáveis.",
-                    "Pedir ao entrevistador que reescreva o problema para ficar mais claro.",
+                    "Começar a codificar logo e assumir o caso mais simples, tratando o resto "
+                    "só se os testes falharem.",
+                    "Esperar em silêncio até o entrevistador notar sua dúvida e se oferecer "
+                    "para esclarecer o enunciado.",
+                    "Perguntar sobre os casos de borda, ou declarar suas premissas e verificar "
+                    "se são aceitáveis.",
+                    "Pedir ao entrevistador que reescreva o problema para ficar mais claro e "
+                    "sem nenhuma ambiguidade.",
                 ),
                 explanation="Lidar com ambiguidade faz parte do trabalho e da avaliação. "
                 "Perguntar ou declarar premissas em voz alta mostra que você pensa em casos de "
@@ -1661,11 +1673,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
             Language.EN: QuestionText(
                 prompt="Why is it recommended to think aloud during a coding interview?",
                 options=_options(
-                    "It lets the interviewer follow your reasoning, give hints and evaluate "
-                    "how you approach problems, not just the final code.",
-                    "It is a rule that candidates must talk continuously, with no pauses.",
-                    "It distracts the interviewer from small bugs in your code.",
-                    "It guarantees that the solution you write is correct.",
+                    "It lets the interviewer follow your reasoning, give hints and judge your "
+                    "approach, not just the final code.",
+                    "It is a rule that candidates must talk continuously, with no pauses, "
+                    "from the first minute to the last.",
+                    "It distracts the interviewer from small bugs in your code, so they are "
+                    "less likely to notice them.",
+                    "It guarantees that the solution you write is correct, because you "
+                    "explain each line.",
                 ),
                 explanation="Interviewers assess the process as well as the result, and a "
                 "visible process also lets them nudge you if you drift. Short pauses to think "
@@ -1676,10 +1691,13 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="Por que se recomenda pensar em voz alta durante uma entrevista de código?",
                 options=_options(
                     "Permite que o entrevistador acompanhe seu raciocínio, dê dicas e avalie "
-                    "como você aborda problemas, e não só o código final.",
-                    "É uma regra: o candidato deve falar o tempo todo, sem pausas.",
-                    "Distrai o entrevistador de pequenos bugs no seu código.",
-                    "Garante que a solução escrita esteja correta.",
+                    "sua abordagem, e não só o código final.",
+                    "É uma regra: o candidato deve falar o tempo todo, sem pausas, do "
+                    "primeiro ao último minuto.",
+                    "Distrai o entrevistador de pequenos bugs no seu código, e por isso ele "
+                    "tem menos chance de notá-los.",
+                    "Garante que a solução escrita esteja correta, porque você explica cada "
+                    "linha.",
                 ),
                 explanation="Os entrevistadores avaliam o processo além do resultado, e um "
                 "processo visível também permite que eles te orientem se você se desviar. "
@@ -1701,11 +1719,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="Ten minutes into a coding problem you are stuck. What is the best "
                 "thing to do?",
                 options=_options(
-                    "Stay quiet and keep trying until you find the answer on your own.",
-                    "Guess an approach at random and start coding to look busy.",
-                    "Ask the interviewer to tell you the algorithm.",
-                    "Say where you are stuck, what you have already tried or ruled out, and "
-                    "what you plan to test next, and take any hint as a collaborator would.",
+                    "Stay quiet and keep trying until you find the answer on your own, "
+                    "without involving the interviewer.",
+                    "Guess an approach at random and start coding to look busy, then see "
+                    "whether it happens to work.",
+                    "Ask the interviewer to tell you the algorithm outright so that you can "
+                    "spend the remaining time on coding it.",
+                    "Say where you are stuck, what you have tried or ruled out and what you "
+                    "will test next, and welcome hints.",
                 ),
                 explanation="Being stuck is common and interviewers mostly judge how you "
                 "handle it. Describing the state of your thinking lets them help at the right "
@@ -1717,11 +1738,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="Dez minutos depois de começar um problema de código, você está "
                 "travado. Qual é a melhor coisa a fazer?",
                 options=_options(
-                    "Ficar em silêncio e continuar tentando até achar a resposta sozinho.",
-                    "Escolher uma abordagem ao acaso e começar a codificar para parecer ocupado.",
-                    "Pedir ao entrevistador que diga o algoritmo.",
-                    "Dizer onde está travado, o que já tentou ou descartou e o que pretende "
-                    "testar a seguir, e aceitar dicas como um colaborador aceitaria.",
+                    "Ficar em silêncio e continuar tentando até achar a resposta sozinho, sem "
+                    "envolver o entrevistador.",
+                    "Escolher uma abordagem ao acaso e começar a codificar para parecer "
+                    "ocupado, para ver se por acaso funciona.",
+                    "Pedir ao entrevistador que diga o algoritmo de uma vez, para gastar o "
+                    "tempo restante só codificando.",
+                    "Dizer onde está travado, o que já tentou ou descartou e o que vai testar "
+                    "a seguir, e aceitar dicas.",
                 ),
                 explanation="Travar é comum, e os entrevistadores avaliam principalmente como "
                 "você lida com isso. Descrever o estado do seu raciocínio permite que eles "
@@ -1744,12 +1768,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="The interviewer suggests a different approach that you suspect has a "
                 "worse worst-case running time. How do you respond?",
                 options=_options(
-                    "Defend your approach firmly and say theirs is wrong.",
+                    "Defend your approach firmly and say theirs is wrong, because you have "
+                    "already thought through its worst case.",
                     "Restate their idea to confirm you understood it, then test it together "
-                    "with a concrete input or a complexity estimate, and adjust if you find "
-                    "you were wrong.",
-                    "Switch to their approach immediately so you do not seem argumentative.",
-                    "Ignore the suggestion and keep coding in silence.",
+                    "with a concrete input or a complexity estimate.",
+                    "Switch to their approach immediately so you do not seem argumentative, "
+                    "and ask them to explain its complexity afterwards.",
+                    "Ignore the suggestion and keep coding in silence, hoping the "
+                    "interviewer drops the subject.",
                 ),
                 explanation="Disagreeing well means making sure you understood first, then "
                 "turning the disagreement into something checkable. You may discover that "
@@ -1761,12 +1787,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 prompt="O entrevistador sugere uma abordagem diferente que você suspeita ter "
                 "pior tempo de execução no pior caso. Como responder?",
                 options=_options(
-                    "Defender firmemente a sua abordagem e dizer que a dele está errada.",
+                    "Defender firmemente a sua abordagem e dizer que a dele está errada, "
+                    "porque você já pensou no pior caso dela.",
                     "Reformular a ideia dele para confirmar que entendeu, depois testá-la "
-                    "juntos com uma entrada concreta ou uma estimativa de complexidade, e "
-                    "ajustar se descobrir que estava errado.",
-                    "Mudar imediatamente para a abordagem dele para não parecer argumentativo.",
-                    "Ignorar a sugestão e continuar codificando em silêncio.",
+                    "juntos com uma entrada concreta ou uma estimativa de complexidade.",
+                    "Mudar imediatamente para a abordagem dele para não parecer "
+                    "argumentativo, e pedir que explique a complexidade depois.",
+                    "Ignorar a sugestão e continuar codificando em silêncio, esperando que o "
+                    "entrevistador largue o assunto.",
                 ),
                 explanation="Discordar bem é garantir antes que você entendeu e depois "
                 "transformar a discordância em algo verificável. Você pode descobrir que ele "
@@ -1833,9 +1861,12 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "weeks. Which explanation is best?",
                 options=_options(
                     '"We have to rewrite the schema, the ORM layer and the replication '
-                    'topology, and then reconcile the foreign keys."',
-                    '"It is complicated, and engineering estimates are what they are."',
-                    '"Please trust the team; we have done the analysis."',
+                    "topology, reconcile the foreign keys, and rebuild every index on the new "
+                    'cluster before we can run the final cutover in the maintenance window."',
+                    '"It is complicated, and engineering estimates are what they are; there '
+                    'are a lot of unknowns, so three weeks is already optimistic."',
+                    '"Please trust the team; we have done the analysis, and the three-week '
+                    'figure comes from people who have done this before."',
                     "\"We are moving every customer's data without losing any of it, so most "
                     "of the time goes into testing the move and a safe rollback plan. "
                     'Rushing it risks downtime. Does that match what you needed to know?"',
@@ -1850,9 +1881,13 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "vai levar três semanas. Qual explicação é a melhor?",
                 options=_options(
                     '"Precisamos reescrever o schema, a camada de ORM e a topologia de '
-                    'replicação, e depois reconciliar as chaves estrangeiras."',
-                    '"É complicado, e estimativas de engenharia são o que são."',
-                    '"Por favor, confie no time; já fizemos a análise."',
+                    "replicação, reconciliar as chaves estrangeiras e reconstruir todos os "
+                    "índices no novo cluster antes de executar o cutover final na janela de "
+                    'manutenção."',
+                    '"É complicado, e estimativas de engenharia são o que são; há muitas '
+                    'incógnitas, então três semanas já é otimista."',
+                    '"Por favor, confie no time; já fizemos a análise, e o prazo de três '
+                    'semanas vem de pessoas que já fizeram isso antes."',
                     '"Estamos movendo os dados de todos os clientes sem perder nada, então '
                     "a maior parte do tempo vai em testar a migração e em um plano de "
                     "rollback seguro. Apressar arrisca indisponibilidade. Isso responde ao "
@@ -1879,11 +1914,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "it once. Which statement of its efficiency is the most useful in an "
                 "interview?",
                 options=_options(
-                    '"Time is O(n log n), dominated by sorting the n items; extra space is '
-                    'O(n) if I sort a copy, or O(1) if sorting in place is allowed."',
-                    '"It is fast and handles large inputs well."',
-                    '"It is basically linear."',
-                    '"It ran in under a second on the sample input."',
+                    '"Time is O(n log n), dominated by sorting; extra space is O(n) if I '
+                    'sort a copy, or O(1) in place."',
+                    '"It is fast and handles large inputs well, even with millions of '
+                    'records, and it never needed any special tuning."',
+                    '"It is basically linear, since the sort is quick and the scan only goes '
+                    'over the data once."',
+                    '"It ran in under a second on the sample input, so performance should '
+                    'not be a concern."',
                 ),
                 explanation="Precise statements say what n is, which step dominates and "
                 "what the space cost is, and they invite the interviewer to challenge a "
@@ -1896,12 +1934,14 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "percorre uma vez. Qual afirmação sobre sua eficiência é a mais útil em uma "
                 "entrevista?",
                 options=_options(
-                    '"O tempo é O(n log n), dominado pela ordenação dos n itens; o espaço '
-                    "extra é O(n) se eu ordenar uma cópia, ou O(1) se puder ordenar no "
-                    'lugar."',
-                    '"É rápido e lida bem com entradas grandes."',
-                    '"É basicamente linear."',
-                    '"Rodou em menos de um segundo na entrada de exemplo."',
+                    '"O tempo é O(n log n), dominado pela ordenação; o espaço extra é O(n) '
+                    'se eu ordenar uma cópia, ou O(1) no lugar."',
+                    '"É rápido e lida bem com entradas grandes, até com milhões de '
+                    'registros, e nunca precisou de nenhum ajuste especial."',
+                    '"É basicamente linear, já que a ordenação é rápida e a varredura passa '
+                    'pelos dados uma só vez."',
+                    '"Rodou em menos de um segundo na entrada de exemplo, então desempenho '
+                    'não deve ser um problema."',
                 ),
                 explanation="Afirmações precisas dizem o que é n, qual etapa domina e qual é "
                 "o custo de espaço, e convidam o entrevistador a contestar algo específico. "
@@ -1925,13 +1965,16 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "believe is riskier, and neither of you has hard data. Which response is "
                 "strongest?",
                 options=_options(
-                    "Defer immediately, since they are more senior.",
-                    "Keep repeating your argument until they concede.",
-                    "Propose agreeing on the decision criteria first (for example latency or "
-                    "operational risk) and on a small experiment or measurement that would "
-                    "settle it, and record the decision and its rationale; once it is "
-                    "decided, support it fully.",
-                    "Escalate to the manager so they can choose between you.",
+                    "Defer immediately, since they are more senior and have seen more "
+                    "systems fail than you have, and raise your concern later only if it "
+                    "materializes.",
+                    "Keep repeating your argument, with more emphasis each time, until they "
+                    "concede or the meeting runs out of time.",
+                    "Propose agreeing on the decision criteria (such as latency or "
+                    "operational risk) and on a small experiment that would settle it, record "
+                    "the decision and rationale, and support it fully once decided.",
+                    "Escalate to the manager so they can choose between you, since the two of "
+                    "you cannot agree.",
                 ),
                 explanation="Without data, repeating positions does not move anyone, so the "
                 "strongest move changes the conversation to criteria and evidence, then "
@@ -1944,13 +1987,17 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                 "que você considera mais arriscada, e nenhum dos dois tem dados concretos. "
                 "Qual resposta é a mais forte?",
                 options=_options(
-                    "Ceder imediatamente, já que ele é mais sênior.",
-                    "Repetir seu argumento até ele ceder.",
-                    "Propor primeiro combinar os critérios de decisão (por exemplo, latência "
-                    "ou risco operacional) e um pequeno experimento ou medição que resolva a "
-                    "questão, registrar a decisão e sua justificativa e, depois de decidido, "
-                    "apoiá-la por completo.",
-                    "Escalar para o gestor para que ele escolha entre vocês.",
+                    "Ceder imediatamente, já que ele é mais sênior e já viu mais sistemas "
+                    "falharem do que você, e levantar a preocupação depois só se ela se "
+                    "concretizar.",
+                    "Repetir seu argumento, com mais ênfase a cada vez, até ele ceder ou a "
+                    "reunião acabar.",
+                    "Propor combinar os critérios de decisão (como latência ou risco "
+                    "operacional) e um pequeno experimento que resolva a questão, registrar a "
+                    "decisão e sua justificativa e, depois de decidido, apoiá-la por "
+                    "completo.",
+                    "Escalar para o gestor para que ele escolha entre vocês, já que os dois "
+                    "não chegam a um acordo.",
                 ),
                 explanation="Sem dados, repetir posições não move ninguém, então a jogada mais "
                 "forte muda a conversa para critérios e evidências e termina com uma decisão "
