@@ -569,11 +569,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt='The interviewer says: "Design a ride-sharing service." What is the best '
                 "first move?",
                 options=_options(
-                    "Start drawing the database, cache and message queue you plan to use.",
+                    "Start drawing the database, cache and message queue you plan to use, "
+                    "before discussing what the service must do.",
                     "Ask clarifying questions about what the system must do and at what "
-                    "scale, and agree on the scope.",
-                    "Announce the technology stack you would pick and why.",
-                    "Begin estimating how many petabytes of storage you will need.",
+                    "scale, and agree on scope.",
+                    "Announce the technology stack you would pick and why, so the interviewer "
+                    "sees your experience.",
+                    "Begin estimating how many petabytes of storage you will need for the "
+                    "next five years.",
                 ),
                 explanation="System design prompts are deliberately vague, and interviewers "
                 "grade whether you pin down functional and non-functional requirements before "
@@ -585,11 +588,13 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 "Qual é o melhor primeiro passo?",
                 options=_options(
                     "Começar a desenhar o banco de dados, o cache e a fila de mensagens que "
-                    "pretende usar.",
+                    "pretende usar, antes de discutir o que o serviço deve fazer.",
                     "Fazer perguntas de esclarecimento sobre o que o sistema deve fazer e em "
                     "que escala, e combinar o escopo.",
-                    "Anunciar a stack de tecnologia que escolheria e por quê.",
-                    "Começar a estimar quantos petabytes de armazenamento serão necessários.",
+                    "Anunciar a stack de tecnologia que escolheria e por quê, para o "
+                    "entrevistador ver sua experiência.",
+                    "Começar a estimar quantos petabytes de armazenamento serão necessários "
+                    "nos próximos cinco anos.",
                 ),
                 explanation="Os enunciados de system design são vagos de propósito, e os "
                 "entrevistadores avaliam se você define os requisitos funcionais e não "
@@ -612,11 +617,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="What is the main purpose of back-of-envelope estimation in a system "
                 "design interview?",
                 options=_options(
-                    "To produce exact numbers that the interviewer will verify.",
-                    "To show off your arithmetic speed.",
-                    "To fill time while you think about the architecture.",
-                    "To get order-of-magnitude figures (requests per second, storage, "
-                    "bandwidth) that justify design choices such as caching or sharding.",
+                    "To produce exact numbers that the interviewer will verify line by line "
+                    "against a reference answer.",
+                    "To show off your arithmetic speed and prove you can calculate under "
+                    "pressure.",
+                    "To fill time while you think about the architecture, so there are no "
+                    "awkward silences.",
+                    "To get order-of-magnitude figures (requests per second, storage) that "
+                    "justify design choices.",
                 ),
                 explanation="Estimates matter because they drive decisions: a few hundred "
                 "requests per second may fit on one database, while hundreds of thousands "
@@ -627,11 +635,13 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt='Qual é o principal objetivo da estimativa de "guardanapo" '
                 "(back-of-envelope) em uma entrevista de system design?",
                 options=_options(
-                    "Produzir números exatos que o entrevistador vai conferir.",
-                    "Mostrar sua rapidez de cálculo.",
-                    "Preencher o tempo enquanto você pensa na arquitetura.",
-                    "Obter ordens de grandeza (requisições por segundo, armazenamento, "
-                    "banda) que justifiquem escolhas como cache ou sharding.",
+                    "Produzir números exatos que o entrevistador vai conferir linha por "
+                    "linha com uma resposta de referência.",
+                    "Mostrar sua rapidez de cálculo e provar que você faz contas sob pressão.",
+                    "Preencher o tempo enquanto você pensa na arquitetura, para não haver "
+                    "silêncios constrangedores.",
+                    "Obter ordens de grandeza (requisições por segundo, armazenamento) que "
+                    "justifiquem escolhas de design.",
                 ),
                 explanation="As estimativas importam porque guiam decisões: algumas centenas "
                 "de requisições por segundo podem caber em um único banco, enquanto centenas de "
@@ -652,10 +662,11 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
             Language.EN: QuestionText(
                 prompt="Which of these is a **non-functional** requirement for a social feed?",
                 options=_options(
-                    "The feed loads within 300 ms for 99% of requests.",
-                    "Users can follow and unfollow other users.",
-                    "Users can attach a photo to a post.",
-                    "Moderators can remove a post.",
+                    "The feed loads within 300 ms for 99% of requests, even at peak traffic.",
+                    "Users can follow and unfollow other users and see a list of their own "
+                    "followers.",
+                    "Users can attach a photo to a post and add a caption to it.",
+                    "Moderators can remove a post that breaks the community guidelines.",
                 ),
                 explanation="Non-functional requirements describe qualities such as latency, "
                 "availability, consistency and scale. The other three describe things a user "
@@ -664,10 +675,13 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
             Language.PT_BR: QuestionText(
                 prompt="Qual destes é um requisito **não funcional** de um feed social?",
                 options=_options(
-                    "O feed carrega em até 300 ms em 99% das requisições.",
-                    "Usuários podem seguir e deixar de seguir outros usuários.",
-                    "Usuários podem anexar uma foto a uma publicação.",
-                    "Moderadores podem remover uma publicação.",
+                    "O feed carrega em até 300 ms em 99% das requisições, mesmo no pico de "
+                    "tráfego.",
+                    "Usuários podem seguir e deixar de seguir outros usuários e ver a lista "
+                    "dos seus próprios seguidores.",
+                    "Usuários podem anexar uma foto a uma publicação e adicionar uma legenda.",
+                    "Moderadores podem remover uma publicação que viole as regras da "
+                    "comunidade.",
                 ),
                 explanation="Requisitos não funcionais descrevem qualidades como latência, "
                 "disponibilidade, consistência e escala. Os outros três descrevem coisas que "
@@ -688,13 +702,18 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="You proposed PostgreSQL for the main data store and the interviewer asks "
                 '"Why not a NoSQL database?" Which answer is strongest?',
                 options=_options(
-                    '"PostgreSQL is the industry standard, so it is the safe choice."',
-                    '"NoSQL does not scale, so I avoid it."',
+                    '"PostgreSQL is the industry standard and the default choice of most '
+                    "companies in this space, so choosing anything else would add risk for no "
+                    'reason that I can point to."',
+                    '"NoSQL does not scale, so I avoid it; the systems I have seen adopt it '
+                    "ended up with inconsistent data and had to migrate back to a relational "
+                    'database."',
                     '"Our data is relational and we need transactions across entities. At '
-                    "the estimated load a single primary with read replicas is enough, and "
-                    "if writes grew far beyond that I would revisit partitioning or a "
-                    'different store."',
-                    '"I have used PostgreSQL for years and know it best."',
+                    "the estimated load a single primary with read replicas is enough; if "
+                    'writes grew far beyond that I would revisit partitioning."',
+                    '"I have used PostgreSQL for years and know it best, so I can build it '
+                    "faster and debug it with less risk than a store I have never "
+                    'operated."',
                 ),
                 explanation="A strong answer ties the choice to the stated requirements "
                 "(data shape, consistency, estimated load), acknowledges the cost, and says "
@@ -706,13 +725,19 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="Você propôs PostgreSQL como armazenamento principal e o entrevistador "
                 'pergunta "Por que não um banco NoSQL?". Qual resposta é a mais forte?',
                 options=_options(
-                    '"PostgreSQL é o padrão da indústria, então é a escolha segura."',
-                    '"NoSQL não escala, então eu evito."',
+                    '"PostgreSQL é o padrão da indústria e a escolha-padrão da maioria das '
+                    "empresas deste setor, então escolher outra coisa traria risco sem um "
+                    'motivo que eu consiga apontar."',
+                    '"NoSQL não escala, então eu evito; os sistemas que vi adotá-lo acabaram '
+                    "com dados inconsistentes e tiveram que migrar de volta para um banco "
+                    'relacional."',
                     '"Nossos dados são relacionais e precisamos de transações entre '
                     "entidades. Na carga estimada, um primário com réplicas de leitura é "
-                    "suficiente, e se as escritas crescessem muito além disso eu revisitaria o "
-                    'particionamento ou outro tipo de armazenamento."',
-                    '"Uso PostgreSQL há anos e é o que melhor conheço."',
+                    "suficiente; se as escritas crescessem muito além disso eu revisitaria o "
+                    'particionamento."',
+                    '"Uso PostgreSQL há anos e é o que melhor conheço, então construo mais '
+                    "rápido e depuro com menos risco do que num armazenamento que nunca "
+                    'operei."',
                 ),
                 explanation="Uma resposta forte liga a escolha aos requisitos declarados "
                 "(formato dos dados, consistência, carga estimada), reconhece o custo e diz o "
@@ -734,10 +759,13 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="A service has 10 million daily active users, and each user performs "
                 "about 5 writes per day. Which estimate of write load is most reasonable?",
                 options=_options(
-                    "Roughly 580 writes per second on average; plan for peaks a few times higher.",
-                    "Roughly 58 writes per second on average.",
-                    "Roughly 5,800 writes per second on average.",
-                    "Roughly 50 million writes per second.",
+                    "Roughly 580 writes per second on average; plan for peaks a few times "
+                    "higher.",
+                    "Roughly 58 writes per second on average; a single small server is plenty.",
+                    "Roughly 5,800 writes per second on average; plan for a large sharded "
+                    "cluster.",
+                    "Roughly 50 million writes per second, since every one of the 10M users "
+                    "writes at once.",
                 ),
                 explanation="10M × 5 = 50M writes per day. A day has about 86,400 seconds "
                 "(close to 100,000 for quick math), so the average is about 580 writes per "
@@ -751,9 +779,12 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 options=_options(
                     "Cerca de 580 escritas por segundo em média; planejar picos algumas "
                     "vezes maiores.",
-                    "Cerca de 58 escritas por segundo em média.",
-                    "Cerca de 5.800 escritas por segundo em média.",
-                    "Cerca de 50 milhões de escritas por segundo.",
+                    "Cerca de 58 escritas por segundo em média; um único servidor pequeno "
+                    "dá conta.",
+                    "Cerca de 5.800 escritas por segundo em média; planejar um grande cluster "
+                    "com sharding.",
+                    "Cerca de 50 milhões de escritas por segundo, pois cada um dos 10M de "
+                    "usuários escreve ao mesmo tempo.",
                 ),
                 explanation="10M × 5 = 50M de escritas por dia. Um dia tem cerca de 86.400 "
                 "segundos (perto de 100.000 para a conta rápida), então a média é de cerca de "
@@ -825,11 +856,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt='Midway through, the interviewer asks: "What if traffic grows 10x?" '
                 "What is the best way to respond?",
                 options=_options(
-                    "Add sharding, a cache and a message queue everywhere, to be safe.",
-                    "Say the design already scales and move on.",
-                    "Start over with a distributed architecture from scratch.",
-                    "Re-run the estimates, identify which component becomes the bottleneck "
-                    "first, scale that one and say what stays unchanged.",
+                    "Add sharding, a cache and a message queue everywhere, to be safe, before "
+                    "measuring anything.",
+                    "Say the design already scales because it uses well-known components, and "
+                    "move on to the next topic quickly.",
+                    "Start over with a distributed architecture from scratch, designed for "
+                    "ten times the load.",
+                    "Re-run the estimates, find the first bottleneck, scale that component and "
+                    "say what stays unchanged.",
                 ),
                 explanation="Scaling questions test whether you can find the actual "
                 "bottleneck (database writes, a hot key, network bandwidth) from your numbers "
@@ -841,11 +875,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt='No meio da entrevista, o entrevistador pergunta: "E se o tráfego '
                 'crescer 10 vezes?" Qual é a melhor forma de responder?',
                 options=_options(
-                    "Adicionar sharding, cache e fila de mensagens em todo lugar, por segurança.",
-                    "Dizer que o design já escala e seguir em frente.",
-                    "Recomeçar com uma arquitetura distribuída do zero.",
-                    "Refazer as estimativas, identificar qual componente vira o gargalo "
-                    "primeiro, escalar esse e dizer o que permanece igual.",
+                    "Adicionar sharding, cache e fila de mensagens em todo lugar, por "
+                    "segurança, antes de medir qualquer coisa.",
+                    "Dizer que o design já escala porque usa componentes conhecidos e passar "
+                    "rapidamente para o próximo assunto.",
+                    "Recomeçar com uma arquitetura distribuída do zero, pensada para dez "
+                    "vezes a carga.",
+                    "Refazer as estimativas, achar o primeiro gargalo, escalar esse "
+                    "componente e dizer o que permanece igual.",
                 ),
                 explanation="Perguntas de escala testam se você consegue achar o gargalo real "
                 "(escritas no banco, uma hot key, banda de rede) a partir dos seus números e "
@@ -868,11 +905,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="Twenty minutes in, you realize you misunderstood a requirement and part "
                 "of your design contradicts it. What should you do?",
                 options=_options(
-                    "Keep going and hope the interviewer does not notice.",
+                    "Keep going and hope the interviewer does not notice, then patch it "
+                    "quietly if they ask.",
                     "Say so, confirm the correct requirement, and adjust only the affected "
-                    "parts while explaining the impact.",
-                    "Discard the whole design and restart from the requirements.",
-                    "Argue that your interpretation was also reasonable.",
+                    "parts, explaining the impact.",
+                    "Discard the whole design and restart from the requirements, using the "
+                    "remaining time to redo everything.",
+                    "Argue that your interpretation was also reasonable, since the original "
+                    "wording was ambiguous.",
                 ),
                 explanation="Interviewers expect requirements to be revised during a real "
                 "design discussion; what they evaluate is how you react. Naming the issue and "
@@ -884,11 +924,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="Vinte minutos depois, você percebe que entendeu errado um requisito e "
                 "parte do seu design o contradiz. O que fazer?",
                 options=_options(
-                    "Continuar e torcer para o entrevistador não perceber.",
+                    "Continuar e torcer para o entrevistador não perceber, corrigindo em "
+                    "silêncio se ele perguntar.",
                     "Dizer isso, confirmar o requisito correto e ajustar só as partes "
                     "afetadas, explicando o impacto.",
-                    "Descartar o design inteiro e recomeçar pelos requisitos.",
-                    "Argumentar que sua interpretação também era razoável.",
+                    "Descartar o design inteiro e recomeçar pelos requisitos, usando o tempo "
+                    "restante para refazer tudo.",
+                    "Argumentar que sua interpretação também era razoável, já que o enunciado "
+                    "original era ambíguo.",
                 ),
                 explanation="Os entrevistadores esperam que os requisitos sejam revistos "
                 "durante uma discussão de design real; o que avaliam é como você reage. Nomear "
@@ -913,12 +956,14 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 "about 15 minutes left for deep dives. Which choice is strongest?",
                 options=_options(
                     "Go deep on the component you know best, so you can answer follow-ups "
-                    "confidently.",
-                    "Spend one minute on each component so that everything is covered.",
+                    "confidently and avoid the risky parts of the design.",
+                    "Spend one minute on each component so that everything is covered and "
+                    "nothing looks neglected.",
                     "Propose one or two components where the hardest requirement-driven "
-                    "trade-offs live (for example message delivery and ordering, or group "
-                    "fan-out), and confirm the choice with the interviewer.",
-                    "Detail the database schema, including every column and type.",
+                    "trade-offs live (such as message delivery and ordering) and confirm the "
+                    "choice with the interviewer.",
+                    "Detail the database schema, including every column, type and index, and "
+                    "justify the type of each field.",
                 ),
                 explanation="Deep dives are chosen where the interesting trade-offs are, "
                 "which come from the requirements, and the interviewer gets a say in what "
@@ -931,12 +976,15 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 "cerca de 15 minutos para os deep dives. Qual escolha é a mais forte?",
                 options=_options(
                     "Aprofundar o componente que você conhece melhor, para responder com "
-                    "segurança às perguntas seguintes.",
-                    "Gastar um minuto em cada componente para cobrir tudo.",
+                    "segurança às perguntas seguintes e evitar as partes arriscadas do "
+                    "design.",
+                    "Gastar um minuto em cada componente para cobrir tudo e não parecer que "
+                    "algo foi negligenciado.",
                     "Propor um ou dois componentes onde estão os trade-offs mais difíceis "
-                    "ditados pelos requisitos (por exemplo, entrega e ordenação de mensagens, "
-                    "ou fan-out de grupos) e confirmar a escolha com o entrevistador.",
-                    "Detalhar o schema do banco, com todas as colunas e tipos.",
+                    "ditados pelos requisitos (como entrega e ordenação de mensagens) e "
+                    "confirmar a escolha com o entrevistador.",
+                    "Detalhar o schema do banco, com todas as colunas, tipos e índices, "
+                    "justificando o tipo de cada campo.",
                 ),
                 explanation="Os deep dives são escolhidos onde estão os trade-offs "
                 "interessantes, que vêm dos requisitos, e o entrevistador opina sobre o que "
