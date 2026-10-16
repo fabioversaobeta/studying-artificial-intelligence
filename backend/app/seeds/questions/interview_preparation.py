@@ -619,8 +619,7 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 options=_options(
                     "To produce exact numbers that the interviewer will verify line by line "
                     "against a reference answer.",
-                    "To show off your arithmetic speed and prove you can calculate under "
-                    "pressure.",
+                    "To show off your arithmetic speed and prove you can calculate under pressure.",
                     "To fill time while you think about the architecture, so there are no "
                     "awkward silences.",
                     "To get order-of-magnitude figures (requests per second, storage) that "
@@ -680,8 +679,7 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                     "Usuários podem seguir e deixar de seguir outros usuários e ver a lista "
                     "dos seus próprios seguidores.",
                     "Usuários podem anexar uma foto a uma publicação e adicionar uma legenda.",
-                    "Moderadores podem remover uma publicação que viole as regras da "
-                    "comunidade.",
+                    "Moderadores podem remover uma publicação que viole as regras da comunidade.",
                 ),
                 explanation="Requisitos não funcionais descrevem qualidades como latência, "
                 "disponibilidade, consistência e escala. Os outros três descrevem coisas que "
@@ -759,11 +757,9 @@ _SYSTEM_DESIGN: tuple[QuestionSeed, ...] = (
                 prompt="A service has 10 million daily active users, and each user performs "
                 "about 5 writes per day. Which estimate of write load is most reasonable?",
                 options=_options(
-                    "Roughly 580 writes per second on average; plan for peaks a few times "
-                    "higher.",
+                    "Roughly 580 writes per second on average; plan for peaks a few times higher.",
                     "Roughly 58 writes per second on average; a single small server is plenty.",
-                    "Roughly 5,800 writes per second on average; plan for a large sharded "
-                    "cluster.",
+                    "Roughly 5,800 writes per second on average; plan for a large sharded cluster.",
                     "Roughly 50 million writes per second, since every one of the 10M users "
                     "writes at once.",
                 ),
@@ -1584,8 +1580,7 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                     "details.",
                     "List every alternative you considered, with its pros and cons, before "
                     "saying what you chose.",
-                    "Say it was obvious to anyone with experience and move on to the next "
-                    "topic.",
+                    "Say it was obvious to anyone with experience and move on to the next topic.",
                 ),
                 explanation="Leading with the conclusion lets the listener follow everything "
                 "that comes after it and lets them interrupt early if they disagree. A "
@@ -1696,8 +1691,7 @@ _COMMUNICATION: tuple[QuestionSeed, ...] = (
                     "primeiro ao último minuto.",
                     "Distrai o entrevistador de pequenos bugs no seu código, e por isso ele "
                     "tem menos chance de notá-los.",
-                    "Garante que a solução escrita esteja correta, porque você explica cada "
-                    "linha.",
+                    "Garante que a solução escrita esteja correta, porque você explica cada linha.",
                 ),
                 explanation="Os entrevistadores avaliam o processo além do resultado, e um "
                 "processo visível também permite que eles te orientem se você se desviar. "
