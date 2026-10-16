@@ -1551,11 +1551,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "notifications can all react to the same event. Both are asynchronous, and both "
             "can be durable, so those are not the distinguishing factors.",
             _options(
-                "A work queue is synchronous, while pub/sub is asynchronous.",
-                "Pub/sub messages are never persisted, while queue messages always are.",
+                "A work queue is synchronous, while pub/sub is asynchronous and "
+                "fire-and-forget.",
+                "Pub/sub messages are never persisted, while queue messages are always "
+                "written to disk before delivery.",
                 "In a work queue each message is handled by one consumer; in pub/sub each "
-                "subscriber receives its own copy of every message.",
-                "A work queue can have only one consumer, while pub/sub has many.",
+                "subscriber gets its own copy.",
+                "A work queue can have only one consumer process attached at a time, while "
+                "pub/sub can have many subscribers.",
             ),
         ),
         _t(
@@ -1567,11 +1570,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "analytics e notificações podem reagir ao mesmo evento. Ambos são assíncronos e "
             "ambos podem ser duráveis, então esses não são os fatores que os distinguem.",
             _options(
-                "Uma fila de trabalho é síncrona, enquanto o pub/sub é assíncrono.",
-                "Mensagens de pub/sub nunca são persistidas, enquanto as de fila sempre são.",
+                "Uma fila de trabalho é síncrona, enquanto o pub/sub é assíncrono e do tipo "
+                "fire-and-forget.",
+                "Mensagens de pub/sub nunca são persistidas, enquanto as de fila são sempre "
+                "gravadas em disco antes da entrega.",
                 "Em uma fila de trabalho cada mensagem é tratada por um consumidor; no "
-                "pub/sub cada assinante recebe sua própria cópia de toda mensagem.",
-                "Uma fila de trabalho só pode ter um consumidor, enquanto o pub/sub tem vários.",
+                "pub/sub cada assinante recebe sua própria cópia.",
+                "Uma fila de trabalho só pode ter um processo consumidor ligado por vez, "
+                "enquanto o pub/sub pode ter vários assinantes.",
             ),
         ),
     ),
@@ -1591,9 +1597,11 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "once. Duplicates are expected, loss is not allowed by the guarantee, and global "
             "ordering is not part of it.",
             _options(
-                "Messages are never duplicated, so no special handling is needed.",
+                "Messages are never duplicated, so no special handling is needed in the "
+                "consumer.",
                 "Messages may be lost, so the consumer must poll the database as a backup.",
-                "Messages always arrive in the global order they were published.",
+                "Messages always arrive in the global order they were published, across all "
+                "partitions.",
                 "The same message may arrive more than once, so processing must be idempotent.",
             ),
         ),
@@ -1606,10 +1614,12 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "o mesmo efeito que processá-la uma vez. Duplicatas são esperadas, a perda não é "
             "permitida pela garantia, e ordenação global não faz parte dela.",
             _options(
-                "As mensagens nunca são duplicadas, então nenhum tratamento especial é necessário.",
+                "As mensagens nunca são duplicadas, então nenhum tratamento especial é "
+                "necessário no consumidor.",
                 "As mensagens podem se perder, então o consumidor deve consultar o banco "
                 "como reserva.",
-                "As mensagens sempre chegam na ordem global em que foram publicadas.",
+                "As mensagens sempre chegam na ordem global em que foram publicadas, em todas "
+                "as partições.",
                 "A mesma mensagem pode chegar mais de uma vez, então o processamento deve ser "
                 "idempotente.",
             ),
@@ -1632,11 +1642,13 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "delivery, it does not remove the need for failure handling (retries, duplicates, "
             "dead letters), and the email is sent later, not before the order response.",
             _options(
-                "Order processing keeps working when the email service is slow or down, and "
-                "the queue absorbs traffic spikes.",
-                "It guarantees that each email is sent exactly once.",
-                "It removes the need to handle failures in the email service.",
-                "The email is guaranteed to be sent before the order response returns.",
+                "Orders keep succeeding when the email service is slow or down, and the queue "
+                "absorbs spikes.",
+                "It guarantees that each email is sent exactly once, even after a crash.",
+                "It removes the need to handle failures in the email service or retry "
+                "anything.",
+                "The email is guaranteed to be sent before the order response returns to the "
+                "client, keeping both in step.",
             ),
         ),
         _t(
@@ -1650,11 +1662,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "duplicatas, dead letters), e o e-mail é enviado depois, não antes da resposta "
             "do pedido.",
             _options(
-                "O processamento de pedidos continua funcionando quando o serviço de e-mail "
-                "está lento ou fora do ar, e a fila absorve picos de tráfego.",
-                "Garante que cada e-mail seja enviado exatamente uma vez.",
-                "Elimina a necessidade de tratar falhas no serviço de e-mail.",
-                "O e-mail é garantidamente enviado antes de a resposta do pedido retornar.",
+                "Os pedidos continuam funcionando quando o serviço de e-mail está lento ou "
+                "fora do ar, e a fila absorve picos.",
+                "Garante que cada e-mail seja enviado exatamente uma vez, mesmo após uma "
+                "queda.",
+                "Elimina a necessidade de tratar falhas no serviço de e-mail ou de repetir "
+                "qualquer coisa.",
+                "O e-mail é garantidamente enviado antes de a resposta do pedido voltar ao "
+                "cliente, mantendo os dois em sincronia.",
             ),
         ),
     ),
@@ -1676,13 +1691,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sender produces at-least-once, and acknowledging before processing risks "
             "losing the message on a crash.",
             _options(
-                "Any broker provides it once acknowledgements are enabled.",
-                "It is not generally achievable end to end; in practice you combine "
-                "at-least-once delivery with idempotent processing to get exactly-once "
-                "effects.",
-                "At-most-once delivery plus retries on the sender gives exactly-once.",
+                "Any broker provides it automatically once acknowledgements are enabled on "
+                "the consumer side.",
+                "It is not generally achievable end to end; in practice you pair "
+                "at-least-once delivery with idempotent processing.",
+                "At-most-once delivery combined with automatic retries on the sender gives "
+                "exactly-once delivery.",
                 "Acknowledging each message before processing it guarantees exactly-once "
-                "processing.",
+                "processing, even if the consumer crashes midway.",
             ),
         ),
         _t(
@@ -1696,13 +1712,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deduplicam, repetir um remetente at-most-once produz at-least-once, e dar "
             "acknowledge antes de processar arrisca perder a mensagem em uma queda.",
             _options(
-                "Qualquer broker a fornece quando os acknowledgements estão habilitados.",
+                "Qualquer broker a fornece automaticamente quando os acknowledgements estão "
+                "habilitados no consumidor.",
                 "Geralmente não é alcançável de ponta a ponta; na prática combina-se "
-                "entrega at-least-once com processamento idempotente para obter efeitos "
-                "exactly-once.",
-                "Entrega at-most-once mais retries no remetente resulta em exactly-once.",
+                "entrega at-least-once com processamento idempotente.",
+                "Entrega at-most-once combinada com retries automáticos no remetente resulta "
+                "em entrega exactly-once.",
                 "Dar acknowledge em cada mensagem antes de processá-la garante "
-                "processamento exactly-once.",
+                "processamento exactly-once, mesmo que o consumidor caia no meio.",
             ),
         ),
     ),
@@ -1764,13 +1781,13 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "gap, in-memory buffers lose events on a crash, and distributed two-phase commit "
             "is a different (and heavier) technique.",
             _options(
-                "Publish to the broker first, then write to the database, retrying forever "
-                "if the write fails.",
+                "Publish to the broker first, then write to the database, retrying the "
+                "database write forever if it fails.",
                 "Keep events in an in-memory list and flush them to the broker every few seconds.",
                 "Run a distributed two-phase commit between the database and the broker for "
-                "every request.",
+                "every request, holding locks until both agree.",
                 "Insert the event into an outbox table in the same transaction as the state "
-                "change; a separate relay publishes the rows and marks them as sent.",
+                "change; a relay publishes the rows.",
             ),
         ),
         _t(
@@ -1783,14 +1800,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "reintroduz a lacuna do dual-write, buffers em memória perdem eventos em uma "
             "queda, e two-phase commit distribuído é uma técnica diferente (e mais pesada).",
             _options(
-                "Publicar no broker primeiro e depois gravar no banco, repetindo para sempre "
-                "se a gravação falhar.",
+                "Publicar no broker primeiro e depois gravar no banco, repetindo a gravação "
+                "para sempre se ela falhar.",
                 "Manter os eventos em uma lista em memória e descarregá-los no broker a cada "
                 "alguns segundos.",
                 "Executar um two-phase commit distribuído entre o banco e o broker em toda "
-                "requisição.",
+                "requisição, mantendo locks até ambos concordarem.",
                 "Inserir o evento em uma tabela outbox na mesma transação da mudança de "
-                "estado; um relay separado publica as linhas e as marca como enviadas.",
+                "estado; um relay publica as linhas.",
             ),
         ),
     ),
@@ -1902,11 +1919,12 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "keys lose per-order ordering, sleeping in the consumer is a fragile guess about "
             "timing, and a single partition gives up the parallelism you wanted.",
             _options(
-                "Use random keys for an even spread and let the consumers sort events by "
-                "timestamp.",
-                "Use a single partition for the whole topic and a single consumer.",
+                "Use random keys for an even spread and let the consumers reorder events by "
+                "timestamp before processing.",
+                "Use a single partition for the whole topic and a single consumer, so order "
+                "is trivially kept.",
                 "Publish with the order id as the partition key, so all events of an order "
-                "land in the same partition and are consumed in sequence.",
+                "land in one partition.",
                 "Make the consumer sleep a few seconds when it receives `Paid` before `Created`.",
             ),
         ),
@@ -1922,11 +1940,11 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sobre tempo, e uma única partição abre mão do paralelismo desejado.",
             _options(
                 "Usar chaves aleatórias para uma distribuição uniforme e deixar os "
-                "consumidores ordenarem os eventos por timestamp.",
-                "Usar uma única partição para o tópico inteiro e um único consumidor.",
+                "consumidores reordenarem os eventos por timestamp antes de processar.",
+                "Usar uma única partição para o tópico inteiro e um único consumidor, de "
+                "modo que a ordem seja trivialmente mantida.",
                 "Publicar com o id do pedido como chave de partição, de modo que todos os "
-                "eventos de um pedido caiam na mesma partição e sejam consumidos em "
-                "sequência.",
+                "eventos de um pedido caiam em uma partição.",
                 "Fazer o consumidor dormir alguns segundos ao receber `Paid` antes de `Created`.",
             ),
         ),
