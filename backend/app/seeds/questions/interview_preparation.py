@@ -1053,14 +1053,17 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
         source=AI,
         text={
             Language.EN: QuestionText(
-                prompt='An interviewer asks: "Tell me about a time you failed." Which approach '
-                "is best?",
+                prompt='An interviewer asks: "Tell me about a time you failed." They look for '
+                "honesty, ownership and concrete learning. Which approach is best?",
                 options=_options(
-                    "Describe a real failure with genuine consequences, own your part in it, "
-                    "and explain what you changed afterwards.",
-                    'Describe a disguised strength, such as "I care too much about quality."',
-                    "Explain how outside circumstances made the failure unavoidable.",
-                    "Say you cannot think of one, because you prepare carefully.",
+                    "Describe a real failure with genuine consequences, own your part, and "
+                    "explain what you changed afterwards.",
+                    'Describe a disguised strength, such as "I care too much about quality," '
+                    "and explain how it helped the team.",
+                    "Explain how outside circumstances, such as unclear requirements and a "
+                    "tight deadline, made the failure unavoidable.",
+                    "Say you cannot think of one, because you prepare carefully and "
+                    "double-check everything.",
                 ),
                 explanation="This question probes self-awareness and growth. A real failure, "
                 "honest ownership and a concrete change in behavior show all of that. "
@@ -1070,14 +1073,17 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
             ),
             Language.PT_BR: QuestionText(
                 prompt='Um entrevistador pergunta: "Conte sobre uma vez em que você '
-                'falhou." Qual abordagem é a melhor?',
+                'falhou." Ele procura honestidade, responsabilidade e aprendizado concreto. '
+                "Qual abordagem é a melhor?",
                 options=_options(
-                    "Descrever uma falha real, com consequências genuínas, assumir sua parte "
-                    "nela e explicar o que você mudou depois.",
+                    "Descrever uma falha real, com consequências genuínas, assumir sua parte e "
+                    "explicar o que você mudou depois.",
                     'Descrever uma qualidade disfarçada, como "eu me importo demais com '
-                    'qualidade".',
-                    "Explicar como circunstâncias externas tornaram a falha inevitável.",
-                    "Dizer que não lembra de nenhuma, porque você se prepara com cuidado.",
+                    'qualidade", e explicar como isso ajudou a equipe.',
+                    "Explicar como circunstâncias externas, como requisitos pouco claros e um "
+                    "prazo apertado, tornaram a falha inevitável.",
+                    "Dizer que não lembra de nenhuma, porque você se prepara com cuidado e "
+                    "confere tudo duas vezes.",
                 ),
                 explanation="Essa pergunta avalia autoconsciência e crescimento. Uma falha "
                 "real, a responsabilidade assumida com honestidade e uma mudança concreta de "
@@ -1101,11 +1107,14 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 'Interviewers keep asking "but what did *you* do?" What is the best way to '
                 "tell the story?",
                 options=_options(
-                    'Use "we" throughout to show you are a team player.',
-                    "Claim the whole result as your own so your impact is clear.",
-                    "Skip the team context entirely and talk only about code.",
-                    'Give the team context briefly, then say "I" for your own decisions '
-                    "and actions, crediting teammates for theirs.",
+                    'Use "we" throughout to show you are a team player and that the result '
+                    "belonged to everyone.",
+                    "Claim the whole result as your own, including the parts teammates built, "
+                    "so your impact is unmistakable.",
+                    "Skip the team context entirely and talk only about the code you wrote and "
+                    "the tools you used.",
+                    'Give the team context briefly, then say "I" for your own decisions and '
+                    "credit teammates for theirs.",
                 ),
                 explanation="The interviewer is hiring you, not the team, so they need to "
                 "see your specific contribution. Using only 'we' hides it, while taking credit "
@@ -1118,11 +1127,14 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 'pessoas. Os entrevistadores insistem em perguntar "mas o que *você* fez?". '
                 "Qual é a melhor forma de contar a história?",
                 options=_options(
-                    'Usar "nós" o tempo todo para mostrar que você trabalha bem em equipe.',
-                    "Atribuir todo o resultado a si mesmo para deixar seu impacto claro.",
-                    "Pular o contexto da equipe e falar apenas de código.",
-                    'Dar o contexto da equipe rapidamente e então dizer "eu" para as suas '
-                    "decisões e ações, dando crédito aos colegas pelas deles.",
+                    'Usar "nós" o tempo todo para mostrar que você trabalha bem em equipe e '
+                    "que o resultado foi de todos.",
+                    "Atribuir todo o resultado a si mesmo, inclusive o que os colegas "
+                    "construíram, para deixar seu impacto inequívoco.",
+                    "Pular o contexto da equipe e falar apenas do código que você escreveu e "
+                    "das ferramentas que usou.",
+                    'Dar o contexto da equipe rapidamente e dizer "eu" para as suas decisões, '
+                    "dando crédito aos colegas pelas deles.",
                 ),
                 explanation="O entrevistador está contratando você, não a equipe, então "
                 "precisa ver sua contribuição específica. Usar só 'nós' a esconde, enquanto "
@@ -1146,14 +1158,19 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 "look for a specific example, ownership of your own part, collaboration and a "
                 "clear outcome. Which answer summary meets those criteria best?",
                 options=_options(
-                    '"A colleague kept writing sloppy code. I told the team how careless '
-                    'they were and eventually they changed."',
-                    '"We disagreed on whether to build a queue or call the service '
-                    "directly. I asked about their constraints, realized I had underweighted "
-                    "operational cost, and we agreed to prototype both and compare latency. "
-                    'We shipped the simpler option, and we still pair on design reviews."',
-                    '"I have never had a real conflict; I get along with everyone."',
-                    '"I escalated to my manager right away and they decided for us."',
+                    '"A colleague kept writing sloppy code that slowed the whole team down. '
+                    "After weeks of frustration, I told everyone in the retro how careless "
+                    "they were and how much extra work it created for me, and eventually they "
+                    'changed their habits and our velocity recovered."',
+                    '"We disagreed on a queue versus a direct service call. I asked about '
+                    "their constraints, realized I had underweighted operational cost, and we "
+                    "prototyped both and compared latency. We shipped the simpler option and "
+                    'still pair on design reviews."',
+                    '"I have never had a real conflict at work; I get along with everyone, '
+                    "and when opinions differ I simply adapt to what the team prefers. "
+                    'There is nothing to tell."',
+                    '"I escalated to my manager right away, laid out both positions, and '
+                    'they decided for us so the project could keep moving."',
                 ),
                 explanation="The strongest answer is one concrete event, shows curiosity about "
                 "the other view, admits where the narrator was wrong, uses evidence to resolve "
@@ -1167,15 +1184,20 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 "parte, colaboração e um resultado claro. Qual resumo de resposta atende "
                 "melhor a esses critérios?",
                 options=_options(
-                    '"Um colega escrevia código descuidado. Eu disse ao time como ele era '
-                    'relaxado e, com o tempo, ele mudou."',
-                    '"Discordamos sobre criar uma fila ou chamar o serviço diretamente. '
+                    '"Um colega escrevia código descuidado que atrasava o time inteiro. Depois '
+                    "de semanas de frustração, eu disse a todos na retro como ele era "
+                    "relaxado e quanto trabalho extra isso me causava e, com o tempo, ele "
+                    'mudou os hábitos e nossa velocidade se recuperou."',
+                    '"Discordamos sobre uma fila versus uma chamada direta ao serviço. '
                     "Perguntei sobre as restrições dele, percebi que eu tinha subestimado o "
-                    "custo operacional e combinamos prototipar as duas opções e comparar a "
-                    "latência. Entregamos a opção mais simples e ainda fazemos design reviews "
+                    "custo operacional e prototipamos as duas opções e comparamos a latência. "
+                    "Entregamos a opção mais simples e ainda fazemos design reviews "
                     'juntos."',
-                    '"Nunca tive um conflito de verdade; eu me dou bem com todo mundo."',
-                    '"Escalei para o meu gestor imediatamente e ele decidiu por nós."',
+                    '"Nunca tive um conflito de verdade no trabalho; eu me dou bem com todo '
+                    "mundo e, quando as opiniões divergem, simplesmente me adapto ao que o "
+                    'time prefere. Não há nada a contar."',
+                    '"Escalei para o meu gestor imediatamente, expus as duas posições e ele '
+                    'decidiu por nós para o projeto continuar andando."',
                 ),
                 explanation="A resposta mais forte é um evento concreto, mostra curiosidade "
                 "pelo outro ponto de vista, admite onde o narrador errou, usa evidências para "
@@ -1200,11 +1222,13 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 "effective preparation?",
                 options=_options(
                     "Write and memorize a word-for-word script for every question you can "
-                    "think of.",
-                    "Prepare one excellent story and reuse it for every question.",
-                    "Prepare a different story for each possible question and never repeat any.",
-                    "Pick a handful of real, substantial experiences, map each to several "
-                    "themes, and rehearse short versions you can emphasize differently.",
+                    "think of, and recite it in the interview.",
+                    "Prepare one excellent story and reuse it for every question, adjusting "
+                    "only the opening sentence.",
+                    "Prepare a different story for each possible question, never repeating "
+                    "any, and drill them in the order they might be asked.",
+                    "Pick a handful of real experiences, map each to several themes, and "
+                    "rehearse short versions you can emphasize differently.",
                 ),
                 explanation="A small story bank that covers multiple themes is flexible: the "
                 "same project can illustrate ambiguity in one answer and leadership in "
@@ -1218,13 +1242,13 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 "preparação mais eficaz?",
                 options=_options(
                     "Escrever e decorar um roteiro palavra por palavra para cada pergunta "
-                    "imaginável.",
-                    "Preparar uma única história excelente e reutilizá-la em todas as perguntas.",
-                    "Preparar uma história diferente para cada pergunta possível e nunca "
-                    "repetir nenhuma.",
-                    "Escolher algumas experiências reais e substanciais, associar cada uma a "
-                    "vários temas e ensaiar versões curtas que você possa enfatizar de formas "
-                    "diferentes.",
+                    "imaginável e recitá-lo na entrevista.",
+                    "Preparar uma única história excelente e reutilizá-la em todas as "
+                    "perguntas, ajustando só a frase de abertura.",
+                    "Preparar uma história diferente para cada pergunta possível, sem repetir "
+                    "nenhuma, e treiná-las na ordem em que podem ser feitas.",
+                    "Escolher algumas experiências reais, associar cada uma a vários temas e "
+                    "ensaiar versões curtas que você possa enfatizar de formas diferentes.",
                 ),
                 explanation="Um pequeno banco de histórias que cobre vários temas é flexível: "
                 "o mesmo projeto pode ilustrar ambiguidade em uma resposta e liderança em "
@@ -1290,11 +1314,14 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 prompt="You are asked to describe a time you led a project without formal "
                 "authority, and no experience fits exactly. What should you do?",
                 options=_options(
-                    "Take a moment, pick the closest real experience, and say how it relates "
-                    "to the question, noting any difference in context.",
-                    "Invent a convincing story, since nobody can verify it.",
-                    'Answer hypothetically with "I would..." and describe an ideal approach.',
-                    "Say you have not had that experience and wait for the next question.",
+                    "Take a moment, pick the closest real experience, and say how it "
+                    "relates, noting any difference in context.",
+                    "Invent a convincing story that fits the question exactly, since nobody in "
+                    "the room can verify it.",
+                    'Answer hypothetically with "I would...", describing in detail the ideal '
+                    "approach you would follow.",
+                    "Say you have not had that experience and politely ask to move on to the "
+                    "next question.",
                 ),
                 explanation="Pausing to choose a relevant real example is normal, and "
                 "being open about the context gap is honest and still gives evidence. "
@@ -1308,11 +1335,13 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 "fazer?",
                 options=_options(
                     "Pedir um momento, escolher a experiência real mais próxima e explicar "
-                    "como ela se relaciona com a pergunta, apontando a diferença de contexto.",
-                    "Inventar uma história convincente, já que ninguém pode verificar.",
-                    'Responder de forma hipotética, com "eu faria...", descrevendo uma '
-                    "abordagem ideal.",
-                    "Dizer que não teve essa experiência e esperar a próxima pergunta.",
+                    "como ela se relaciona, apontando a diferença de contexto.",
+                    "Inventar uma história convincente que se encaixe exatamente na pergunta, "
+                    "já que ninguém na sala pode verificar.",
+                    'Responder de forma hipotética, com "eu faria...", descrevendo em '
+                    "detalhes a abordagem ideal que você seguiria.",
+                    "Dizer que não teve essa experiência e pedir educadamente para passar à "
+                    "próxima pergunta.",
                 ),
                 explanation="Fazer uma pausa para escolher um exemplo real relevante é "
                 "normal, e ser claro sobre a diferença de contexto é honesto e ainda traz "
@@ -1337,12 +1366,14 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 'want to use it for "tell me about a challenging project." How should you '
                 "handle the Result?",
                 options=_options(
-                    "Skip the Result and end the story at the last thing you built.",
+                    "Skip the Result and end the story at the last thing you built, then move "
+                    "on to the next question.",
                     "Say the project was a success because the team learned a lot, without "
-                    "mentioning the cancellation.",
-                    "State plainly that it was cancelled, say why you understand that "
-                    "happened, and describe what you took from it and applied later.",
-                    "Blame the leadership's decision and explain why they were wrong.",
+                    "mentioning the cancellation at all.",
+                    "State plainly that it was cancelled, say why you think that happened, "
+                    "and describe what you applied later.",
+                    "Blame the leadership's decision and explain in detail why they were "
+                    "wrong to cancel a project that was on track.",
                 ),
                 explanation="A mixed or negative outcome is acceptable if you are honest and "
                 "reflective. Omitting the Result looks evasive, reframing a cancellation as a "
@@ -1355,12 +1386,14 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 'lançamento e quer usá-lo para "conte sobre um projeto desafiador". Como '
                 "tratar o Result?",
                 options=_options(
-                    "Pular o Result e encerrar a história na última coisa que você construiu.",
+                    "Pular o Result e encerrar a história na última coisa que você construiu, "
+                    "passando logo para a próxima pergunta.",
                     "Dizer que o projeto foi um sucesso porque a equipe aprendeu muito, sem "
                     "mencionar o cancelamento.",
                     "Dizer com clareza que foi cancelado, explicar por que entende que isso "
-                    "aconteceu e descrever o que tirou dessa experiência e aplicou depois.",
-                    "Culpar a decisão da liderança e explicar por que ela estava errada.",
+                    "aconteceu e o que aplicou depois.",
+                    "Culpar a decisão da liderança e explicar em detalhes por que ela errou ao "
+                    "cancelar um projeto que ia bem.",
                 ),
                 explanation="Um resultado misto ou negativo é aceitável se você for honesto "
                 "e reflexivo. Omitir o Result parece evasivo, reapresentar um cancelamento "
@@ -1383,12 +1416,16 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 prompt='"Tell me about a decision you made with incomplete information." '
                 "Which answer summary best shows sound judgment?",
                 options=_options(
-                    '"I kept collecting data for three weeks until I was certain, then decided."',
+                    '"I kept collecting data for three weeks, running more analyses each time '
+                    "something looked unclear, until I was completely certain, and only then "
+                    'made the decision."',
                     '"I listed what I knew and did not know, chose the option that was '
-                    "easiest to reverse, told stakeholders my confidence level and what would "
-                    'make me change course, and reviewed the outcome at a set checkpoint."',
-                    '"I trusted my gut because of my experience, and it worked out."',
-                    '"I escalated so my manager would own the decision."',
+                    "easiest to reverse, told stakeholders my confidence and what would change "
+                    'my mind, and reviewed the outcome at a set checkpoint."',
+                    '"I trusted my gut because of my years of experience, did not discuss it '
+                    'with anyone to avoid slowing things down, and it worked out."',
+                    '"I escalated the question to my manager and the leadership team so that '
+                    'they would own the decision and the risk."',
                 ),
                 explanation="Incomplete information is the normal case, so good judgment is "
                 "about bounding the risk: separating known from unknown, preferring "
@@ -1400,14 +1437,18 @@ _BEHAVIORAL: tuple[QuestionSeed, ...] = (
                 prompt='"Conte sobre uma decisão que você tomou com informação '
                 'incompleta." Qual resumo de resposta melhor demonstra bom julgamento?',
                 options=_options(
-                    '"Continuei coletando dados por três semanas até ter certeza e só '
-                    'então decidi."',
+                    '"Continuei coletando dados por três semanas, rodando mais análises '
+                    "sempre que algo parecia incerto, até ter certeza absoluta, e só então "
+                    'decidi."',
                     '"Listei o que eu sabia e o que não sabia, escolhi a opção mais fácil '
-                    "de reverter, contei aos stakeholders meu nível de confiança e o que me "
-                    "faria mudar de rumo, e revisei o resultado em um checkpoint "
+                    "de reverter, contei aos stakeholders minha confiança e o que me faria "
+                    "mudar de ideia, e revisei o resultado em um checkpoint "
                     'combinado."',
-                    '"Confiei na minha intuição por causa da minha experiência, e deu certo."',
-                    '"Escalei para que meu gestor fosse o dono da decisão."',
+                    '"Confiei na minha intuição, por causa de anos de experiência, não '
+                    "conversei com ninguém para não atrasar as coisas, e deu "
+                    'certo."',
+                    '"Escalei a questão para o meu gestor e para a liderança, para que eles '
+                    'fossem donos da decisão e do risco."',
                 ),
                 explanation="Informação incompleta é o caso normal, então bom julgamento é "
                 "limitar o risco: separar o conhecido do desconhecido, preferir escolhas "
