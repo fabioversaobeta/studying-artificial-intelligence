@@ -118,7 +118,7 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "about creating new instances (D).",
             (
                 "A class should expose only one public method.",
-                "A class should have only one reason to change: it serves a single concern.",
+                "A class should have a single reason to change: one concern.",
                 "A class should be split until each class is only a few lines long.",
                 "A class should be instantiated only once during the program's lifetime.",
             ),
@@ -131,8 +131,7 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "objetivo (C) e o SRP não diz nada sobre quantas instâncias são criadas (D).",
             (
                 "Uma classe deve expor apenas um método público.",
-                "Uma classe deve ter apenas um motivo para mudar, pois atende a uma única "
-                "preocupação.",
+                "Uma classe deve ter um único motivo para mudar: uma só preocupação.",
                 "Uma classe deve ser dividida até que cada uma tenha poucas linhas.",
                 "Uma classe deve ser instanciada uma única vez durante a vida do programa.",
             ),
@@ -152,11 +151,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "already tested and in use. Editing the existing branches (A), copying code (B) "
             "and making fields public (C) all increase the risk of breaking what works.",
             (
-                "Adding a new `elif` branch to a long conditional every time a new case appears.",
-                "Copy-pasting a class and tweaking the copy for each new customer.",
+                "Adding a new `elif` branch to the long conditional in `checkout()` each time a "
+                "new payment method appears.",
+                "Copy-pasting the checkout class and tweaking the copy for each new customer.",
                 "Making every field public so other code can extend the object freely.",
-                "Supporting a new payment method by adding a new class that implements an "
-                "existing `PaymentMethod` interface.",
+                "Supporting a new payment method with a new class implementing the existing "
+                "`PaymentMethod` interface.",
             ),
         ),
         _t(
@@ -166,12 +166,13 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "testado e em uso. Editar os ramos existentes (A), copiar código (B) e tornar "
             "campos públicos (C) aumentam o risco de quebrar o que já funciona.",
             (
-                "Adicionar um novo `elif` a uma condicional longa sempre que surge um caso novo.",
-                "Copiar e colar uma classe e ajustar a cópia para cada novo cliente.",
+                "Adicionar um novo `elif` à condicional longa em `checkout()` sempre que surge "
+                "um novo meio de pagamento.",
+                "Copiar e colar a classe de checkout e ajustar a cópia para cada novo cliente.",
                 "Tornar todos os campos públicos para que outro código possa estender o objeto "
                 "livremente.",
-                "Suportar um novo meio de pagamento criando uma nova classe que implementa a "
-                "interface `PaymentMethod` já existente.",
+                "Suportar um novo meio de pagamento com uma nova classe que implementa a "
+                "interface `PaymentMethod` existente.",
             ),
         ),
     ),
@@ -268,11 +269,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "change of a class, OCP (A) is not about interface width, and DIP (C) would not "
             "remove the unused methods.",
             (
-                "OCP; add a subclass for every device type.",
-                "SRP; split `LaserPrinter` into several concrete classes.",
-                "DIP; make the interface depend on the concrete `LaserPrinter`.",
+                "OCP; keep the wide interface and add a subclass for every new device type that "
+                "is released.",
+                "SRP; split `LaserPrinter` into several concrete classes, one per method.",
+                "DIP; make the interface depend on the concrete `LaserPrinter` class.",
                 "ISP; split the interface into small role interfaces (`Printer`, `Scanner`, "
-                "`Fax`) that each class picks from.",
+                "`Fax`).",
             ),
         ),
         _t(
@@ -287,11 +289,12 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "mudança de uma classe, o OCP (A) não é sobre a largura da interface e o DIP (C) "
             "não removeria os métodos sem uso.",
             (
-                "OCP; criar uma subclasse para cada tipo de dispositivo.",
-                "SRP; dividir `LaserPrinter` em várias classes concretas.",
-                "DIP; fazer a interface depender da `LaserPrinter` concreta.",
+                "OCP; manter a interface larga e criar uma subclasse para cada novo tipo de "
+                "dispositivo lançado.",
+                "SRP; dividir `LaserPrinter` em várias classes concretas, uma por método.",
+                "DIP; fazer a interface depender da classe concreta `LaserPrinter`.",
                 "ISP; dividir a interface em interfaces de papel pequenas (`Printer`, "
-                "`Scanner`, `Fax`) das quais cada classe escolhe o que precisa.",
+                "`Scanner`, `Fax`).",
             ),
         ),
     ),
@@ -362,11 +365,11 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "abstraction such as `OrderRepository`, owned by the high-level layer, which the "
             "Postgres class implements.",
             (
-                "Yes, because the dependency is injected rather than created with `new`.",
-                "No, because `OrderService` still depends on a concrete class; it should "
-                "depend on an `OrderRepository` abstraction.",
+                "Yes, because the dependency is injected through the constructor rather than "
+                "created with `new`.",
+                "No, because `OrderService` still names a concrete class, not an abstraction.",
                 "Yes, because a container is in use and containers always invert dependencies.",
-                "No, because DIP forbids constructor injection and requires setters.",
+                "No, because DIP forbids constructor injection and requires setter injection.",
             ),
         ),
         _t(
@@ -380,11 +383,10 @@ SOLID_QUESTIONS: tuple[QuestionSeed, ...] = (
             "depender de uma abstração como `OrderRepository`, pertencente à camada de alto "
             "nível, que a classe do Postgres implementa.",
             (
-                "Sim, porque a dependência é injetada em vez de criada com `new`.",
-                "Não, porque o `OrderService` ainda depende de uma classe concreta; deveria "
-                "depender de uma abstração `OrderRepository`.",
+                "Sim, porque a dependência é injetada pelo construtor em vez de criada com `new`.",
+                "Não, porque o `OrderService` ainda cita uma classe concreta, não uma abstração.",
                 "Sim, porque há um contêiner em uso e contêineres sempre invertem dependências.",
-                "Não, porque o DIP proíbe injeção por construtor e exige setters.",
+                "Não, porque o DIP proíbe injeção por construtor e exige injeção por setter.",
             ),
         ),
     ),
@@ -587,10 +589,10 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "knowing the details. A describes Singleton, B describes Observer, and D "
             "describes Builder.",
             (
-                "Guarantee that a class has exactly one instance with a global access point.",
+                "Guarantee that a class has exactly one instance and provide a single global "
+                "access point to it.",
                 "Notify many dependents automatically when an object's state changes.",
-                "Encapsulate interchangeable algorithms behind a common interface so the "
-                "behavior can be swapped at runtime.",
+                "Put interchangeable algorithms behind a common interface, chosen at runtime.",
                 "Construct a complex object step by step through a readable sequence of calls.",
             ),
         ),
@@ -601,11 +603,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sem que o contexto conheça os detalhes. A descreve o Singleton, a B descreve o "
             "Observer e a D descreve o Builder.",
             (
-                "Garantir que uma classe tenha exatamente uma instância com um ponto de "
-                "acesso global.",
+                "Garantir que uma classe tenha exatamente uma instância e oferecer um único "
+                "ponto de acesso global a ela.",
                 "Notificar automaticamente vários dependentes quando o estado de um objeto muda.",
-                "Encapsular algoritmos intercambiáveis atrás de uma interface comum, para "
-                "trocar o comportamento em tempo de execução.",
+                "Colocar algoritmos intercambiáveis atrás de uma interface comum, escolhidos "
+                "em tempo de execução.",
                 "Construir um objeto complexo passo a passo por uma sequência legível de chamadas.",
             ),
         ),
@@ -705,9 +707,8 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Factory Method, to pick the concrete request class.",
                 "Observer, to notify the request about its own parameters.",
-                "Adapter, to convert the positional arguments into a dictionary.",
-                "Builder, to set each option through named steps and validate in a final "
-                "`build()`.",
+                "Adapter, to convert the positional arguments into a dictionary before each call.",
+                "Builder, to set options through named steps and validate in `build()`.",
             ),
         ),
         _t(
@@ -722,9 +723,9 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Factory Method, para escolher a classe concreta da requisição.",
                 "Observer, para notificar a requisição sobre seus próprios parâmetros.",
-                "Adapter, para converter os argumentos posicionais em um dicionário.",
-                "Builder, para definir cada opção por passos nomeados e validar em um "
-                "`build()` final.",
+                "Adapter, para converter os argumentos posicionais em um dicionário antes de "
+                "cada chamada.",
+                "Builder, para definir opções por passos nomeados e validar em `build()`.",
             ),
         ),
     ),
@@ -781,10 +782,10 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "handle) and, where available, weak references. Observers do not need to be "
             "singletons (B), and the other options do not describe a leak.",
             (
-                "Lapsed listeners: the subject keeps strong references until observers "
-                "explicitly unsubscribe.",
+                "Lapsed listeners: strong references are held until observers unsubscribe.",
                 "Observers must be singletons, so every screen shares one listener.",
-                "The subject should notify observers in separate processes to free memory.",
+                "The subject should notify observers in separate processes so that memory is "
+                "freed sooner.",
                 "Observer is limited to a single subscriber per event type.",
             ),
         ),
@@ -800,12 +801,12 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "disponível, usar referências fracas. Observadores não precisam ser singletons "
             "(B) e as demais opções não descrevem um vazamento.",
             (
-                "Lapsed listeners: o sujeito mantém referências fortes até que os "
-                "observadores cancelem a inscrição explicitamente.",
+                "Lapsed listeners: referências fortes são mantidas até os observadores "
+                "cancelarem a inscrição.",
                 "Os observadores precisam ser singletons, então toda tela compartilha um "
                 "único listener.",
-                "O sujeito deveria notificar os observadores em processos separados para "
-                "liberar memória.",
+                "O sujeito deveria notificar os observadores em processos separados para que a "
+                "memória seja liberada antes.",
                 "O Observer se limita a um único inscrito por tipo de evento.",
             ),
         ),
@@ -870,11 +871,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the decision logic still exists somewhere, so it does not remove every "
             "conditional (D).",
             (
-                "It guarantees that only one `Notifier` instance can ever exist.",
+                "It guarantees that only one `Notifier` instance can ever exist in the whole "
+                "application.",
                 "It makes every `Notifier` immutable.",
-                "Callers depend only on the `Notifier` interface, and adding a kind changes "
-                "one place instead of many.",
-                "It removes every conditional from the program.",
+                "Callers depend only on the `Notifier` interface; a new kind changes one place.",
+                "It removes every conditional from the program, since creation needs no decision.",
             ),
         ),
         _t(
@@ -888,11 +889,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(B), e a lógica de decisão continua existindo em algum lugar, então ela não "
             "remove todas as condicionais (D).",
             (
-                "Garante que só possa existir uma instância de `Notifier`.",
+                "Garante que só possa existir uma instância de `Notifier` em toda a aplicação.",
                 "Torna todo `Notifier` imutável.",
-                "Os chamadores dependem apenas da interface `Notifier`, e adicionar um tipo "
-                "altera um lugar em vez de vários.",
-                "Remove todas as condicionais do programa.",
+                "Os chamadores dependem apenas da interface `Notifier`; um novo tipo altera "
+                "um só lugar.",
+                "Remove todas as condicionais do programa, pois a criação não exige decisão.",
             ),
         ),
     ),
@@ -913,12 +914,13 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "know nothing about each other. Both use composition and an interface, and "
             "neither is structural in the GoF sense.",
             (
-                "Strategy needs an interface while State does not.",
-                "State uses inheritance of the context while Strategy uses composition.",
+                "Strategy needs an interface to be swapped through, while State works with "
+                "concrete classes only.",
+                "State relies on inheritance of the context class to change its behavior, "
+                "while Strategy relies on plain composition.",
                 "State is a structural pattern and Strategy is a creational pattern.",
-                "In State the object's behavior changes as its own state changes, often with "
-                "the state objects driving transitions; in Strategy the client chooses an "
-                "algorithm and the strategies are independent of each other.",
+                "In State, behavior follows the object's own lifecycle; in Strategy, the "
+                "client picks an independent algorithm.",
             ),
         ),
         _t(
@@ -931,13 +933,13 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "intercambiável e as estratégias não sabem nada umas das outras. Ambos usam "
             "composição e uma interface, e nenhum é estrutural no sentido do GoF.",
             (
-                "O Strategy precisa de uma interface, enquanto o State não.",
-                "O State usa herança do contexto, enquanto o Strategy usa composição.",
+                "O Strategy precisa de uma interface para ser trocado, enquanto o State "
+                "trabalha apenas com classes concretas.",
+                "O State depende da herança da classe de contexto para mudar seu "
+                "comportamento, enquanto o Strategy depende de composição simples.",
                 "O State é um padrão estrutural e o Strategy é um padrão de criação.",
-                "No State o comportamento do objeto muda conforme o próprio estado muda, "
-                "muitas vezes com os objetos de estado conduzindo as transições; no "
-                "Strategy o cliente escolhe um algoritmo e as estratégias são independentes "
-                "entre si.",
+                "No State o comportamento acompanha o ciclo de vida do próprio objeto; no "
+                "Strategy o cliente escolhe um algoritmo independente.",
             ),
         ),
     ),
@@ -1042,9 +1044,9 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "layers in both directions through interfaces, C describes strict layering that "
             "is not required, and D would break the rule for the innermost layer.",
             (
-                "Outer layers must never call inner layers at runtime.",
-                "Source-code dependencies must point inward, toward the higher-level "
-                "business policy.",
+                "Outer layers must never call inner layers at runtime, not even through "
+                "interfaces.",
+                "Source-code dependencies must point inward, toward business policy.",
                 "Every layer must depend on the layer directly below it and no other.",
                 "Entities may depend on frameworks as long as use cases do not.",
             ),
@@ -1058,9 +1060,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dois sentidos via interfaces, C descreve uma divisão estrita em camadas que "
             "não é exigida e D quebraria a regra para a camada mais interna.",
             (
-                "Camadas externas nunca devem chamar camadas internas em tempo de execução.",
+                "Camadas externas nunca devem chamar camadas internas em tempo de execução, "
+                "nem por interfaces.",
                 "As dependências de código-fonte devem apontar para dentro, em direção à "
-                "política de negócio de mais alto nível.",
+                "política de negócio.",
                 "Toda camada deve depender da camada imediatamente abaixo e de nenhuma outra.",
                 "Entidades podem depender de frameworks, desde que os casos de uso não dependam.",
             ),
@@ -1082,10 +1085,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "controller (B), a database trigger (C) or a UI component (D) ties them to a "
             "detail and duplicates them whenever another entry point appears.",
             (
-                "In the domain layer (the order entity or a use case), independent of frameworks.",
-                "In the HTTP controller that handles the shipping request.",
-                "In a database trigger that rejects the update.",
-                'In a front-end component that disables the "Ship" button.',
+                "In the domain layer (the order entity or a use case).",
+                "In the HTTP controller that handles the shipping request and returns the error.",
+                "In a database trigger that rejects the update when the status is not paid.",
+                'In a front-end component that disables the "Ship" button until payment arrives.',
             ),
         ),
         _t(
@@ -1098,11 +1101,12 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "componente de interface (D) as prende a um detalhe e as duplica sempre que "
             "surge outro ponto de entrada.",
             (
-                "Na camada de domínio (na entidade pedido ou em um caso de uso), "
-                "independente de frameworks.",
-                "No controller HTTP que trata a requisição de envio.",
-                "Em um trigger de banco de dados que rejeita a atualização.",
-                'Em um componente de front-end que desabilita o botão "Enviar".',
+                "Na camada de domínio (na entidade pedido ou em um caso de uso).",
+                "No controller HTTP que trata a requisição de envio e devolve o erro.",
+                "Em um trigger de banco de dados que rejeita a atualização se o status não "
+                "for pago.",
+                'Em um componente de front-end que desabilita o botão "Enviar" até o '
+                "pagamento chegar.",
             ),
         ),
     ),
@@ -1124,8 +1128,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "A port is a network port number, and an adapter is a database driver.",
                 "A port is a concrete class in the infrastructure layer, and an adapter is an "
                 "interface in the domain.",
-                "A port is an interface owned by the application core, and an adapter is "
-                "technology-specific code that implements or calls it.",
+                "A port is an interface owned by the core; an adapter is technology-specific "
+                "code behind it.",
                 "A port and an adapter are two names for the same class.",
             ),
         ),
@@ -1141,8 +1145,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Uma port é um número de porta de rede e um adapter é um driver de banco de dados.",
                 "Uma port é uma classe concreta da camada de infraestrutura e um adapter é "
                 "uma interface do domínio.",
-                "Uma port é uma interface pertencente ao núcleo da aplicação e um adapter é "
-                "código específico de tecnologia que a implementa ou a chama.",
+                "Uma port é uma interface do núcleo; um adapter é código específico de "
+                "tecnologia por trás dela.",
                 "Port e adapter são dois nomes para a mesma classe.",
             ),
         ),
@@ -1205,10 +1209,11 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "putting it in the web layer (C) or in a shared package everyone imports (D) "
             "couples unrelated layers.",
             (
-                "Next to the Postgres implementation in the infrastructure layer.",
-                "In the domain or application layer, with the Postgres class implementing it "
-                "from the infrastructure layer.",
-                "In the web layer, next to the controllers that call the use case.",
+                "Next to the Postgres implementation in the infrastructure layer, in the same "
+                "module.",
+                "In the domain or application layer; the Postgres class implements it.",
+                "In the web layer, next to the controllers that call the use case and map "
+                "its results.",
                 "In a shared `common` package imported by every layer.",
             ),
         ),
@@ -1222,10 +1227,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "camada web (C) ou em um pacote compartilhado que todos importam (D) acopla "
             "camadas que não têm relação.",
             (
-                "Ao lado da implementação Postgres, na camada de infraestrutura.",
-                "Na camada de domínio ou de aplicação, com a classe Postgres da camada de "
-                "infraestrutura implementando-a.",
-                "Na camada web, ao lado dos controllers que chamam o caso de uso.",
+                "Ao lado da implementação Postgres, na camada de infraestrutura, no mesmo módulo.",
+                "Na camada de domínio ou de aplicação; a classe Postgres a implementa.",
+                "Na camada web, ao lado dos controllers que chamam o caso de uso e mapeiam "
+                "seus resultados.",
                 "Em um pacote compartilhado `common` importado por todas as camadas.",
             ),
         ),
@@ -1246,10 +1251,10 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "simple output data structures keeps both sides free to change. The ORM does not "
             "forbid serialization (A), and speed (B) is not the concern here.",
             (
-                "ORM models cannot be serialized to JSON.",
-                "It is slower than returning dictionaries in every case.",
-                "It couples the API contract to the persistence schema and lets the outer "
-                "layer trigger database access.",
+                "ORM models cannot be serialized to JSON by any web framework or serializer.",
+                "It is slower than returning dictionaries in every case, which hurts response "
+                "times.",
+                "It couples the API contract to the persistence schema.",
                 "It violates the rule that use cases must return primitive integers.",
             ),
         ),
@@ -1263,10 +1268,11 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "lados livres para mudar. O ORM não impede a serialização (A) e velocidade (B) "
             "não é a preocupação aqui.",
             (
-                "Modelos do ORM não podem ser serializados para JSON.",
-                "É mais lento que retornar dicionários em todos os casos.",
-                "Acopla o contrato da API ao esquema de persistência e permite que a camada "
-                "externa dispare acesso ao banco.",
+                "Modelos do ORM não podem ser serializados para JSON por nenhum framework web "
+                "ou serializador.",
+                "É mais lento que retornar dicionários em todos os casos, o que prejudica o "
+                "tempo de resposta.",
+                "Acopla o contrato da API ao esquema de persistência.",
                 "Viola a regra de que casos de uso devem retornar inteiros primitivos.",
             ),
         ),
@@ -1327,7 +1333,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "reintroduces a dependency on a concrete class, and doing it inside the domain "
             "package (C) makes the innermost layer depend on infrastructure.",
             (
-                "Inside the use case's constructor, with `PostgresOrderRepository()`.",
+                "Inside the use case's constructor, by calling `PostgresOrderRepository()` "
+                "directly.",
                 "Inside the entities, so each entity can load its own data.",
                 "In the domain package's `__init__` module, so it is ready everywhere.",
                 "In a composition root at the application's entry point, outside the core.",
@@ -1342,7 +1349,8 @@ CLEAN_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(B) reintroduz a dependência de uma classe concreta, e fazê-lo no pacote de "
             "domínio (C) faz a camada mais interna depender da infraestrutura.",
             (
-                "Dentro do construtor do caso de uso, com `PostgresOrderRepository()`.",
+                "Dentro do construtor do caso de uso, chamando `PostgresOrderRepository()` "
+                "diretamente.",
                 "Dentro das entidades, para que cada uma carregue seus próprios dados.",
                 "No módulo `__init__` do pacote de domínio, para estar pronto em todo lugar.",
                 "Em uma composition root no ponto de entrada da aplicação, fora do núcleo.",
@@ -1552,11 +1560,13 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "programming language (B), a translation layer (C), or a glossary kept only "
             "by business analysts (D).",
             (
-                "A common vocabulary shared by developers and domain experts, used in "
-                "conversation and in the code of a bounded context.",
-                "A programming language that every team in the company must use.",
-                "A layer that translates database column names into English.",
-                "A glossary maintained by business analysts and not reflected in the code.",
+                "A shared vocabulary of developers and experts, used in conversation and code.",
+                "A programming language that every team in the company must adopt for new "
+                "services.",
+                "A layer that translates database column names into English for the "
+                "reporting tools.",
+                "A glossary maintained by business analysts and not reflected in the code or "
+                "the tests.",
             ),
         ),
         _t(
@@ -1567,11 +1577,14 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "classes e métodos). Não é uma linguagem de programação (B), uma camada de "
             "tradução (C) nem um glossário mantido só por analistas de negócio (D).",
             (
-                "Um vocabulário comum entre desenvolvedores e especialistas de domínio, "
-                "usado nas conversas e no código de um bounded context.",
-                "Uma linguagem de programação que todos os times da empresa devem usar.",
-                "Uma camada que traduz nomes de colunas do banco para o inglês.",
-                "Um glossário mantido por analistas de negócio e que não aparece no código.",
+                "Um vocabulário compartilhado por desenvolvedores e especialistas, usado na "
+                "conversa e no código.",
+                "Uma linguagem de programação que todos os times da empresa devem adotar para "
+                "novos serviços.",
+                "Uma camada que traduz nomes de colunas do banco para o inglês, para as "
+                "ferramentas de relatório.",
+                "Um glossário mantido por analistas de negócio e que não aparece no código "
+                "nem nos testes.",
             ),
         ),
     ),
@@ -1591,9 +1604,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "between them. Renaming one of them to something unrelated (C) would break each "
             "team's ubiquitous language.",
             (
-                "Build one universal `Customer` class with every field either team needs.",
-                "Treat Accounting and Marketing as separate bounded contexts, each with its "
-                "own `Customer` model, and map between them explicitly.",
+                "Build one universal `Customer` class holding every field that Accounting and "
+                "Marketing need.",
+                "Use separate bounded contexts, each with its own `Customer`, and map between "
+                "them.",
                 'Rename "Customer" in Marketing to a term the business never uses.',
                 "Share a single database table so both models stay identical.",
             ),
@@ -1608,10 +1622,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "explícitas entre eles. Renomear um deles para algo sem relação (C) quebraria "
             "a ubiquitous language de cada time.",
             (
-                "Construir uma única classe `Customer` universal com todos os campos de que "
-                "os dois times precisam.",
-                "Tratar Contabilidade e Marketing como bounded contexts separados, cada um "
-                "com seu próprio modelo de `Customer`, e mapear entre eles explicitamente.",
+                "Construir uma única classe `Customer` universal com todos os campos de que a "
+                "Contabilidade e o Marketing precisam.",
+                "Usar bounded contexts separados, cada um com seu próprio `Customer`, e "
+                "mapear entre eles.",
                 'Renomear "Cliente" no Marketing para um termo que o negócio nunca usa.',
                 "Compartilhar uma única tabela de banco para que os dois modelos sejam idênticos.",
             ),
@@ -1670,10 +1684,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "and one giant aggregate (D) causes contention and huge loads.",
             (
                 "Any service updates `OrderLine` records directly through its own repository.",
-                "`Order` is the root with an `add_line()` method that checks the limit, and "
-                "the repository saves the whole `Order`.",
+                "`Order` is the root; its `add_line()` checks the limit and the repository "
+                "saves it.",
                 "Each `OrderLine` holds references to the full `Customer` and `Product` "
-                "object graphs.",
+                "object graphs for convenience.",
                 "One large aggregate holds all orders, customers and products together.",
             ),
         ),
@@ -1688,10 +1702,9 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Qualquer serviço atualiza registros de `OrderLine` diretamente por seu "
                 "próprio repositório.",
-                "`Order` é a raiz, com um método `add_line()` que verifica o limite, e o "
-                "repositório salva o `Order` inteiro.",
+                "`Order` é a raiz; seu `add_line()` verifica o limite e o repositório o salva.",
                 "Cada `OrderLine` guarda referências aos grafos completos de `Customer` e "
-                "`Product`.",
+                "`Product`, por conveniência.",
                 "Um único aggregate grande contém todos os pedidos, clientes e produtos.",
             ),
         ),
@@ -1712,11 +1725,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(A), identity is not always faster (B), and referencing by id does not make "
             "two aggregates share one transaction (C); the guidance is the opposite.",
             (
-                "Because the database requires foreign keys to be integers.",
-                "Because comparing ids is always faster than comparing objects.",
-                "So that both aggregates can be updated in the same transaction.",
-                "To keep each aggregate a small consistency boundary and avoid loading or "
-                "changing another aggregate by accident.",
+                "Because the database requires foreign keys to be integers rather than objects.",
+                "Because comparing ids is always faster than comparing whole objects in memory.",
+                "So that both aggregates can always be updated together in the same transaction.",
+                "To keep each aggregate a small consistency boundary.",
             ),
         ),
         _t(
@@ -1729,11 +1741,13 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "rápida (B) e referenciar por id não faz dois aggregates compartilharem uma "
             "transação (C); a orientação é a oposta.",
             (
-                "Porque o banco de dados exige que chaves estrangeiras sejam inteiros.",
-                "Porque comparar ids é sempre mais rápido que comparar objetos.",
-                "Para que os dois aggregates possam ser atualizados na mesma transação.",
-                "Para manter cada aggregate como uma pequena fronteira de consistência e "
-                "evitar carregar ou alterar outro aggregate por acidente.",
+                "Porque o banco de dados exige que chaves estrangeiras sejam inteiros e não "
+                "objetos.",
+                "Porque comparar ids é sempre mais rápido que comparar objetos inteiros na "
+                "memória.",
+                "Para que os dois aggregates possam ser sempre atualizados juntos na mesma "
+                "transação.",
+                "Para manter cada aggregate como uma pequena fronteira de consistência.",
             ),
         ),
     ),
@@ -1835,10 +1849,10 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "Inventory in Order (B) creates an oversized aggregate, and ignoring the stock "
             "change (D) breaks the business rule.",
             (
-                "Always update both aggregates in one database transaction.",
+                "Always update both aggregates in one database transaction so that stock never "
+                "drifts.",
                 "Make `Inventory` a child entity of `Order` so they share a boundary.",
-                "Commit the order, publish an `OrderPlaced` event, and let a handler reduce "
-                "stock in its own idempotent transaction.",
+                "Commit the order, publish an `OrderPlaced` event, and let a handler reduce stock.",
                 "Skip the stock update and reconcile manually at the end of the month.",
             ),
         ),
@@ -1854,10 +1868,11 @@ DDD_QUESTIONS: tuple[QuestionSeed, ...] = (
             "embutir Inventory em Order (B) cria um aggregate grande demais e ignorar a "
             "baixa de estoque (D) quebra a regra de negócio.",
             (
-                "Sempre atualizar os dois aggregates em uma única transação de banco.",
+                "Sempre atualizar os dois aggregates em uma única transação de banco, para o "
+                "estoque nunca divergir.",
                 "Tornar `Inventory` uma entidade filha de `Order` para compartilharem a fronteira.",
                 "Confirmar o pedido, publicar um evento `OrderPlaced` e deixar um handler "
-                "reduzir o estoque em sua própria transação idempotente.",
+                "reduzir o estoque.",
                 "Pular a atualização de estoque e reconciliar manualmente no fim do mês.",
             ),
         ),
@@ -2040,8 +2055,8 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "does not make tests faster (A), and it has nothing to do with code coverage "
             "(C) or with the framework's license (D).",
             (
-                "They make the suite run faster because failed tests stop early.",
-                "They erode trust in the suite, so real failures get ignored or rerun.",
+                "They make the suite run faster because failed tests stop early and skip setup.",
+                "They erode trust, so real failures get ignored or rerun.",
                 "They reduce code coverage until the failures are fixed.",
                 "They violate the license of most test frameworks.",
             ),
@@ -2055,9 +2070,9 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "rápidos (A) e não tem relação com cobertura de código (C) nem com a licença do "
             "framework (D).",
             (
-                "Eles deixam a suíte mais rápida, pois testes que falham param cedo.",
-                "Eles corroem a confiança na suíte, então falhas reais são ignoradas ou "
-                "reexecutadas.",
+                "Eles deixam a suíte mais rápida, pois testes que falham param cedo e pulam "
+                "a preparação.",
+                "Eles corroem a confiança, então falhas reais são ignoradas ou reexecutadas.",
                 "Eles reduzem a cobertura de código até as falhas serem corrigidas.",
                 "Eles violam a licença da maioria dos frameworks de teste.",
             ),
@@ -2079,11 +2094,11 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "waiting on a `threading.Event`. The `==` comparison, the global list and the "
             "thread being non-daemon are not the cause.",
             (
-                "`assert` should compare with `is` instead of `==`.",
-                "The global list should be replaced with a `Mock`.",
-                "The thread should be a daemon thread.",
-                "It depends on timing (a `sleep` race); it should wait deterministically, "
-                "for example with `join()` or an `Event`.",
+                "The `assert` should compare the list with `is` instead of `==` to avoid a "
+                "deep comparison.",
+                "The global list should be replaced with a `Mock` so the worker can be verified.",
+                "The thread should be a daemon thread so that it never blocks the test run.",
+                "It races on `sleep` timing; it should use `join()` or an `Event`.",
             ),
         ),
         _t(
@@ -2095,11 +2110,11 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "exemplo chamando `join()` na thread ou esperando um `threading.Event`. A "
             "comparação com `==`, a lista global e a thread não ser daemon não são a causa.",
             (
-                "O `assert` deveria comparar com `is` em vez de `==`.",
-                "A lista global deveria ser substituída por um `Mock`.",
-                "A thread deveria ser uma thread daemon.",
-                "Ele depende de tempo (uma corrida de `sleep`); deveria esperar de forma "
-                "determinística, por exemplo com `join()` ou um `Event`.",
+                "O `assert` deveria comparar a lista com `is` em vez de `==` para evitar uma "
+                "comparação profunda.",
+                "A lista global deveria ser substituída por um `Mock` para verificar o worker.",
+                "A thread deveria ser daemon para nunca bloquear a execução dos testes.",
+                "Ele corre contra o tempo do `sleep`; deveria usar `join()` ou um `Event`.",
             ),
         ),
     ),
@@ -2162,11 +2177,10 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "result, too few tests (C) cannot cause failures, and a refactoring cannot "
             "make the test runner outdated (D).",
             (
-                "The tests are coupled to implementation details such as private methods or "
-                "mock interactions.",
-                "The tests were too independent of each other.",
-                "There were too few tests in the suite.",
-                "The test runner is out of date.",
+                "The tests assert on implementation details, such as private methods.",
+                "The tests were too independent of each other, so none of them caught the change.",
+                "There were too few tests in the suite to describe the behavior.",
+                "The test runner is out of date and cannot parse the refactored modules.",
             ),
         ),
         _t(
@@ -2179,11 +2193,11 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "si (B) não causam isso, poucos testes (C) não causam falhas e uma refatoração "
             "não deixa o test runner desatualizado (D).",
             (
-                "Os testes estão acoplados a detalhes de implementação, como métodos "
-                "privados ou interações de mocks.",
-                "Os testes eram independentes demais entre si.",
-                "Havia poucos testes na suíte.",
-                "O test runner está desatualizado.",
+                "Os testes verificam detalhes de implementação, como métodos privados.",
+                "Os testes eram independentes demais entre si, então nenhum deles percebeu "
+                "a mudança.",
+                "Havia poucos testes na suíte para descrever o comportamento.",
+                "O test runner está desatualizado e não consegue ler os módulos refatorados.",
             ),
         ),
     ),

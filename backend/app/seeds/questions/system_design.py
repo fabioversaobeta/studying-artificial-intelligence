@@ -581,11 +581,11 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "means overselling. Product descriptions, display names and static bundles are "
             "read-heavy and tolerate staleness.",
             (
-                "A remaining-stock counter that is decremented on every sale and checked at "
-                "checkout.",
-                "Product descriptions that are edited about once a week.",
-                "Users' display names shown next to comments.",
-                "Static JavaScript and CSS bundles.",
+                "A remaining-stock counter decremented on every sale and checked at checkout.",
+                "Product descriptions that are edited by the merchandising team about once a week.",
+                "Users' display names shown next to comments on articles and product pages.",
+                "Static JavaScript and CSS bundles that are versioned and rebuilt only on "
+                "each release.",
             ),
         ),
         _t(
@@ -596,11 +596,14 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "exato; um valor defasado significa vender o que não existe. Descrições de produto, "
             "nomes de exibição e bundles estáticos são de leitura intensa e toleram defasagem.",
             (
-                "Um contador de estoque restante que é decrementado a cada venda e conferido no "
+                "Um contador de estoque restante decrementado a cada venda e conferido no "
                 "checkout.",
-                "Descrições de produto editadas cerca de uma vez por semana.",
-                "Nomes de exibição de usuários mostrados ao lado de comentários.",
-                "Bundles estáticos de JavaScript e CSS.",
+                "Descrições de produto editadas pela equipe de merchandising cerca de uma vez "
+                "por semana.",
+                "Nomes de exibição de usuários mostrados ao lado de comentários em artigos e "
+                "páginas de produto.",
+                "Bundles estáticos de JavaScript e CSS, versionados e reconstruídos apenas a "
+                "cada release.",
             ),
         ),
     ),
@@ -662,8 +665,7 @@ _CACHE: tuple[QuestionSeed, ...] = (
                 "Only the first read after the script is stale; later reads refresh the entry "
                 "automatically.",
                 "The next read raises an error because the cached value no longer matches the row.",
-                "The old prices keep being served until each entry expires or is evicted; "
-                "always keep a TTL as a backstop, and make bulk jobs invalidate too.",
+                "Old prices keep being served until entries expire; keep a TTL as a backstop.",
             ),
         ),
         _t(
@@ -682,9 +684,8 @@ _CACHE: tuple[QuestionSeed, ...] = (
                 "entrada automaticamente.",
                 "A próxima leitura gera um erro, porque o valor em cache não bate mais com a "
                 "linha.",
-                "Os preços antigos continuam sendo servidos até cada entrada expirar ou ser "
-                "removida; mantenha sempre um TTL como rede de segurança e faça os jobs em lote "
-                "também invalidarem.",
+                "Os preços antigos continuam sendo servidos até as entradas expirarem; "
+                "mantenha um TTL como rede de segurança.",
             ),
         ),
     ),
@@ -741,11 +742,11 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "bigger pool (B) just lets more identical queries hit the database, and a shorter "
             "TTL (D) makes the expiry events more frequent.",
             (
-                "Add random jitter to the TTL of every key.",
-                "Increase the database connection pool so it can run all 1,200 queries.",
-                "Take a short-lived SET-if-not-exists lock so one request recomputes while the "
-                "others wait or serve stale data.",
-                "Lower the TTL so the key is refreshed more often.",
+                "Add random jitter to the TTL of every key so that they do not expire together.",
+                "Increase the database connection pool so it can run all 1,200 queries in "
+                "parallel.",
+                "Take a short-lived SET-if-not-exists lock so only one request recomputes.",
+                "Lower the TTL so the key is refreshed more often and never grows stale.",
             ),
         ),
         _t(
@@ -758,11 +759,13 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "com uma única chave quente. Um pool maior (B) só deixa mais consultas idênticas "
             "chegarem ao banco, e um TTL menor (D) torna as expirações mais frequentes.",
             (
-                "Adicionar jitter aleatório ao TTL de todas as chaves.",
-                "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas.",
-                "Obter um lock de curta duração com SET-if-not-exists para que uma requisição "
-                "recompute enquanto as outras esperam ou servem dados defasados.",
-                "Reduzir o TTL para que a chave seja atualizada com mais frequência.",
+                "Adicionar jitter aleatório ao TTL de todas as chaves para que não expirem juntas.",
+                "Aumentar o pool de conexões do banco para que ele execute as 1.200 consultas "
+                "em paralelo.",
+                "Obter um lock de curta duração com SET-if-not-exists para que só uma "
+                "requisição recompute.",
+                "Reduzir o TTL para que a chave seja atualizada com mais frequência e nunca "
+                "fique defasada.",
             ),
         ),
     ),
@@ -824,9 +827,9 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "needed (B). Each access also pays one extra read to resolve the current version "
             "(C), and the approach replaces values rather than updating them in place (D).",
             (
-                "When many related entries must be invalidated at once and enumerating every "
-                "key would be error-prone.",
-                "When you want to drop TTLs entirely, since old versions disappear on their own.",
+                "When many related entries must be invalidated at once without listing every key.",
+                "When you want to drop TTLs entirely, since old versions disappear on their "
+                "own after a while.",
                 "When you need the cheapest possible read path, with no extra cache lookups.",
                 "When cached values must be modified in place instead of being replaced.",
             ),
@@ -841,9 +844,10 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "uma leitura extra para resolver a versão atual (C), e a abordagem substitui valores "
             "em vez de atualizá-los no lugar (D).",
             (
-                "Quando muitas entradas relacionadas precisam ser invalidadas de uma vez e "
-                "enumerar cada chave seria propenso a erros.",
-                "Quando se quer abandonar os TTLs, já que as versões antigas somem sozinhas.",
+                "Quando muitas entradas relacionadas precisam ser invalidadas de uma vez, sem "
+                "listar cada chave.",
+                "Quando se quer abandonar os TTLs, já que as versões antigas somem sozinhas "
+                "depois de um tempo.",
                 "Quando se precisa do caminho de leitura mais barato possível, sem consultas "
                 "extras ao cache.",
                 "Quando os valores em cache precisam ser modificados no lugar em vez de "
@@ -869,11 +873,11 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "is harmless: the next read simply reloads it.",
             (
                 "Deleting from the cache is slower than writing to the database, so it "
-                "belongs last.",
+                "belongs last in the sequence.",
                 "A delete issued before the commit blocks all readers until the commit finishes.",
                 "If the write is rolled back after the delete, the cache stays permanently empty.",
-                "A concurrent reader could repopulate the cache with the old value between the "
-                "delete and the commit, leaving stale data until the TTL.",
+                "A concurrent reader could repopulate the cache with the old value before the "
+                "commit.",
             ),
         ),
         _t(
@@ -887,12 +891,13 @@ _CACHE: tuple[QuestionSeed, ...] = (
             "cache vazio após uma escrita revertida (C) é inofensivo: a próxima leitura o "
             "recarrega.",
             (
-                "Apagar do cache é mais lento do que gravar no banco, então deve vir por último.",
+                "Apagar do cache é mais lento do que gravar no banco, então deve vir por "
+                "último na sequência.",
                 "Um delete emitido antes do commit bloqueia todos os leitores até o commit "
                 "terminar.",
                 "Se a escrita for revertida depois do delete, o cache fica vazio para sempre.",
-                "Um leitor concorrente poderia repopular o cache com o valor antigo entre o "
-                "delete e o commit, deixando dados defasados até o TTL.",
+                "Um leitor concorrente poderia repopular o cache com o valor antigo antes do "
+                "commit.",
             ),
         ),
     ),
@@ -969,11 +974,11 @@ _LB: tuple[QuestionSeed, ...] = (
             "IP addresses and ports, whatever algorithm it uses, and DNS round robin just "
             "hands out different addresses without ever looking at the request path.",
             (
-                "An L4 (TCP) balancer, because it is faster and sees every packet.",
+                "An L4 (TCP) balancer, because it is faster and sees every packet of every "
+                "connection.",
                 "An L4 balancer configured with consistent hashing.",
                 "DNS round robin with one record per pool.",
-                "An L7 (HTTP) balancer, which parses requests and can route on path, host or "
-                "headers.",
+                "An L7 (HTTP) balancer, which parses requests and routes on path.",
             ),
         ),
         _t(
@@ -985,11 +990,11 @@ _LB: tuple[QuestionSeed, ...] = (
             "DNS round robin só entrega endereços diferentes sem nunca olhar o caminho da "
             "requisição.",
             (
-                "Um balanceador L4 (TCP), porque é mais rápido e vê todos os pacotes.",
+                "Um balanceador L4 (TCP), porque é mais rápido e vê todos os pacotes de cada "
+                "conexão.",
                 "Um balanceador L4 configurado com consistent hashing.",
                 "DNS round robin com um registro por pool.",
-                "Um balanceador L7 (HTTP), que interpreta requisições e pode rotear por "
-                "caminho, host ou headers.",
+                "Um balanceador L7 (HTTP), que interpreta requisições e roteia por caminho.",
             ),
         ),
     ),
@@ -1009,11 +1014,12 @@ _LB: tuple[QuestionSeed, ...] = (
             "with fewer in-flight ones. The other options describe behaviors round robin does "
             "not have.",
             (
-                "It spreads requests evenly by count, so a server stuck on slow requests keeps "
-                "receiving new work at the same rate.",
-                "It sends all traffic to the first server until that server fails.",
-                "It requires the balancer to parse the HTTP request body.",
-                "It cannot be used with more than two servers.",
+                "It balances by count, so a server stuck on slow requests keeps getting new work.",
+                "It sends all traffic to the first server until that server fails, then "
+                "switches over.",
+                "It requires the balancer to parse the HTTP request body before choosing a server.",
+                "It cannot be used with more than two servers because it alternates between a "
+                "pair.",
             ),
         ),
         _t(
@@ -1025,11 +1031,13 @@ _LB: tuple[QuestionSeed, ...] = (
             "requisições a servidores com menos requisições em andamento. As demais opções "
             "descrevem comportamentos que o round robin não tem.",
             (
-                "Ele distribui as requisições igualmente por quantidade, então um servidor "
-                "preso em requisições lentas continua recebendo trabalho novo no mesmo ritmo.",
-                "Ele envia todo o tráfego ao primeiro servidor até que este falhe.",
-                "Ele exige que o balanceador interprete o corpo da requisição HTTP.",
-                "Ele não pode ser usado com mais de dois servidores.",
+                "Ele equilibra por quantidade, então um servidor preso em requisições lentas "
+                "continua recebendo trabalho novo.",
+                "Ele envia todo o tráfego ao primeiro servidor até que este falhe, e então "
+                "troca de servidor.",
+                "Ele exige que o balanceador interprete o corpo da requisição HTTP antes de "
+                "escolher um servidor.",
+                "Ele não pode ser usado com mais de dois servidores porque alterna entre um par.",
             ),
         ),
     ),
@@ -1170,11 +1178,12 @@ _LB: tuple[QuestionSeed, ...] = (
             "not change where the session data lives, and scaling back (D) gives up the "
             "capacity you needed.",
             (
-                "Move the session data to a shared store such as Redis, so any instance can "
-                "serve any user.",
-                "Enable sticky sessions and keep them permanently.",
-                "Increase the session cookie's lifetime.",
-                "Scale back down to 3 instances.",
+                "Move the session data to a shared store such as Redis.",
+                "Enable sticky sessions and keep them permanently, pinning each user to one "
+                "instance.",
+                "Increase the session cookie's lifetime so that sessions last longer between "
+                "visits.",
+                "Scale back down to 3 instances so that the original session behavior returns.",
             ),
         ),
         _t(
@@ -1188,11 +1197,12 @@ _LB: tuple[QuestionSeed, ...] = (
             "vida mais longa (C) não muda onde os dados da sessão ficam, e voltar para 3 (D) "
             "abre mão da capacidade de que você precisava.",
             (
-                "Mover os dados de sessão para um armazenamento compartilhado, como o Redis, "
-                "para que qualquer instância atenda qualquer usuário.",
-                "Ativar sticky sessions e mantê-las permanentemente.",
-                "Aumentar o tempo de vida do cookie de sessão.",
-                "Voltar a 3 instâncias.",
+                "Mover os dados de sessão para um armazenamento compartilhado, como o Redis.",
+                "Ativar sticky sessions e mantê-las permanentemente, fixando cada usuário em "
+                "uma instância.",
+                "Aumentar o tempo de vida do cookie de sessão para que as sessões durem mais "
+                "entre visitas.",
+                "Voltar a 3 instâncias para que o comportamento original das sessões retorne.",
             ),
         ),
     ),
@@ -1302,12 +1312,12 @@ _LB: tuple[QuestionSeed, ...] = (
             "read load with caching or replicas. Scaling stateless servers is the easy part, "
             "and a balancer node is rarely the first limit.",
             (
-                "The balancer's CPU; add a second balancer in front of it.",
-                "The app servers' CPU; move to larger instance types.",
-                "DNS resolution of the instances; raise the DNS TTL.",
-                "The database connection limit (about 300 potential connections against 100); "
-                "cap the pools and add an external pooler, plus caching or replicas for read "
-                "load.",
+                "The balancer's CPU; add a second balancer next to it and split the traffic "
+                "between both by DNS.",
+                "The app servers' CPU; move to larger instance types with more cores.",
+                "DNS resolution of the instances; raise the DNS TTL so lookups are cached longer.",
+                "The database connection limit (about 300 connections against 100); cap pools, "
+                "add a pooler.",
             ),
         ),
         _t(
@@ -1323,12 +1333,14 @@ _LB: tuple[QuestionSeed, ...] = (
             "banco, aliviando a leitura com cache ou réplicas. Escalar servidores stateless é "
             "a parte fácil, e um nó de balanceador raramente é o primeiro limite.",
             (
-                "A CPU do balanceador; adicionar um segundo balanceador na frente.",
-                "A CPU dos servidores de aplicação; migrar para instâncias maiores.",
-                "A resolução DNS das instâncias; aumentar o TTL do DNS.",
-                "O limite de conexões do banco (cerca de 300 conexões potenciais contra 100); "
-                "limitar os pools e adicionar um pooler externo, além de cache ou réplicas para "
-                "a carga de leitura.",
+                "A CPU do balanceador; adicionar um segundo balanceador ao lado e dividir o "
+                "tráfego entre os dois por DNS.",
+                "A CPU dos servidores de aplicação; migrar para instâncias maiores com mais "
+                "núcleos.",
+                "A resolução DNS das instâncias; aumentar o TTL do DNS para que as consultas "
+                "fiquem mais tempo em cache.",
+                "O limite de conexões do banco (cerca de 300 conexões contra 100); limitar os "
+                "pools e adicionar um pooler.",
             ),
         ),
     ),
@@ -1443,11 +1455,10 @@ _DB: tuple[QuestionSeed, ...] = (
             "later, and a closed connection (C) or a duplicated write (D) would not produce "
             "this old-then-new pattern.",
             (
-                "The read was served by an asynchronous replica that had not applied the write "
-                "yet.",
-                "The primary rolled back the write and then applied it again.",
-                "The connection pool returned a closed connection.",
-                "The write was applied twice.",
+                "The read hit an asynchronous replica that had not applied the write.",
+                "The primary rolled back the write and then applied it again on retry.",
+                "The connection pool returned a closed connection that silently retried the read.",
+                "The write was applied twice, so the first read saw a half-updated row.",
             ),
         ),
         _t(
@@ -1460,11 +1471,12 @@ _DB: tuple[QuestionSeed, ...] = (
             "novo depois, e uma conexão fechada (C) ou uma escrita duplicada (D) não produziria "
             "esse padrão de antigo e depois novo.",
             (
-                "A leitura foi atendida por uma réplica assíncrona que ainda não tinha aplicado "
-                "a escrita.",
-                "O primário reverteu a escrita e depois a aplicou de novo.",
-                "O pool de conexões devolveu uma conexão fechada.",
-                "A escrita foi aplicada duas vezes.",
+                "A leitura caiu em uma réplica assíncrona que ainda não tinha aplicado a escrita.",
+                "O primário reverteu a escrita e depois a aplicou de novo na nova tentativa.",
+                "O pool de conexões devolveu uma conexão fechada, que refez a leitura "
+                "silenciosamente.",
+                "A escrita foi aplicada duas vezes, então a primeira leitura viu uma linha "
+                "pela metade.",
             ),
         ),
     ),
@@ -1483,11 +1495,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "that does not matter, and they hold the same data as the primary (B, C are "
             "false).",
             (
-                "Replicas are read-only, so they cannot be restored.",
-                "Replicas can only store a fraction of the primary's data.",
-                "Replicas copy only the table schema, not the rows.",
-                "Replication propagates mistaken writes, such as a bad `DELETE`, to every "
-                "replica almost immediately.",
+                "Replicas are read-only, so they cannot be restored from or promoted to primary.",
+                "Replicas can only store a fraction of the primary's data, chosen by key range.",
+                "Replicas copy only the table schema, not the rows, to keep the network "
+                "traffic low.",
+                "Replication copies mistaken writes, such as a bad `DELETE`, to every replica.",
             ),
         ),
         _t(
@@ -1497,11 +1509,14 @@ _DB: tuple[QuestionSeed, ...] = (
             "restaurar o estado anterior ao erro. Ser somente leitura (A) não é o ponto, e as "
             "réplicas guardam os mesmos dados do primário (B e C são falsas).",
             (
-                "As réplicas são somente leitura, então não podem ser restauradas.",
-                "As réplicas só conseguem guardar uma fração dos dados do primário.",
-                "As réplicas copiam só o esquema das tabelas, não as linhas.",
-                "A replicação propaga escritas erradas, como um `DELETE` ruim, para todas as "
-                "réplicas quase imediatamente.",
+                "As réplicas são somente leitura, então não podem ser restauradas nem "
+                "promovidas a primário.",
+                "As réplicas só conseguem guardar uma fração dos dados do primário, definida "
+                "por faixa de chave.",
+                "As réplicas copiam só o esquema das tabelas, não as linhas, para reduzir o "
+                "tráfego de rede.",
+                "A replicação copia escritas erradas, como um `DELETE` ruim, para todas as "
+                "réplicas.",
             ),
         ),
     ),
@@ -1524,9 +1539,9 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Make replication synchronous for every replica so every write waits for all "
                 "of them.",
-                "Route that user's reads to the primary for a few seconds after a write, or "
-                "wait for the replica to reach the write's log position.",
-                "Add more replicas so that lag shrinks.",
+                "Route that user's reads to the primary for a few seconds after a write.",
+                "Add more replicas so that lag shrinks, because each replica receives fewer "
+                "queries.",
                 "Let browsers cache profile reads for five minutes.",
             ),
         ),
@@ -1544,8 +1559,9 @@ _DB: tuple[QuestionSeed, ...] = (
                 "Tornar a replicação síncrona em todas as réplicas, para que cada escrita "
                 "espere por todas.",
                 "Direcionar as leituras desse usuário ao primário por alguns segundos após a "
-                "escrita, ou esperar a réplica alcançar a posição de log da escrita.",
-                "Adicionar mais réplicas para que o lag diminua.",
+                "escrita.",
+                "Adicionar mais réplicas para que o lag diminua, já que cada réplica recebe "
+                "menos consultas.",
                 "Deixar os navegadores fazerem cache das leituras de perfil por cinco minutos.",
             ),
         ),
@@ -1606,11 +1622,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "may therefore not exist in the next one. Multi-statement transactions, replica "
             "reads and parameterized queries all work normally.",
             (
-                "Wrapping several statements in one `BEGIN ... COMMIT` block.",
-                "Sending read-only queries to a replica.",
-                "Relying on a session-level `SET` from one transaction still being in effect in "
-                "the next one.",
-                "Using parameterized queries.",
+                "Wrapping several statements in one `BEGIN ... COMMIT` block with a savepoint "
+                "inside.",
+                "Sending read-only queries to a replica through a second pooler instance.",
+                "Relying on a session-level `SET` still being in effect in the next transaction.",
+                "Using parameterized queries sent through the driver's standard interface.",
             ),
         ),
         _t(
@@ -1622,11 +1638,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "não existir na seguinte. Transações com vários comandos, leituras em réplicas e "
             "consultas parametrizadas funcionam normalmente.",
             (
-                "Envolver vários comandos em um bloco `BEGIN ... COMMIT`.",
-                "Enviar consultas somente leitura a uma réplica.",
-                "Depender de um `SET` de sessão feito em uma transação continuar valendo na "
-                "seguinte.",
-                "Usar consultas parametrizadas.",
+                "Envolver vários comandos em um bloco `BEGIN ... COMMIT` com um savepoint dentro.",
+                "Enviar consultas somente leitura a uma réplica por meio de uma segunda "
+                "instância do pooler.",
+                "Depender de um `SET` de sessão ainda valer na transação seguinte.",
+                "Usar consultas parametrizadas enviadas pela interface padrão do driver.",
             ),
         ),
     ),
@@ -1689,11 +1705,11 @@ _DB: tuple[QuestionSeed, ...] = (
             "for sharding (D) would show up in the database's own metrics or elsewhere, not as "
             "waiting on a pool while the database is idle.",
             (
-                "Connections are held too long or leaked, so the pool is exhausted even though "
-                "the database is idle.",
-                "The database server has run out of disk space.",
-                "Replication lag has grown too large.",
-                "The table has grown enough that it must be sharded.",
+                "Connections are held too long or leaked, exhausting the pool.",
+                "The database server has run out of disk space and can no longer accept new "
+                "writes.",
+                "Replication lag has grown too large, so the replicas reject new connections.",
+                "The table has grown enough that it must be sharded across several servers.",
             ),
         ),
         _t(
@@ -1706,11 +1722,10 @@ _DB: tuple[QuestionSeed, ...] = (
             "métricas do próprio banco ou em outro lugar, não como espera por um pool com o "
             "banco ocioso.",
             (
-                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o pool "
-                "mesmo com o banco ocioso.",
-                "O servidor de banco ficou sem espaço em disco.",
-                "O lag de replicação ficou grande demais.",
-                "A tabela cresceu a ponto de precisar de sharding.",
+                "As conexões estão sendo seguradas por tempo demais ou vazadas, esgotando o pool.",
+                "O servidor de banco ficou sem espaço em disco e não aceita mais novas escritas.",
+                "O lag de replicação ficou grande demais, e as réplicas rejeitam novas conexões.",
+                "A tabela cresceu a ponto de precisar de sharding em vários servidores.",
             ),
         ),
     ),
@@ -1734,8 +1749,7 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Wrapping both updates in a normal `BEGIN ... COMMIT` issued by the "
                 "application's router guarantees atomicity across shards.",
-                "Single-database ACID no longer covers it; options include co-locating data "
-                "that transacts together, a saga with compensating actions, or a costly "
+                "Single-database ACID no longer covers it; use co-location, a saga or "
                 "two-phase commit.",
                 "Giving each shard a read replica restores atomicity across shards.",
                 "Hash-based sharding guarantees that both users always land on the same shard.",
@@ -1754,9 +1768,8 @@ _DB: tuple[QuestionSeed, ...] = (
             (
                 "Envolver as duas atualizações em um `BEGIN ... COMMIT` normal emitido pelo "
                 "roteador da aplicação garante atomicidade entre shards.",
-                "O ACID de um único banco não cobre o caso; as opções incluem manter juntos os "
-                "dados que transacionam, uma saga com ações compensatórias ou um two-phase "
-                "commit custoso.",
+                "O ACID de um único banco não cobre o caso; use colocalização, uma saga ou "
+                "two-phase commit.",
                 "Dar a cada shard uma réplica de leitura restaura a atomicidade entre shards.",
                 "O sharding por hash garante que os dois usuários sempre caiam no mesmo shard.",
             ),
