@@ -54,6 +54,9 @@ jobs:
       - name: Mypy
         run: mypy app
 
+      - name: Question bank quality (strict)
+        run: python -m app.seeds.questions.validate --strict
+
       - name: Alembic upgrade on a clean database
         run: alembic upgrade head
 
