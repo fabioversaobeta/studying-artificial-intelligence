@@ -2061,8 +2061,9 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "does not make tests faster (A), and it has nothing to do with code coverage "
             "(C) or with the framework's license (D).",
             (
-                "They make the suite run faster because failed tests stop early.",
-                "They erode trust in the suite, so real failures get ignored or rerun.",
+                "They make the suite run faster because failed tests stop early and skip "
+                "setup.",
+                "They erode trust, so real failures get ignored or rerun.",
                 "They reduce code coverage until the failures are fixed.",
                 "They violate the license of most test frameworks.",
             ),
@@ -2076,9 +2077,9 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "rápidos (A) e não tem relação com cobertura de código (C) nem com a licença do "
             "framework (D).",
             (
-                "Eles deixam a suíte mais rápida, pois testes que falham param cedo.",
-                "Eles corroem a confiança na suíte, então falhas reais são ignoradas ou "
-                "reexecutadas.",
+                "Eles deixam a suíte mais rápida, pois testes que falham param cedo e pulam "
+                "a preparação.",
+                "Eles corroem a confiança, então falhas reais são ignoradas ou reexecutadas.",
                 "Eles reduzem a cobertura de código até as falhas serem corrigidas.",
                 "Eles violam a licença da maioria dos frameworks de teste.",
             ),
@@ -2100,11 +2101,12 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "waiting on a `threading.Event`. The `==` comparison, the global list and the "
             "thread being non-daemon are not the cause.",
             (
-                "`assert` should compare with `is` instead of `==`.",
-                "The global list should be replaced with a `Mock`.",
-                "The thread should be a daemon thread.",
-                "It depends on timing (a `sleep` race); it should wait deterministically, "
-                "for example with `join()` or an `Event`.",
+                "The `assert` should compare the list with `is` instead of `==` to avoid a "
+                "deep comparison.",
+                "The global list should be replaced with a `Mock` so the worker can be "
+                "verified.",
+                "The thread should be a daemon thread so that it never blocks the test run.",
+                "It races on `sleep` timing; it should use `join()` or an `Event`.",
             ),
         ),
         _t(
@@ -2116,11 +2118,12 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "exemplo chamando `join()` na thread ou esperando um `threading.Event`. A "
             "comparação com `==`, a lista global e a thread não ser daemon não são a causa.",
             (
-                "O `assert` deveria comparar com `is` em vez de `==`.",
-                "A lista global deveria ser substituída por um `Mock`.",
-                "A thread deveria ser uma thread daemon.",
-                "Ele depende de tempo (uma corrida de `sleep`); deveria esperar de forma "
-                "determinística, por exemplo com `join()` ou um `Event`.",
+                "O `assert` deveria comparar a lista com `is` em vez de `==` para evitar uma "
+                "comparação profunda.",
+                "A lista global deveria ser substituída por um `Mock` para verificar o "
+                "worker.",
+                "A thread deveria ser daemon para nunca bloquear a execução dos testes.",
+                "Ele corre contra o tempo do `sleep`; deveria usar `join()` ou um `Event`.",
             ),
         ),
     ),
@@ -2183,11 +2186,11 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "result, too few tests (C) cannot cause failures, and a refactoring cannot "
             "make the test runner outdated (D).",
             (
-                "The tests are coupled to implementation details such as private methods or "
-                "mock interactions.",
-                "The tests were too independent of each other.",
-                "There were too few tests in the suite.",
-                "The test runner is out of date.",
+                "The tests assert on implementation details, such as private methods.",
+                "The tests were too independent of each other, so none of them caught the "
+                "change.",
+                "There were too few tests in the suite to describe the behavior.",
+                "The test runner is out of date and cannot parse the refactored modules.",
             ),
         ),
         _t(
@@ -2200,11 +2203,11 @@ TESTING_QUESTIONS: tuple[QuestionSeed, ...] = (
             "si (B) não causam isso, poucos testes (C) não causam falhas e uma refatoração "
             "não deixa o test runner desatualizado (D).",
             (
-                "Os testes estão acoplados a detalhes de implementação, como métodos "
-                "privados ou interações de mocks.",
-                "Os testes eram independentes demais entre si.",
-                "Havia poucos testes na suíte.",
-                "O test runner está desatualizado.",
+                "Os testes verificam detalhes de implementação, como métodos privados.",
+                "Os testes eram independentes demais entre si, então nenhum deles percebeu "
+                "a mudança.",
+                "Havia poucos testes na suíte para descrever o comportamento.",
+                "O test runner está desatualizado e não consegue ler os módulos refatorados.",
             ),
         ),
     ),
