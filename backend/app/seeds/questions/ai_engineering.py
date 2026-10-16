@@ -1369,11 +1369,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "itself, which it cannot. D is wrong: tools are defined at request time, not "
             "baked into the weights.",
             _options(
-                "The model runs the function inside its own process.",
-                "The model opens network connections to the tool's API directly.",
-                "The model emits a structured request (tool name and arguments), your "
-                "application runs it and returns the result to the model.",
-                "Tools are compiled into the model's weights during training.",
+                "The model runs the function inside its own process and reports the return "
+                "value.",
+                "The model opens network connections to the tool's API directly, using "
+                "credentials stored in its context window.",
+                "The model emits a request (tool name and arguments); your application runs "
+                "it and returns the result.",
+                "Tools are compiled into the model's weights during training, so no "
+                "definition is needed per request.",
             ),
         ),
         _t(
@@ -1384,11 +1387,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "código ou chamadas de rede por conta própria, o que ele não faz. D está errada: "
             "as ferramentas são definidas na requisição, não embutidas nos pesos.",
             _options(
-                "O modelo executa a função dentro do próprio processo.",
-                "O modelo abre conexões de rede diretamente com a API da ferramenta.",
-                "O modelo emite uma requisição estruturada (nome da ferramenta e argumentos), "
-                "sua aplicação a executa e devolve o resultado ao modelo.",
-                "As ferramentas são compiladas nos pesos do modelo durante o treinamento.",
+                "O modelo executa a função dentro do próprio processo e informa o valor de "
+                "retorno.",
+                "O modelo abre conexões de rede diretamente com a API da ferramenta, usando "
+                "credenciais guardadas em sua janela de contexto.",
+                "O modelo emite uma requisição (nome da ferramenta e argumentos); sua "
+                "aplicação a executa e devolve o resultado.",
+                "As ferramentas são compiladas nos pesos do modelo durante o treinamento, sem "
+                "precisar de definição a cada requisição.",
             ),
         ),
     ),
@@ -1406,11 +1412,13 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "limit is reached. A confuses agents with prompt length, C with model size, and D "
             "describes a fixed workflow, where code rather than the model decides the steps.",
             _options(
-                "It is any LLM call with a long prompt.",
-                "It runs a loop where the model picks its next action based on earlier "
-                "results until it finishes or hits a limit.",
-                "It is a model with more parameters.",
-                "It is a fixed pipeline where code decides every step in advance.",
+                "It is any LLM call with a long prompt that packs in many instructions and "
+                "examples.",
+                "It loops: the model picks each next action from earlier results until it "
+                "is done or hits a limit.",
+                "It is a model with more parameters and a larger context window.",
+                "It is a fixed pipeline where code decides every step in advance and calls "
+                "the model only to fill in text.",
             ),
         ),
         _t(
@@ -1421,11 +1429,13 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "tamanho do modelo, e D descreve um workflow fixo, em que o código, e não o "
             "modelo, decide as etapas.",
             _options(
-                "É qualquer chamada a um LLM com um prompt longo.",
-                "Executa um laço em que o modelo escolhe a próxima ação com base nos "
-                "resultados anteriores até terminar ou atingir um limite.",
-                "É um modelo com mais parâmetros.",
-                "É um pipeline fixo em que o código decide cada etapa de antemão.",
+                "É qualquer chamada a um LLM com um prompt longo, cheio de instruções e "
+                "exemplos.",
+                "Roda em laço: o modelo escolhe cada próxima ação pelos resultados "
+                "anteriores até terminar ou bater num limite.",
+                "É um modelo com mais parâmetros e uma janela de contexto maior.",
+                "É um pipeline fixo em que o código decide cada etapa de antemão e só chama "
+                "o modelo para preencher trechos de texto.",
             ),
         ),
     ),
@@ -1443,11 +1453,12 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "are wrong because the model is not given the tool's source code, and C is wrong "
             "because descriptions do not change the context window size.",
             _options(
-                "The model reads the tool's source code to understand what it does.",
+                "The model reads the tool's source code to understand what it does before "
+                "deciding to call it.",
                 "They are only for human documentation and are ignored by the model.",
                 "They enlarge the context window available to the model.",
-                "The model decides which tool to call and how to fill the arguments mostly "
-                "from them.",
+                "The model decides which tool to call and how to fill the arguments from "
+                "them.",
             ),
         ),
         _t(
@@ -1459,11 +1470,12 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "da ferramenta, e C está errada porque descrições não alteram o tamanho da janela "
             "de contexto.",
             _options(
-                "O modelo lê o código-fonte da ferramenta para entender o que ela faz.",
+                "O modelo lê o código-fonte da ferramenta para entender o que ela faz antes "
+                "de decidir se a chama.",
                 "Servem só como documentação para humanos e são ignorados pelo modelo.",
                 "Ampliam a janela de contexto disponível para o modelo.",
                 "O modelo decide qual ferramenta chamar e como preencher os argumentos "
-                "principalmente a partir delas.",
+                "sobretudo a partir delas.",
             ),
         ),
     ),
@@ -1602,11 +1614,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the model no chance to recover. C leads it to assume success and build on a "
             "false premise. D invents data, which is worse than failing.",
             _options(
-                "Return a clear error message as the tool result so the model can adjust, with "
-                "a cap on retries.",
-                "Abort the entire run on any tool error.",
-                "Ignore the error silently and let the model assume the call worked.",
-                "Generate a plausible fake result in code so the loop can continue.",
+                "Return a clear error as the tool result so the model can adjust, with a "
+                "retry cap.",
+                "Abort the entire run on any tool error, even one the model could easily "
+                "correct.",
+                "Ignore the error silently and let the model assume the call worked as "
+                "intended.",
+                "Generate a plausible fake result in code so the loop can continue without "
+                "interruption.",
             ),
         ),
         _t(
@@ -1618,11 +1633,14 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sucesso e construir sobre uma premissa falsa. D inventa dados, o que é pior do "
             "que falhar.",
             _options(
-                "Devolver uma mensagem de erro clara como resultado da ferramenta para o "
-                "modelo se ajustar, com um limite de tentativas.",
-                "Abortar a execução inteira a qualquer erro de ferramenta.",
-                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada funcionou.",
-                "Gerar em código um resultado falso plausível para o laço continuar.",
+                "Devolver um erro claro como resultado da ferramenta para o modelo se "
+                "ajustar, com limite de tentativas.",
+                "Abortar a execução inteira a qualquer erro de ferramenta, mesmo um que o "
+                "modelo corrigiria com facilidade.",
+                "Ignorar o erro silenciosamente e deixar o modelo assumir que a chamada "
+                "funcionou como esperado.",
+                "Gerar em código um resultado falso, mas plausível, para o laço continuar "
+                "sem nenhuma interrupção.",
             ),
         ),
     ),
@@ -1641,10 +1659,11 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "describes voting among several agents, and C a single retrieval step followed "
             "by one answer.",
             _options(
-                "Planning the full sequence of actions up front and never revising it.",
+                "Planning the full sequence of actions up front and never revising it, "
+                "whatever the tool results show.",
                 "Running several agents and taking a majority vote.",
                 "Retrieving documents once and then producing a single answer.",
-                "Interleaving reasoning with actions, feeding each observation back to guide "
+                "Interleaving reasoning with actions, feeding each observation back into "
                 "the next step.",
             ),
         ),
@@ -1656,7 +1675,8 @@ AGENT_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deliberadamente. B descreve votação entre vários agentes, e C uma única etapa de "
             "recuperação seguida de uma resposta.",
             _options(
-                "Planejar toda a sequência de ações de antemão e nunca revisá-la.",
+                "Planejar toda a sequência de ações de antemão e nunca revisá-la, não "
+                "importa o que as ferramentas devolvam.",
                 "Executar vários agentes e adotar o voto da maioria.",
                 "Recuperar documentos uma vez e então produzir uma única resposta.",
                 "Intercalar raciocínio e ação, realimentando cada observação para guiar o "
