@@ -969,11 +969,14 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "unrelated to RAG. C is backwards: retrieved text consumes context window. D "
             "overstates it: grounding reduces hallucination but does not guarantee its absence.",
             _options(
-                "It makes the model train faster.",
-                "It lets the model answer using current or private knowledge supplied at "
-                "query time, without retraining.",
-                "It removes the context window limit.",
-                "It guarantees that the model never hallucinates.",
+                "It makes the model train faster by shrinking the training set it needs to "
+                "see.",
+                "It lets the model answer from current or private knowledge supplied at "
+                "query time.",
+                "It removes the context window limit by moving the prompt into an external "
+                "index.",
+                "It guarantees that the model never hallucinates, because every answer is "
+                "checked against sources.",
             ),
         ),
         _t(
@@ -984,11 +987,14 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "janela de contexto. D exagera: o grounding reduz a alucinação, mas não garante "
             "sua ausência.",
             _options(
-                "Faz o modelo treinar mais rápido.",
-                "Permite que o modelo responda com conhecimento atual ou privado fornecido no "
-                "momento da consulta, sem retreinar.",
-                "Remove o limite da janela de contexto.",
-                "Garante que o modelo nunca alucine.",
+                "Faz o modelo treinar mais rápido ao reduzir o conjunto de treino que ele "
+                "precisa ver.",
+                "Permite que o modelo responda com conhecimento atual ou privado fornecido "
+                "na consulta.",
+                "Remove o limite da janela de contexto ao mover o prompt para um índice "
+                "externo.",
+                "Garante que o modelo nunca alucine, pois toda resposta é conferida contra "
+                "as fontes recuperadas.",
             ),
         ),
     ),
@@ -1006,9 +1012,12 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "orders are impossible: you cannot embed before you have chunks, nor chunk text "
             "that has not been parsed yet.",
             _options(
-                "Embed, then chunk, then parse, then store.",
-                "Store, then chunk, then embed, then parse.",
-                "Chunk, then store, then parse, then embed.",
+                "Embed each document, then chunk the embeddings, then parse them into text, "
+                "then store the results.",
+                "Store the raw files, then chunk them, then embed each chunk, then finally "
+                "parse the vectors into text.",
+                "Chunk the raw files, then store the chunks, then parse them into text, then "
+                "embed each chunk.",
                 "Load and parse documents, split into chunks, embed each chunk, store the "
                 "vectors with metadata.",
             ),
@@ -1020,12 +1029,12 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "metadados. As outras ordens são impossíveis: não dá para gerar embeddings antes de "
             "ter chunks, nem dividir um texto que ainda não foi extraído.",
             _options(
-                "Gerar embeddings, depois dividir em chunks, depois extrair o texto, depois "
-                "armazenar.",
-                "Armazenar, depois dividir em chunks, depois gerar embeddings, depois extrair "
-                "o texto.",
-                "Dividir em chunks, depois armazenar, depois extrair o texto, depois gerar "
-                "embeddings.",
+                "Gerar o embedding de cada documento, dividir os embeddings em chunks, "
+                "extrair o texto deles e por fim armazenar o resultado.",
+                "Armazenar os arquivos brutos, dividi-los em chunks, gerar o embedding de "
+                "cada chunk e só então extrair o texto dos vetores.",
+                "Dividir os arquivos brutos em chunks, armazenar os chunks, extrair o texto "
+                "deles e depois gerar o embedding de cada chunk.",
                 "Carregar e extrair o texto dos documentos, dividir em chunks, gerar o "
                 "embedding de cada chunk e armazenar os vetores com metadados.",
             ),
@@ -1119,11 +1128,14 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "produce diluted embeddings and waste context, not missing neighbors. C and D do "
             "not affect which text is retrieved.",
             _options(
-                "Chunks are too large; make them smaller.",
-                "Chunks are too small and split related information; use larger chunks, more "
-                "overlap, or expand hits with neighboring text.",
-                "The embedding vectors have too many dimensions; reduce them.",
-                "The generation temperature is too low; raise it.",
+                "Chunks are too large and dilute each embedding; make them smaller so each "
+                "one is more focused.",
+                "Chunks are too small and split related information; use larger chunks or "
+                "more overlap.",
+                "The embedding vectors have too many dimensions; reduce them to speed up the "
+                "search.",
+                "The generation temperature is too low; raise it so the answer includes more "
+                "details.",
             ),
         ),
         _t(
@@ -1136,11 +1148,14 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "problema oposto: chunks grandes demais geram embeddings diluídos e desperdiçam "
             "contexto, não perdem vizinhos. C e D não afetam qual texto é recuperado.",
             _options(
-                "Os chunks são grandes demais; torná-los menores.",
-                "Os chunks são pequenos demais e separam informações relacionadas; usar chunks "
-                "maiores, mais sobreposição ou expandir os resultados com o texto vizinho.",
-                "Os vetores de embedding têm dimensões demais; reduzi-las.",
-                "A temperatura de geração está baixa demais; aumentá-la.",
+                "Os chunks são grandes demais e diluem cada embedding; torná-los menores "
+                "para ficarem mais focados.",
+                "Os chunks são pequenos demais e separam informações relacionadas; usar "
+                "chunks maiores ou mais sobreposição.",
+                "Os vetores de embedding têm dimensões demais; reduzi-las para acelerar a "
+                "busca.",
+                "A temperatura de geração está baixa demais; aumentá-la para a resposta "
+                "trazer mais detalhes.",
             ),
         ),
     ),
@@ -1160,11 +1175,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "joint scoring is usually more accurate than comparing precomputed vectors. C and "
             "D invent restrictions.",
             _options(
-                "Scoring every chunk jointly with the query is too expensive per request, so "
-                "it runs only on a shortlist from a fast first stage.",
-                "Cross-encoders are less accurate than comparing precomputed vectors.",
-                "Cross-encoders only work on keyword indexes.",
-                "Vector databases forbid reranking.",
+                "Scoring each chunk jointly with the query is too costly per request, so it "
+                "runs on a shortlist.",
+                "Cross-encoders are less accurate than comparing precomputed vectors, which "
+                "is why they are used last.",
+                "Cross-encoders only work on keyword indexes, so they cannot rerank vector "
+                "search results.",
+                "Vector databases forbid reranking, so it has to happen outside the index.",
             ),
         ),
         _t(
@@ -1177,10 +1194,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "pré-calculados. C e D inventam restrições.",
             _options(
                 "Avaliar cada chunk em conjunto com a consulta é caro demais por requisição, "
-                "então ele roda só em uma lista curta vinda de uma primeira etapa rápida.",
-                "Cross-encoders são menos precisos do que comparar vetores pré-calculados.",
-                "Cross-encoders só funcionam em índices de palavras-chave.",
-                "Bancos de dados vetoriais proíbem reranking.",
+                "então ele roda só em uma lista curta.",
+                "Cross-encoders são menos precisos do que comparar vetores pré-calculados, e "
+                "por isso são usados por último.",
+                "Cross-encoders só funcionam em índices de palavras-chave, então não "
+                "reordenam resultados de busca vetorial.",
+                "Bancos de dados vetoriais proíbem reranking, então ele precisa ocorrer fora "
+                "do índice.",
             ),
         ),
     ),
@@ -1284,11 +1304,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "system abstain more gracefully, but the question is still unanswerable because "
             "the evidence is missing.",
             _options(
-                "Lower the generation temperature to 0.",
-                "Add an instruction to say 'I don't know' when unsure.",
-                "Switch to a larger generation model.",
-                "Improve retrieval, for example with hybrid search, better chunking or a "
-                "reranker over a wider candidate pool, and re-measure recall.",
+                "Lower the generation temperature to 0 so the model sticks to the most "
+                "likely answer.",
+                "Add an instruction telling the model to say 'I don't know' whenever it is "
+                "unsure about the evidence it was given.",
+                "Switch to a larger generation model with a stronger grasp of the subject.",
+                "Improve retrieval (hybrid search, better chunking, a reranker) and "
+                "re-measure recall.",
             ),
         ),
         _t(
@@ -1302,11 +1324,13 @@ RAG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "B pode fazer o sistema se abster com mais elegância, mas a pergunta continua sem "
             "resposta porque falta a evidência.",
             _options(
-                "Reduzir a temperatura de geração para 0.",
-                "Adicionar uma instrução para dizer 'não sei' quando estiver em dúvida.",
-                "Trocar por um modelo de geração maior.",
-                "Melhorar a recuperação, por exemplo com busca híbrida, chunking melhor ou um "
-                "reranker sobre um conjunto maior de candidatos, e medir o recall novamente.",
+                "Reduzir a temperatura de geração para 0, para o modelo se ater à resposta "
+                "mais provável.",
+                "Adicionar uma instrução mandando o modelo dizer 'não sei' sempre que estiver "
+                "em dúvida sobre a evidência recebida.",
+                "Trocar por um modelo de geração maior, com domínio mais forte do assunto.",
+                "Melhorar a recuperação (busca híbrida, chunking melhor, um reranker) e "
+                "medir o recall novamente.",
             ),
         ),
     ),
