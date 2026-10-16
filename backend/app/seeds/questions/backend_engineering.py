@@ -204,8 +204,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "outros designs, mas não é o padrão do framework.",
             _options(
                 "`422 Unprocessable Entity`, com detalhes do campo inválido.",
-                "`400 Bad Request` com uma mensagem genérica dizendo que a requisição é "
-                "inválida.",
+                "`400 Bad Request` com uma mensagem genérica dizendo que a requisição é inválida.",
                 "`500 Internal Server Error`, porque o handler quebra com o valor.",
                 "`404 Not Found`, porque o corpo não corresponde à rota.",
             ),
@@ -228,8 +227,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the order requested.",
             _options(
                 "It cannot be combined with a sort order, so the feed order is undefined.",
-                "It forces the client to know the total number of rows before asking for any "
-                "page.",
+                "It forces the client to know the total number of rows before asking for any page.",
                 "Inserts and deletes between requests can duplicate or skip items, and large "
                 "offsets get slower.",
                 "It returns rows in a non-deterministic order even when the query has an "
@@ -246,8 +244,7 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "linhas ignoradas. O offset funciona bem com ordenação, não exige contagem total "
             "e devolve as linhas na ordem pedida.",
             _options(
-                "Não pode ser combinada com uma ordenação, então a ordem do feed fica "
-                "indefinida.",
+                "Não pode ser combinada com uma ordenação, então a ordem do feed fica indefinida.",
                 "Obriga o cliente a conhecer o número total de linhas antes de pedir qualquer "
                 "página.",
                 "Inserções e remoções entre requisições podem duplicar ou pular itens, e "
@@ -647,11 +644,9 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "verification can be done locally with the key, with no call to the issuer on "
             "every request.",
             _options(
-                "The payload is encrypted, so the client cannot read the claims inside the "
-                "token.",
+                "The payload is encrypted, so the client cannot read the claims inside the token.",
                 "The payload is only encoded, so anyone holding the token can read it.",
-                "The signature makes the claims confidential from anyone who intercepts the "
-                "token.",
+                "The signature makes the claims confidential from anyone who intercepts the token.",
                 "A server must call the issuer on every single request to check that the "
                 "token is valid.",
             ),
@@ -717,8 +712,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "logar de novo.",
                 "JWTs stateless assinados com um algoritmo mais forte e uma chave de assinatura "
                 "maior.",
-                "Sessões no servidor, em um banco: apagar todos os registros de sessão do "
-                "usuário.",
+                "Sessões no servidor, em um banco: apagar todos os registros de sessão do usuário.",
             ),
         ),
     ),
@@ -785,8 +779,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "A new flow that replaces the authorization code flow for browser-based apps.",
                 "An identity layer: an ID token about the user, the `openid` scope and a "
                 "userinfo endpoint.",
-                "Refresh tokens, which OAuth 2.0 does not support, so sessions can be "
-                "extended.",
+                "Refresh tokens, which OAuth 2.0 does not support, so sessions can be extended.",
             ),
         ),
         _t(
@@ -878,8 +871,7 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Broken object-level authorization (IDOR): any logged-in user can fetch any "
                 "invoice by id.",
                 "SQL injection through `invoice_id`, which is concatenated into the query.",
-                "CSRF, because the endpoint answers a `GET` request without an anti-forgery "
-                "token.",
+                "CSRF, because the endpoint answers a `GET` request without an anti-forgery token.",
             ),
         ),
         _t(
@@ -892,13 +884,11 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "aleatórios dificultam o palpite, mas não são um controle de autorização. Não há "
             "SQL injection aqui, e CSRF diz respeito a requisições que alteram estado.",
             _options(
-                "Nenhuma: como o endpoint exige login, só usuários legítimos chegam às "
-                "faturas.",
+                "Nenhuma: como o endpoint exige login, só usuários legítimos chegam às faturas.",
                 "Autorização quebrada em nível de objeto (IDOR): qualquer usuário logado "
                 "pode buscar qualquer fatura pelo id.",
                 "SQL injection por meio de `invoice_id`, que é concatenado na consulta.",
-                "CSRF, porque o endpoint responde a uma requisição `GET` sem token "
-                "anti-forgery.",
+                "CSRF, porque o endpoint responde a uma requisição `GET` sem token anti-forgery.",
             ),
         ),
     ),
@@ -1140,8 +1130,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "Reads on that table become slower, because the database must now check the "
                 "index first.",
-                "Extra storage, plus every write must also update the index, so writes slow "
-                "down.",
+                "Extra storage, plus every write must also update the index, so writes slow down.",
                 "The table can no longer contain duplicate rows, because every index enforces "
                 "uniqueness.",
                 "The table becomes read-only while the index exists, until it is dropped.",
@@ -1378,8 +1367,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "The users that have no orders; the guest-order `NULL` row is simply ignored "
                 "by the `NOT IN` comparison.",
-                "Every user, since `NULL` matches nothing and so excludes nobody from the "
-                "result.",
+                "Every user, since `NULL` matches nothing and so excludes nobody from the result.",
                 "No rows at all, because comparing with `NULL` makes the condition unknown "
                 "for every user.",
                 "An error, because `NOT IN` does not accept subqueries that can return `NULL` "
@@ -1551,8 +1539,7 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "notifications can all react to the same event. Both are asynchronous, and both "
             "can be durable, so those are not the distinguishing factors.",
             _options(
-                "A work queue is synchronous, while pub/sub is asynchronous and "
-                "fire-and-forget.",
+                "A work queue is synchronous, while pub/sub is asynchronous and fire-and-forget.",
                 "Pub/sub messages are never persisted, while queue messages are always "
                 "written to disk before delivery.",
                 "In a work queue each message is handled by one consumer; in pub/sub each "
@@ -1597,8 +1584,7 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "once. Duplicates are expected, loss is not allowed by the guarantee, and global "
             "ordering is not part of it.",
             _options(
-                "Messages are never duplicated, so no special handling is needed in the "
-                "consumer.",
+                "Messages are never duplicated, so no special handling is needed in the consumer.",
                 "Messages may be lost, so the consumer must poll the database as a backup.",
                 "Messages always arrive in the global order they were published, across all "
                 "partitions.",
@@ -1645,8 +1631,7 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Orders keep succeeding when the email service is slow or down, and the queue "
                 "absorbs spikes.",
                 "It guarantees that each email is sent exactly once, even after a crash.",
-                "It removes the need to handle failures in the email service or retry "
-                "anything.",
+                "It removes the need to handle failures in the email service or retry anything.",
                 "The email is guaranteed to be sent before the order response returns to the "
                 "client, keeping both in step.",
             ),
@@ -1664,8 +1649,7 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             _options(
                 "Os pedidos continuam funcionando quando o serviço de e-mail está lento ou "
                 "fora do ar, e a fila absorve picos.",
-                "Garante que cada e-mail seja enviado exatamente uma vez, mesmo após uma "
-                "queda.",
+                "Garante que cada e-mail seja enviado exatamente uma vez, mesmo após uma queda.",
                 "Elimina a necessidade de tratar falhas no serviço de e-mail ou de repetir "
                 "qualquer coisa.",
                 "O e-mail é garantidamente enviado antes de a resposta do pedido voltar ao "

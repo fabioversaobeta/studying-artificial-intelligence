@@ -649,8 +649,7 @@ _REPL: tuple[QuestionSeed, ...] = (
             "Reading from the leader after a write (A) addresses read-your-writes, and "
             "more followers (B) would make the lag differences worse, while split-brain (D) "
             "is about two leaders.",
-            "A read-your-writes violation; read from the leader after every write the user "
-            "makes.",
+            "A read-your-writes violation; read from the leader after every write the user makes.",
             "A monotonic-reads violation; add more followers so that each one carries less "
             "read load.",
             "A monotonic-reads violation; pin each user's reads to the same replica.",
@@ -770,8 +769,7 @@ _REPL: tuple[QuestionSeed, ...] = (
             "creating two leaders.",
             "A long write-unavailability window after a real crash, since the failure takes "
             "too long to be detected.",
-            "Followers fall further behind the leader's replication log during every long "
-            "pause.",
+            "Followers fall further behind the leader's replication log during every long pause.",
             "The replication log grows without bound on the leader until the next full backup.",
         ),
         _text(
@@ -1005,12 +1003,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "capacity but does not help when the data or the write throughput no longer fits "
             "on one machine. Sharding splits the data so each node holds only a slice, letting "
             "total storage and write capacity grow with the number of shards.",
-            "It protects the data against the loss of a single machine or an entire data "
-            "center.",
+            "It protects the data against the loss of a single machine or an entire data center.",
             "It lets the dataset and write load exceed what a single machine can handle.",
             "It makes every read return the latest write, even when replicas are lagging.",
-            "It removes the need for backups, because the data is already stored on several "
-            "nodes.",
+            "It removes the need for backups, because the data is already stored on several nodes.",
         ),
         _text(
             "Que problema o sharding resolve e a replicação sozinha não resolve?",
@@ -1019,8 +1015,7 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "escrita não cabem mais em uma máquina. O sharding divide os dados para que cada nó "
             "guarde só uma fatia, permitindo que o armazenamento e a capacidade de escrita "
             "totais cresçam com o número de shards.",
-            "Protege os dados contra a perda de uma única máquina ou de um data center "
-            "inteiro.",
+            "Protege os dados contra a perda de uma única máquina ou de um data center inteiro.",
             "Permite que os dados e a carga de escrita excedam o que uma máquina suporta.",
             "Faz toda leitura retornar a última escrita, mesmo com réplicas atrasadas.",
             "Elimina a necessidade de backups, pois os dados já ficam em vários nós.",
@@ -1080,8 +1075,7 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "flexibility is its selling point.",
             "The directory is an extra dependency on the request path and must be highly "
             "available.",
-            "Range scans become impossible, because the lookup table has no notion of key "
-            "order.",
+            "Range scans become impossible, because the lookup table has no notion of key order.",
             "Data can only be rebalanced by taking the whole system offline while the "
             "directory is rebuilt.",
             "Keys must be uniformly distributed for the directory to work, or it overloads.",
@@ -1175,8 +1169,7 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "uniforme entre os shards.",
             "A maioria das consultas e transações toca um só tenant, então ficam em um único "
             "shard.",
-            "Elimina a necessidade de índices secundários, pois toda busca é roteada por "
-            "tenant.",
+            "Elimina a necessidade de índices secundários, pois toda busca é roteada por tenant.",
             "Torna baratas as consultas que cruzam todos os tenants.",
         ),
     ),
@@ -1220,8 +1213,7 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "mesma função da tabela.",
             "A consulta não pode ser respondida a menos que a tabela seja re-particionada por "
             "`external_ticket_id`.",
-            "A consulta é enviada a todos os shards (scatter-gather) e os resultados são "
-            "reunidos.",
+            "A consulta é enviada a todos os shards (scatter-gather) e os resultados são reunidos.",
             "A consulta exige uma transação distribuída entre todos os shards para dar um "
             "resultado consistente.",
         ),
@@ -1451,8 +1443,7 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "which is what stops a later leader or decision from ignoring it. Majorities are not "
             "required for speed (A), do not pick the fastest node (B), and the argument does "
             "not depend on odd cluster sizes (D).",
-            "A majority is the smallest group that can answer quickly enough to keep latency "
-            "low.",
+            "A majority is the smallest group that can answer quickly enough to keep latency low.",
             "The majority always includes the fastest node, which then becomes the leader of "
             "the cluster.",
             "Any two majorities share a node, so a later majority cannot miss a committed "
@@ -1590,11 +1581,9 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "garantido pela regra de votação. Segurança contra atacantes (C) e distribuição de "
             "leituras (D) não são objetivos desse mecanismo.",
             "Para garantir que o nó com o log mais completo sempre expire primeiro e vença.",
-            "Para que um nó em geral expire primeiro e vença, evitando votos divididos "
-            "repetidos.",
+            "Para que um nó em geral expire primeiro e vença, evitando votos divididos repetidos.",
             "Para tornar os heartbeats e as eleições imprevisíveis para atacantes de rede.",
-            "Para distribuir uniformemente o tráfego de leitura entre os seguidores do "
-            "cluster.",
+            "Para distribuir uniformemente o tráfego de leitura entre os seguidores do cluster.",
         ),
     ),
     _q(
@@ -1635,8 +1624,7 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "quando a partição se resolve.",
             "O líder antigo continua confirmando escritas em seu grupo de 2, e o outro grupo "
             "as incorpora quando a partição se resolve.",
-            "O cluster inteiro para, pois nenhum grupo pode prosseguir até a partição se "
-            "resolver.",
+            "O cluster inteiro para, pois nenhum grupo pode prosseguir até a partição se resolver.",
             "O grupo de 3 elege um novo líder; o líder antigo não confirma nada e renuncia "
             "depois que a partição se resolve.",
         ),
