@@ -146,11 +146,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "has not failed must get a non-error response. The answer may be stale. It is not "
             "an uptime percentage (A), it does not promise the latest write (B; that is "
             "consistency), and the theorem sets no latency bound (C).",
-            "The service is up a very high percentage of the time (for example 99.99%).",
-            "Every request returns the result of the most recent write.",
-            "Every request is answered within the latency target of the service.",
-            "Every request to a non-failing node receives a non-error response, though not "
-            "necessarily one reflecting the latest write.",
+            "The service is up a very high percentage of the time, for example 99.99% over a "
+            "month.",
+            "Every request returns the result of the most recent completed write, as if there "
+            "were a single copy of the data.",
+            "Every request is answered within the latency target in the service's SLO, for "
+            "example 200 ms.",
+            "Every request to a non-failing node gets a non-error response, even if it is not "
+            "the latest write.",
         ),
         _text(
             "Na formulação formal do teorema CAP, o que significa **disponibilidade** "
@@ -159,11 +162,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "um nó que não falhou deve receber uma resposta sem erro. A resposta pode estar "
             "desatualizada. Não é um percentual de uptime (A), não promete a última escrita "
             "(B; isso é consistência) e o teorema não define limite de latência (C).",
-            "O serviço fica no ar uma porcentagem altíssima do tempo (por exemplo, 99,99%).",
-            "Toda requisição retorna o resultado da escrita mais recente.",
-            "Toda requisição é respondida dentro da meta de latência do serviço.",
-            "Toda requisição a um nó que não falhou recebe uma resposta sem erro, embora "
-            "não necessariamente refletindo a última escrita.",
+            "O serviço fica no ar uma porcentagem altíssima do tempo, por exemplo 99,99% ao "
+            "longo de um mês.",
+            "Toda requisição retorna o resultado da última escrita concluída, como se "
+            "houvesse uma única cópia dos dados.",
+            "Toda requisição é respondida dentro da meta de latência do SLO do serviço, por "
+            "exemplo 200 ms.",
+            "Toda requisição a um nó que não falhou recebe uma resposta sem erro, mesmo que "
+            "não seja a da última escrita.",
         ),
     ),
     _q(
@@ -181,11 +187,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "(for example, it cannot reach a majority) refuses or times out requests. B and C "
             "keep answering and so are AP behaviors, and D accepts writes it cannot "
             "coordinate, so it risks the very divergence a ledger must avoid.",
-            "It rejects or times out requests that it cannot guarantee are consistent until the "
+            "It rejects or times out requests it cannot guarantee are consistent until the "
             "partition heals.",
-            "It keeps accepting writes and merges them with the other data centers afterwards.",
-            "It keeps answering reads from its local, possibly stale, copy of the data.",
-            "It acknowledges writes immediately and replicates them whenever the network returns.",
+            "It keeps accepting writes locally and merges them with the other data centers "
+            "once the partition heals.",
+            "It keeps answering reads from its local, possibly stale, copy of the data until "
+            "the partition heals.",
+            "It acknowledges writes immediately and replicates them whenever the network "
+            "returns to normal.",
         ),
         _text(
             "Um livro-razão bancário está implantado em três data centers e uma partição de "
@@ -198,10 +207,11 @@ _CAP: tuple[QuestionSeed, ...] = (
             "que um livro-razão precisa evitar.",
             "Rejeita ou deixa expirar as requisições cuja consistência não consegue garantir "
             "até que a partição seja resolvida.",
-            "Continua aceitando escritas e as mescla com os outros data centers depois.",
+            "Continua aceitando escritas localmente e as mescla com os outros data centers "
+            "quando a partição for resolvida.",
             "Continua respondendo leituras a partir da sua cópia local, possivelmente "
-            "desatualizada.",
-            "Confirma as escritas imediatamente e as replica quando a rede voltar.",
+            "desatualizada, até a partição ser resolvida.",
+            "Confirma as escritas imediatamente e as replica quando a rede voltar ao normal.",
         ),
     ),
     _q(
@@ -219,12 +229,12 @@ _CAP: tuple[QuestionSeed, ...] = (
             "to another, preserving application-defined invariants such as constraints. They "
             "are unrelated guarantees, and CAP consistency is not eventual consistency.",
             "They are the same guarantee; CAP just applies the ACID definition to several nodes.",
-            "CAP consistency means reads see the latest write as if there were one copy of the "
-            "data; ACID consistency means a transaction preserves the database's invariants.",
-            "CAP consistency means replicas converge eventually; ACID consistency means reads "
-            "see the latest write.",
-            "CAP consistency is about durability on disk; ACID consistency is about isolation "
-            "between transactions.",
+            "CAP consistency means reads see the latest write, as if there were one copy; ACID "
+            "consistency means a transaction preserves the invariants.",
+            "CAP consistency means replicas eventually converge to the same value; ACID "
+            "consistency means every read sees the latest committed write.",
+            "CAP consistency is about durability, meaning writes survive a crash on disk; ACID "
+            "consistency is about isolation between concurrent transactions.",
         ),
         _text(
             'Qual afirmação distingue melhor o "C" do CAP do "C" do ACID?',
@@ -235,13 +245,12 @@ _CAP: tuple[QuestionSeed, ...] = (
             "constraints. São garantias sem relação, e a consistência do CAP não é consistência "
             "eventual.",
             "São a mesma garantia; o CAP apenas aplica a definição do ACID a vários nós.",
-            "No CAP, consistência significa que as leituras veem a última escrita como se "
-            "houvesse uma só cópia dos dados; no ACID, que uma transação preserva as "
-            "invariantes do banco.",
-            "No CAP, consistência significa que as réplicas convergem com o tempo; no ACID, "
-            "que as leituras veem a última escrita.",
-            "No CAP, consistência trata de durabilidade em disco; no ACID, de isolamento entre "
-            "transações.",
+            "No CAP, consistência significa que as leituras veem a última escrita, como se "
+            "houvesse uma só cópia; no ACID, que uma transação preserva as invariantes.",
+            "No CAP, consistência significa que as réplicas acabam convergindo para o mesmo "
+            "valor; no ACID, que toda leitura vê a última escrita confirmada.",
+            "No CAP, consistência trata de durabilidade, ou seja, as escritas sobrevivem a "
+            "uma queda em disco; no ACID, de isolamento entre transações concorrentes.",
         ),
     ),
     _q(
@@ -339,10 +348,13 @@ _CAP: tuple[QuestionSeed, ...] = (
             "asynchronous replication does the opposite. B reverses the roles of the clauses, "
             "C is not a PACELC trade-off, and D describes CAP's own clause.",
             "The trade-off between latency and consistency when there is no partition, such as "
-            "synchronous versus asynchronous replication.",
-            "The trade-off between latency and consistency while a partition is happening.",
-            "The trade-off between storage cost and durability when there is no partition.",
-            "The trade-off between availability and consistency when there is no partition.",
+            "synchronous replication.",
+            "The trade-off between latency and consistency that a system faces while a network "
+            "partition is in progress.",
+            "The trade-off between storage cost and durability, such as how many replicas to "
+            "keep, when there is no partition.",
+            "The trade-off between availability and consistency when there is no partition, "
+            "that is, the choice CAP already describes.",
         ),
         _text(
             'A formulação PACELC acrescenta uma cláusula "ELC" ao CAP. O que ela descreve?',
@@ -351,11 +363,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "replicação síncrona compra mais consistência ao custo de latência, e a assíncrona "
             "faz o oposto. B inverte os papéis das cláusulas, C não é um trade-off do PACELC e "
             "D descreve a própria cláusula do CAP.",
-            "O trade-off entre latência e consistência quando não há partição, como replicação "
-            "síncrona versus assíncrona.",
-            "O trade-off entre latência e consistência enquanto uma partição está ocorrendo.",
-            "O trade-off entre custo de armazenamento e durabilidade quando não há partição.",
-            "O trade-off entre disponibilidade e consistência quando não há partição.",
+            "O trade-off entre latência e consistência quando não há partição, como a "
+            "replicação síncrona.",
+            "O trade-off entre latência e consistência que o sistema enfrenta enquanto uma "
+            "partição de rede está em curso.",
+            "O trade-off entre custo de armazenamento e durabilidade, como quantas réplicas "
+            "manter, quando não há partição.",
+            "O trade-off entre disponibilidade e consistência quando não há partição, ou "
+            "seja, a escolha que o CAP já descreve.",
         ),
     ),
     _q(
@@ -523,10 +538,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "that, if the leader crashes before followers receive the write, a write the client "
             "was told succeeded can be lost. A describes the synchronous trade-off, C and D "
             "describe benefits that asynchronous replication does not provide.",
-            "It guarantees that acknowledged writes survive a leader crash, but writes are slower.",
-            "It gives lower write latency, but a write acknowledged to the client can be lost "
-            "if the leader crashes before followers receive it.",
-            "It gives followers stronger consistency than the leader, but uses more storage.",
+            "It guarantees that acknowledged writes survive a leader crash, but every write "
+            "waits for follower acknowledgments and is slower.",
+            "It gives lower write latency, but an acknowledged write can be lost if the "
+            "leader crashes before followers get it.",
+            "It gives followers stronger consistency than the leader, but uses more storage "
+            "for the extra copies.",
             "It removes replication lag, because followers apply each write in parallel with "
             "the client's acknowledgment.",
         ),
@@ -538,11 +555,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "se o líder falhar antes de os seguidores receberem a escrita, uma escrita que o "
             "cliente foi informado que deu certo pode ser perdida. A descreve o trade-off da "
             "replicação síncrona; C e D descrevem benefícios que a assíncrona não oferece.",
-            "Garante que escritas confirmadas sobrevivem à queda do líder, mas as escritas são "
-            "mais lentas.",
-            "Dá menor latência de escrita, mas uma escrita confirmada ao cliente pode ser "
-            "perdida se o líder falhar antes de os seguidores a receberem.",
-            "Dá aos seguidores consistência mais forte que a do líder, mas usa mais armazenamento.",
+            "Garante que escritas confirmadas sobrevivem à queda do líder, mas cada escrita "
+            "espera a confirmação dos seguidores e fica mais lenta.",
+            "Dá menor latência de escrita, mas uma escrita confirmada pode ser perdida se o "
+            "líder falhar antes de os seguidores a receberem.",
+            "Dá aos seguidores consistência mais forte que a do líder, mas usa mais "
+            "armazenamento para as cópias extras.",
             "Elimina o replication lag, porque os seguidores aplicam cada escrita em paralelo "
             "com a confirmação ao cliente.",
         ),
@@ -563,10 +581,10 @@ _REPL: tuple[QuestionSeed, ...] = (
             "replication lag. Monotonic reads (A) concerns time moving backwards across "
             "successive reads, durability (B) is not at stake since the leader has the write, "
             "and atomicity (D) is about all-or-nothing transactions.",
-            "Monotonic reads",
-            "Durability",
-            "Read-your-writes",
-            "Atomicity",
+            "Monotonic reads (no going back in time)",
+            "Durability of acknowledged writes",
+            "Read-your-writes (seeing own writes)",
+            "Atomicity of multi-row transactions",
         ),
         _text(
             "Um usuário publica um comentário (a escrita vai para o líder) e a página recarrega. "
@@ -577,10 +595,10 @@ _REPL: tuple[QuestionSeed, ...] = (
             "escrita do usuário devido ao replication lag. Monotonic reads (A) trata do tempo "
             "andar para trás entre leituras sucessivas, durabilidade (B) não está em jogo, pois "
             "o líder tem a escrita, e atomicidade (D) trata de transações tudo-ou-nada.",
-            "Monotonic reads",
-            "Durabilidade",
-            "Read-your-writes",
-            "Atomicidade",
+            "Monotonic reads (sem voltar no tempo)",
+            "Durabilidade das escritas confirmadas",
+            "Read-your-writes (ver as próprias escritas)",
+            "Atomicidade de transações com várias linhas",
         ),
     ),
     _q(
@@ -631,11 +649,11 @@ _REPL: tuple[QuestionSeed, ...] = (
             "Reading from the leader after a write (A) addresses read-your-writes, and "
             "more followers (B) would make the lag differences worse, while split-brain (D) "
             "is about two leaders.",
-            "A read-your-writes violation; read from the leader after every write.",
-            "A monotonic-reads violation; add more followers so each one has less load.",
-            "A monotonic-reads violation; route each user's reads consistently to the same "
-            "replica.",
-            "Split-brain; require a quorum before promoting a follower.",
+            "A read-your-writes violation; read from the leader after every write the user makes.",
+            "A monotonic-reads violation; add more followers so that each one carries less "
+            "read load.",
+            "A monotonic-reads violation; pin each user's reads to the same replica.",
+            "Split-brain; require a quorum before promoting a follower to leader.",
         ),
         _text(
             "As leituras são distribuídas entre vários seguidores assíncronos. Um usuário "
@@ -647,12 +665,11 @@ _REPL: tuple[QuestionSeed, ...] = (
             "avançar. Ler do líder após uma escrita (A) trata de read-your-writes, mais "
             "seguidores (B) aumentariam as diferenças de lag, e split-brain (D) trata de dois "
             "líderes.",
-            "Violação de read-your-writes; ler do líder após toda escrita.",
-            "Violação de monotonic reads; adicionar mais seguidores para que cada um tenha "
-            "menos carga.",
-            "Violação de monotonic reads; direcionar as leituras de cada usuário sempre para "
-            "a mesma réplica.",
-            "Split-brain; exigir um quórum antes de promover um seguidor.",
+            "Violação de read-your-writes; ler do líder após toda escrita feita pelo usuário.",
+            "Violação de monotonic reads; adicionar mais seguidores para que cada um receba "
+            "menos carga de leitura.",
+            "Violação de monotonic reads; fixar as leituras de cada usuário na mesma réplica.",
+            "Split-brain; exigir um quórum antes de promover um seguidor a líder.",
         ),
     ),
     _q(
@@ -749,10 +766,11 @@ _REPL: tuple[QuestionSeed, ...] = (
             "the cluster can have two leaders. B is the problem of a timeout that is too long, "
             "and C and D are unrelated to how failure is detected.",
             "A false-positive failover away from a leader that is only paused, possibly "
-            "leaving two nodes acting as leader.",
-            "A long write-unavailability window after a real crash.",
-            "Followers fall further behind the leader's replication log.",
-            "The replication log grows without bound on the leader.",
+            "creating two leaders.",
+            "A long write-unavailability window after a real crash, since the failure takes "
+            "too long to be detected.",
+            "Followers fall further behind the leader's replication log during every long pause.",
+            "The replication log grows without bound on the leader until the next full backup.",
         ),
         _text(
             "Um cluster detecta a falha do líder com heartbeats e um timeout de 5 segundos. O "
@@ -763,10 +781,12 @@ _REPL: tuple[QuestionSeed, ...] = (
             "o cluster pode ficar com dois líderes. B é o problema de um timeout longo demais, "
             "e C e D não têm relação com a detecção de falhas.",
             "Um failover falso positivo, afastando um líder que só estava pausado e "
-            "possivelmente deixando dois nós agindo como líder.",
-            "Uma longa janela de indisponibilidade de escrita após uma queda real.",
-            "Os seguidores ficam ainda mais atrás no log de replicação do líder.",
-            "O log de replicação cresce sem limite no líder.",
+            "possivelmente criando dois líderes.",
+            "Uma longa janela de indisponibilidade de escrita após uma queda real, pois a "
+            "falha demora demais a ser detectada.",
+            "Os seguidores ficam ainda mais atrás no log de replicação do líder a cada pausa "
+            "longa.",
+            "O log de replicação cresce sem limite no líder até o próximo backup completo.",
         ),
     ),
     _q(
@@ -786,11 +806,14 @@ _REPL: tuple[QuestionSeed, ...] = (
             "last-write-wins (B) silently discards one side's writes, and a short DNS TTL (D) "
             "only helps clients find a leader, it does not stop the old one from accepting "
             "writes.",
-            "Promote a new leader as soon as any single follower misses a heartbeat.",
-            "Let both leaders accept writes and keep the one with the later wall-clock timestamp.",
+            "Promote a new leader as soon as any single follower misses one heartbeat from the "
+            "old leader.",
+            "Let both leaders keep accepting writes and, afterwards, keep whichever write "
+            "carries the later wall-clock timestamp.",
             "Require a majority quorum to authorize promotion, and make a leader that loses "
-            "contact with the majority step down.",
-            "Use a short DNS TTL so clients switch to the new leader quickly.",
+            "the majority step down.",
+            "Use a short DNS TTL so that clients switch to the new leader quickly after a "
+            "failover.",
         ),
         _text(
             "Uma partição isola o líder atual do resto do cluster, e o lado majoritário "
@@ -801,12 +824,14 @@ _REPL: tuple[QuestionSeed, ...] = (
             "last-write-wins por relógio (B) descarta silenciosamente as escritas de um lado, "
             "e um TTL de DNS curto (D) só ajuda os clientes a achar um líder, não impede o "
             "antigo de aceitar escritas.",
-            "Promover um novo líder assim que qualquer seguidor perder um heartbeat.",
-            "Deixar ambos os líderes aceitarem escritas e manter a de timestamp de relógio "
-            "mais recente.",
+            "Promover um novo líder assim que qualquer seguidor perder um heartbeat do líder "
+            "antigo.",
+            "Deixar ambos os líderes continuarem aceitando escritas e, depois, manter a de "
+            "timestamp de relógio mais recente.",
             "Exigir um quórum de maioria para autorizar a promoção e fazer o líder que perde "
-            "contato com a maioria renunciar.",
-            "Usar um TTL de DNS curto para os clientes migrarem rápido para o novo líder.",
+            "a maioria renunciar.",
+            "Usar um TTL de DNS curto para os clientes migrarem rápido para o novo líder "
+            "após o failover.",
         ),
     ),
     _q(
@@ -943,10 +968,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             'as "orders from March 1 to 15" must be sent to every shard. Hash sharding does '
             "not create hot ranges (A), does not need a lookup service (B) and does not prevent "
             "lookups by key (C).",
-            "It concentrates recent writes on a single shard.",
-            "It requires a separate lookup service to find the shard of each key.",
-            "It makes lookups by `order_id` impossible.",
-            "Range scans must be sent to every shard, because hashing destroys key ordering.",
+            "It concentrates the most recent writes on a single shard, because new ids are "
+            "always the largest.",
+            "It requires a separate lookup service that maps each key to the shard storing it.",
+            "It makes lookups by `order_id` impossible, because the hash cannot be reversed.",
+            "Range scans must go to every shard, because hashing destroys key ordering.",
         ),
         _text(
             "Uma tabela é particionada (sharded) por `hash(order_id)`. Qual é a principal "
@@ -956,11 +982,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             'consulta por faixa como "pedidos de 1 a 15 de março" precisa ser enviada a todos '
             "os shards. O sharding por hash não cria faixas quentes (A), não precisa de um "
             "serviço de lookup (B) e não impede buscas por chave (C).",
-            "Concentra as escritas recentes em um único shard.",
-            "Exige um serviço de lookup separado para achar o shard de cada chave.",
-            "Torna impossíveis as buscas por `order_id`.",
-            "Consultas por faixa precisam ser enviadas a todos os shards, pois o hash destrói "
-            "a ordenação das chaves.",
+            "Concentra as escritas mais recentes em um único shard, pois os novos ids são "
+            "sempre os maiores.",
+            "Exige um serviço de lookup separado que mapeie cada chave ao shard que a guarda.",
+            "Torna impossíveis as buscas por `order_id`, porque o hash não pode ser revertido.",
+            "Consultas por faixa precisam ir a todos os shards, pois o hash destrói a "
+            "ordenação das chaves.",
         ),
     ),
     _q(
@@ -976,11 +1003,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "capacity but does not help when the data or the write throughput no longer fits "
             "on one machine. Sharding splits the data so each node holds only a slice, letting "
             "total storage and write capacity grow with the number of shards.",
-            "It protects the data against the loss of a machine.",
-            "It lets the dataset and the write load exceed what a single machine can hold or "
-            "handle.",
-            "It makes every read return the latest write.",
-            "It removes the need for backups.",
+            "It protects the data against the loss of a single machine or an entire data center.",
+            "It lets the dataset and write load exceed what a single machine can handle.",
+            "It makes every read return the latest write, even when replicas are lagging.",
+            "It removes the need for backups, because the data is already stored on several nodes.",
         ),
         _text(
             "Que problema o sharding resolve e a replicação sozinha não resolve?",
@@ -989,11 +1015,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "escrita não cabem mais em uma máquina. O sharding divide os dados para que cada nó "
             "guarde só uma fatia, permitindo que o armazenamento e a capacidade de escrita "
             "totais cresçam com o número de shards.",
-            "Protege os dados contra a perda de uma máquina.",
-            "Permite que o conjunto de dados e a carga de escrita excedam o que uma única "
-            "máquina comporta ou suporta.",
-            "Faz toda leitura retornar a última escrita.",
-            "Elimina a necessidade de backups.",
+            "Protege os dados contra a perda de uma única máquina ou de um data center inteiro.",
+            "Permite que os dados e a carga de escrita excedam o que uma máquina suporta.",
+            "Faz toda leitura retornar a última escrita, mesmo com réplicas atrasadas.",
+            "Elimina a necessidade de backups, pois os dados já ficam em vários nós.",
         ),
     ),
     _q(
@@ -1011,10 +1036,11 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "shard. Option A describes hash sharding (range scans over time stay efficient "
             "here), and neither re-sharding (B) nor cross-shard joins (D) is the first thing "
             "to bite.",
-            "Time-range queries must be sent to every shard.",
-            "Adding a shard forces nearly all data to move.",
-            "All new writes land on the shard that owns the current month, creating a hot shard.",
-            "Joins between months become impossible.",
+            "Time-range queries must be sent to every shard, because range sharding scatters "
+            "adjacent times.",
+            "Adding a shard forces nearly all existing data to move to its new owner.",
+            "All new writes land on the shard of the current month, creating a hot shard.",
+            "Joins between rows of different months become impossible.",
         ),
         _text(
             "Uma tabela de séries temporais é particionada por faixa de timestamp, com um shard "
@@ -1024,10 +1050,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "ociosos: um hot shard. A opção A descreve o sharding por hash (aqui as consultas "
             "por faixa de tempo continuam eficientes), e nem o re-sharding (B) nem os joins "
             "entre shards (D) são o primeiro problema.",
-            "Consultas por faixa de tempo precisam ser enviadas a todos os shards.",
-            "Adicionar um shard força a movimentação de quase todos os dados.",
+            "Consultas por faixa de tempo precisam ser enviadas a todos os shards, pois o "
+            "sharding por faixa espalha tempos adjacentes.",
+            "Adicionar um shard força a movimentação de quase todos os dados existentes para "
+            "o novo dono.",
             "Todas as novas escritas caem no shard do mês atual, criando um hot shard.",
-            "Joins entre meses se tornam impossíveis.",
+            "Joins entre linhas de meses diferentes se tornam impossíveis.",
         ),
     ),
     _q(
@@ -1045,11 +1073,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "usually cached. It does not prevent range scans (B), it makes moving data easier, "
             "not harder (C), and it does not require uniformly distributed keys (D); that "
             "flexibility is its selling point.",
-            "The directory is an extra dependency on the request path and must itself be "
-            "highly available.",
-            "Range scans become impossible.",
-            "Data can only be rebalanced by taking the whole system offline.",
-            "Keys must be uniformly distributed for the directory to work.",
+            "The directory is an extra dependency on the request path and must be highly "
+            "available.",
+            "Range scans become impossible, because the lookup table has no notion of key order.",
+            "Data can only be rebalanced by taking the whole system offline while the "
+            "directory is rebuilt.",
+            "Keys must be uniformly distributed for the directory to work, or it overloads.",
         ),
         _text(
             "O sharding baseado em diretório permite mover qualquer chave (ou tenant) para "
@@ -1061,9 +1090,12 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "distribuídas (D); essa flexibilidade é seu ponto forte.",
             "O diretório é uma dependência extra no caminho da requisição e precisa ser "
             "altamente disponível.",
-            "Consultas por faixa se tornam impossíveis.",
-            "Os dados só podem ser rebalanceados desligando o sistema inteiro.",
-            "As chaves precisam ser distribuídas uniformemente para o diretório funcionar.",
+            "Consultas por faixa se tornam impossíveis, pois a tabela de lookup não tem "
+            "noção da ordem das chaves.",
+            "Os dados só podem ser rebalanceados desligando o sistema inteiro enquanto o "
+            "diretório é reconstruído.",
+            "As chaves precisam ser distribuídas uniformemente para o diretório funcionar, "
+            "senão ele sobrecarrega.",
         ),
     ),
     _q(
@@ -1118,9 +1150,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "are usually very uneven in size (A is false and skew is the main risk), secondary "
             "indexes are still needed (C), and cross-tenant analytics become fan-out queries "
             "(D).",
-            "Tenants are normally similar in size, so the load is perfectly even.",
-            "Most queries and transactions touch a single tenant, so they stay within one shard.",
-            "It removes the need for secondary indexes.",
+            "Tenants are normally similar in size, so the load is spread perfectly evenly "
+            "across shards.",
+            "Most queries and transactions touch one tenant, so they stay in one shard.",
+            "It removes the need for secondary indexes, since every lookup is routed by tenant.",
             "It makes queries across all tenants cheap.",
         ),
         _text(
@@ -1133,10 +1166,10 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "secundários continuam necessários (C) e análises entre tenants viram consultas "
             "em todos os shards (D).",
             "Os tenants normalmente têm tamanho parecido, então a carga fica perfeitamente "
-            "uniforme.",
-            "A maioria das consultas e transações toca um único tenant, então ficam dentro "
-            "de um shard.",
-            "Elimina a necessidade de índices secundários.",
+            "uniforme entre os shards.",
+            "A maioria das consultas e transações toca um só tenant, então ficam em um único "
+            "shard.",
+            "Elimina a necessidade de índices secundários, pois toda busca é roteada por tenant.",
             "Torna baratas as consultas que cruzam todos os tenants.",
         ),
     ),
@@ -1157,10 +1190,13 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "targeted lookup but must be kept in sync with the base data and may lag "
             "behind it. A is wrong because no single shard can be chosen, B because the lookup "
             "is possible, and D because a read needs no distributed transaction.",
-            "The query goes to one shard, picked by hashing `external_ticket_id`.",
-            "The query cannot be answered without changing the shard key.",
-            "The query is sent to every shard (scatter-gather) and the results are combined.",
-            "The query needs a distributed transaction across all shards.",
+            "The query goes to one shard, picked by hashing `external_ticket_id` with the same "
+            "function as the table.",
+            "The query cannot be answered at all unless the table is re-sharded by "
+            "`external_ticket_id`.",
+            "The query is sent to every shard (scatter-gather) and the results are merged.",
+            "The query needs a distributed transaction across all shards to give a consistent "
+            "result.",
         ),
         _text(
             "Uma tabela é particionada por `tenant_id` e tem um índice secundário **local** em "
@@ -1173,11 +1209,13 @@ _SHARD: tuple[QuestionSeed, ...] = (
             "com os dados-base e pode ficar atrasado em relação a eles. A erra porque nenhum "
             "shard único pode ser escolhido, B porque a busca é possível, e D porque uma "
             "leitura não precisa de transação distribuída.",
-            "A consulta vai a um shard, escolhido pelo hash de `external_ticket_id`.",
-            "A consulta não pode ser respondida sem mudar a shard key.",
-            "A consulta é enviada a todos os shards (scatter-gather) e os resultados são "
-            "combinados.",
-            "A consulta exige uma transação distribuída entre todos os shards.",
+            "A consulta vai a um shard, escolhido pelo hash de `external_ticket_id` com a "
+            "mesma função da tabela.",
+            "A consulta não pode ser respondida a menos que a tabela seja re-particionada por "
+            "`external_ticket_id`.",
+            "A consulta é enviada a todos os shards (scatter-gather) e os resultados são reunidos.",
+            "A consulta exige uma transação distribuída entre todos os shards para dar um "
+            "resultado consistente.",
         ),
     ),
     _q(
@@ -1333,12 +1371,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "or messages are lost, as long as a majority can communicate. That is what makes "
             "replicated state machines possible. A is conflict merging after the fact, C is "
             "impossible, and D is partitioning.",
-            "Letting any node accept writes and merging conflicting values afterwards using "
-            "timestamps.",
-            "Getting nodes to agree on one ordered sequence of values despite crashes and "
-            "message loss, while a majority stays up.",
-            "Guaranteeing that no node in the cluster ever crashes.",
-            "Distributing keys evenly across the nodes of a cluster.",
+            "Letting any node accept writes and then merging the conflicting values afterwards "
+            "using timestamps or vector clocks.",
+            "Getting nodes to agree on one ordered sequence of values despite crashes, while a "
+            "majority stays up.",
+            "Guaranteeing that no node in the cluster ever crashes or loses its disk.",
+            "Distributing keys evenly across the nodes of a cluster, so that no node is "
+            "overloaded.",
         ),
         _text(
             "Que problema algoritmos de consenso como Paxos e Raft resolvem?",
@@ -1347,12 +1386,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "nós falhem ou mensagens se percam, desde que uma maioria consiga se comunicar. É o "
             "que torna possíveis as máquinas de estado replicadas. A é mesclagem de conflitos "
             "depois do fato, C é impossível e D é particionamento.",
-            "Permitir que qualquer nó aceite escritas e mesclar depois os valores conflitantes "
-            "usando timestamps.",
-            "Fazer os nós concordarem sobre uma sequência ordenada de valores apesar de falhas "
-            "e perda de mensagens, enquanto uma maioria continua ativa.",
-            "Garantir que nenhum nó do cluster jamais falhe.",
-            "Distribuir as chaves uniformemente entre os nós de um cluster.",
+            "Permitir que qualquer nó aceite escritas e depois mesclar os valores conflitantes "
+            "usando timestamps ou vector clocks.",
+            "Fazer os nós concordarem sobre uma sequência ordenada de valores apesar de "
+            "falhas, enquanto uma maioria continua ativa.",
+            "Garantir que nenhum nó do cluster jamais falhe ou perca o seu disco.",
+            "Distribuir as chaves uniformemente entre os nós de um cluster, para nenhum nó "
+            "ficar sobrecarregado.",
         ),
     ),
     _q(
@@ -1369,9 +1409,10 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "itself and requests votes from the other nodes; it becomes leader only if a "
             "majority grants them. It does not declare itself leader outright (B), and it "
             "neither shuts down (C) nor waits indefinitely for the old leader (D).",
-            "It increments its term, becomes a candidate and requests votes from the other nodes.",
-            "It declares itself the leader of the current term immediately.",
-            "It shuts down until an operator restarts it.",
+            "It increments its term, becomes a candidate and requests votes from the others.",
+            "It immediately declares itself the leader of the current term and starts sending "
+            "heartbeats.",
+            "It shuts itself down until an operator restarts it manually.",
             "It keeps waiting for the old leader, since only the leader may start an election.",
         ),
         _text(
@@ -1381,9 +1422,9 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "mesmo e pede votos aos outros nós; só vira líder se uma maioria os conceder. Não se "
             "declara líder diretamente (B), não se desliga (C) nem espera indefinidamente pelo "
             "líder antigo (D).",
-            "Incrementa seu term, vira candidato e pede votos aos outros nós.",
-            "Declara-se imediatamente líder do term atual.",
-            "Desliga-se até que um operador o reinicie.",
+            "Incrementa seu term, vira candidato e pede votos aos demais nós.",
+            "Declara-se imediatamente líder do term atual e começa a enviar heartbeats.",
+            "Desliga-se até que um operador o reinicie manualmente.",
             "Continua esperando o líder antigo, pois só o líder pode iniciar uma eleição.",
         ),
     ),
@@ -1402,11 +1443,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "which is what stops a later leader or decision from ignoring it. Majorities are not "
             "required for speed (A), do not pick the fastest node (B), and the argument does "
             "not depend on odd cluster sizes (D).",
-            "A majority is the smallest group that can answer quickly enough.",
-            "The majority always includes the fastest node, which then becomes leader.",
-            "Any two majorities overlap in at least one node, so a committed decision cannot be "
-            "missed by a later majority.",
-            "Clusters must have an odd number of nodes for any vote to work.",
+            "A majority is the smallest group that can answer quickly enough to keep latency low.",
+            "The majority always includes the fastest node, which then becomes the leader of "
+            "the cluster.",
+            "Any two majorities share a node, so a later majority cannot miss a committed "
+            "decision.",
+            "Clusters must have an odd number of nodes, otherwise no vote can ever reach a "
+            "majority.",
         ),
         _text(
             "Por que protocolos de consenso exigem uma **maioria** (e não um conjunto "
@@ -1416,11 +1459,14 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "maioria posterior, o que impede que um líder ou decisão posterior a ignore. A "
             "maioria não é exigida por velocidade (A), não escolhe o nó mais rápido (B) e o "
             "argumento não depende de o cluster ter tamanho ímpar (D).",
-            "A maioria é o menor grupo capaz de responder rápido o bastante.",
-            "A maioria sempre inclui o nó mais rápido, que então vira líder.",
-            "Quaisquer duas maiorias se sobrepõem em ao menos um nó, então uma decisão "
-            "confirmada não pode ser ignorada por uma maioria posterior.",
-            "Os clusters precisam ter um número ímpar de nós para qualquer votação funcionar.",
+            "A maioria é o menor grupo capaz de responder rápido o bastante para manter a "
+            "latência baixa.",
+            "A maioria sempre inclui o nó mais rápido, que então se torna o líder do cluster "
+            "inteiro.",
+            "Quaisquer duas maiorias compartilham um nó, então uma maioria posterior não pode "
+            "ignorar uma decisão confirmada.",
+            "Os clusters precisam ter um número ímpar de nós, senão nenhuma votação alcança a "
+            "maioria.",
         ),
     ),
     _q(
@@ -1440,11 +1486,11 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "write anyway (C) would risk diverging history, and nothing committed is lost (D).",
             "It continues normally, since the 2 survivors are a majority of the nodes still "
             "running.",
-            "It cannot elect a leader or commit new entries until enough nodes return, but "
-            "committed data is not lost.",
-            "The 2 survivors elect a leader and accept writes, to be reconciled once the other "
-            "nodes return.",
-            "All data committed so far is lost, because most nodes are gone.",
+            "It cannot elect a leader or commit new entries until nodes return, but committed "
+            "data is not lost.",
+            "The 2 survivors elect a leader and keep accepting writes, to be reconciled once "
+            "the other nodes return.",
+            "All data committed so far is lost, because most of the nodes holding it are gone.",
         ),
         _text(
             "Em um cluster Raft de 5 nós, 3 nós caem e continuam fora. Qual é o estado do cluster?",
@@ -1456,11 +1502,12 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "confirmado se perde (D).",
             "Continua normalmente, pois os 2 sobreviventes são uma maioria dos nós que ainda "
             "estão rodando.",
-            "Não consegue eleger líder nem confirmar novas entradas até que nós suficientes "
-            "voltem, mas os dados confirmados não se perdem.",
-            "Os 2 sobreviventes elegem um líder e aceitam escritas, a serem reconciliadas "
-            "quando os outros nós voltarem.",
-            "Todos os dados confirmados até agora se perdem, pois a maioria dos nós sumiu.",
+            "Não consegue eleger líder nem confirmar novas entradas até os nós voltarem, mas "
+            "os dados confirmados não se perdem.",
+            "Os 2 sobreviventes elegem um líder e continuam aceitando escritas, a serem "
+            "reconciliadas quando os outros nós voltarem.",
+            "Todos os dados confirmados até agora se perdem, pois a maioria dos nós que os "
+            "guardam sumiu.",
         ),
     ),
     _q(
@@ -1519,11 +1566,11 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "guarantee that the most up-to-date node goes first (A); log freshness is enforced "
             "by the voting rule instead. Security (C) and read distribution (D) are not goals "
             "of this mechanism.",
-            "To guarantee that the node with the most complete log always times out first.",
-            "So one node usually times out first and wins the election, avoiding repeated "
-            "split votes.",
-            "To make the leader's heartbeats unpredictable to attackers.",
-            "To spread read traffic evenly across the followers.",
+            "To guarantee that the node with the most complete log always times out first and "
+            "wins.",
+            "So one node usually times out first and wins, avoiding repeated split votes.",
+            "To make the leader's heartbeats and elections unpredictable to network attackers.",
+            "To spread read traffic evenly across the followers of the cluster.",
         ),
         _text(
             "Por que o Raft randomiza o election timeout de cada nó?",
@@ -1533,11 +1580,10 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "não garante que o nó mais atualizado saia primeiro (A); o frescor do log é "
             "garantido pela regra de votação. Segurança contra atacantes (C) e distribuição de "
             "leituras (D) não são objetivos desse mecanismo.",
-            "Para garantir que o nó com o log mais completo sempre expire primeiro.",
-            "Para que um nó em geral expire primeiro e vença a eleição, evitando votos "
-            "divididos repetidos.",
-            "Para tornar os heartbeats do líder imprevisíveis para atacantes.",
-            "Para distribuir uniformemente o tráfego de leitura entre os seguidores.",
+            "Para garantir que o nó com o log mais completo sempre expire primeiro e vença.",
+            "Para que um nó em geral expire primeiro e vença, evitando votos divididos repetidos.",
+            "Para tornar os heartbeats e as eleições imprevisíveis para atacantes de rede.",
+            "Para distribuir uniformemente o tráfego de leitura entre os seguidores do cluster.",
         ),
     ),
     _q(
@@ -1556,12 +1602,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "term, steps down and discards its uncommitted entries. A is impossible because the "
             "group of 2 cannot commit, B would let uncommitted data become visible as committed, "
             "and C is too pessimistic because the majority side stays available.",
-            "Both groups keep committing writes and reconcile them when the partition heals.",
-            "The old leader keeps committing writes in its group of 2 and the other group "
-            "copies them later.",
-            "The whole cluster halts until the partition heals.",
-            "The group of 3 elects a new leader and continues; the old leader cannot commit "
-            "anything and steps down after the partition heals.",
+            "Both groups keep committing writes in parallel and reconcile them when the "
+            "partition heals.",
+            "The old leader keeps committing writes in its group of 2, and the other group "
+            "copies them in once the partition heals.",
+            "The whole cluster halts, because no group can proceed until the partition heals.",
+            "The group of 3 elects a new leader; the old leader can commit nothing and steps "
+            "down after healing.",
         ),
         _text(
             "Um cluster Raft de 5 nós é particionado em um grupo de 3 e um grupo de 2, e o "
@@ -1573,13 +1620,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "grupo de 2 não consegue confirmar, B tornaria dados não confirmados visíveis "
             "como confirmados, e C é pessimista demais, pois o lado majoritário continua "
             "disponível.",
-            "Os dois grupos continuam confirmando escritas e as reconciliam quando a partição "
-            "se resolve.",
-            "O líder antigo continua confirmando escritas em seu grupo de 2 e o outro grupo as "
-            "copia depois.",
-            "O cluster inteiro para até a partição se resolver.",
-            "O grupo de 3 elege um novo líder e continua; o líder antigo não consegue "
-            "confirmar nada e renuncia depois que a partição se resolve.",
+            "Os dois grupos continuam confirmando escritas em paralelo e as reconciliam "
+            "quando a partição se resolve.",
+            "O líder antigo continua confirmando escritas em seu grupo de 2, e o outro grupo "
+            "as incorpora quando a partição se resolve.",
+            "O cluster inteiro para, pois nenhum grupo pode prosseguir até a partição se resolver.",
+            "O grupo de 3 elege um novo líder; o líder antigo não confirma nada e renuncia "
+            "depois que a partição se resolve.",
         ),
     ),
     _q(

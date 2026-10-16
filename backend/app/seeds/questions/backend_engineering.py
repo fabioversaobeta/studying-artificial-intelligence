@@ -111,11 +111,11 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`202 Accepted` means the work was only queued and is not finished, and `204` "
             "would hide server-generated fields such as the new `id`.",
             _options(
-                "`200 OK` with no further information.",
-                "`202 Accepted`, because creation is always asynchronous.",
-                "`201 Created`, with the new resource's URL in a `Location` header and "
-                "usually its representation in the body.",
-                "`204 No Content`, because the client already knows what it sent.",
+                "`200 OK` with no further information, since the request succeeded.",
+                "`202 Accepted`, because creating a resource is always asynchronous and may "
+                "still fail later.",
+                "`201 Created`, with the new resource's URL in a `Location` header.",
+                "`204 No Content`, because the client already knows everything it sent.",
             ),
         ),
         _t(
@@ -126,11 +126,11 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`202 Accepted` significa que o trabalho apenas foi enfileirado e não terminou; "
             "e `204` esconderia campos gerados pelo servidor, como o novo `id`.",
             _options(
-                "`200 OK` sem mais informações.",
-                "`202 Accepted`, porque a criação é sempre assíncrona.",
-                "`201 Created`, com a URL do novo recurso no header `Location` e, em geral, "
-                "sua representação no corpo.",
-                "`204 No Content`, porque o cliente já sabe o que enviou.",
+                "`200 OK` sem mais informações, já que a requisição deu certo.",
+                "`202 Accepted`, porque criar um recurso é sempre assíncrono e ainda pode "
+                "falhar depois.",
+                "`201 Created`, com a URL do novo recurso no header `Location`.",
+                "`204 No Content`, porque o cliente já sabe tudo o que enviou.",
             ),
         ),
     ),
@@ -150,10 +150,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "or triggers something (a payment, an email) is not idempotent, and a `PATCH` "
             "that applies a relative change such as an increment would be applied twice.",
             _options(
-                '`POST /payments` with `{"amount": 50}`',
+                '`POST /payments` with `{"amount": 50}` to charge the customer',
                 "`PUT /users/42` with the full new representation of the user",
-                "`POST /emails/send` with a recipient and a body",
-                '`PATCH /counters/7` with `{"increment": 1}`',
+                "`POST /emails/send` with a recipient, a subject and a body, to be delivered",
+                '`PATCH /counters/7` with `{"increment": 1}` to add one to the total',
             ),
         ),
         _t(
@@ -165,10 +165,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dispara algo (um pagamento, um e-mail) não é idempotente, e um `PATCH` que aplica "
             "uma mudança relativa, como um incremento, seria aplicado duas vezes.",
             _options(
-                '`POST /payments` com `{"amount": 50}`',
+                '`POST /payments` com `{"amount": 50}` para cobrar o cliente',
                 "`PUT /users/42` com a nova representação completa do usuário",
-                "`POST /emails/send` com destinatário e corpo",
-                '`PATCH /counters/7` com `{"increment": 1}`',
+                "`POST /emails/send` com destinatário, assunto e corpo, para ser entregue",
+                '`PATCH /counters/7` com `{"increment": 1}` para somar um ao total',
             ),
         ),
     ),
@@ -188,9 +188,9 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "missing resource, not a malformed field. A `400` is a legitimate choice in "
             "other designs, but it is not the framework default.",
             _options(
-                "`422 Unprocessable Entity`, with details about the invalid field.",
-                "`400 Bad Request` with a generic message.",
-                "`500 Internal Server Error`, because the handler crashes.",
+                "`422 Unprocessable Entity`, with details of the invalid field.",
+                "`400 Bad Request` with a generic message saying the request is invalid.",
+                "`500 Internal Server Error`, because the handler crashes on the value.",
                 "`404 Not Found`, because the body does not match the route.",
             ),
         ),
@@ -203,9 +203,9 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "recurso inexistente, não de campo malformado. Um `400` é uma escolha legítima em "
             "outros designs, mas não é o padrão do framework.",
             _options(
-                "`422 Unprocessable Entity`, com detalhes sobre o campo inválido.",
-                "`400 Bad Request` com uma mensagem genérica.",
-                "`500 Internal Server Error`, porque o handler quebra.",
+                "`422 Unprocessable Entity`, com detalhes do campo inválido.",
+                "`400 Bad Request` com uma mensagem genérica dizendo que a requisição é inválida.",
+                "`500 Internal Server Error`, porque o handler quebra com o valor.",
                 "`404 Not Found`, porque o corpo não corresponde à rota.",
             ),
         ),
@@ -226,11 +226,12 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "Offset works fine with sorting, does not need a total count, and returns rows in "
             "the order requested.",
             _options(
-                "It cannot be combined with a sort order.",
-                "It forces the client to know the total number of rows first.",
-                "Inserts and deletes between requests can cause duplicated or skipped items, "
-                "and large offsets get slower because earlier rows must still be skipped.",
-                "It returns rows in a non-deterministic order even with `ORDER BY`.",
+                "It cannot be combined with a sort order, so the feed order is undefined.",
+                "It forces the client to know the total number of rows before asking for any page.",
+                "Inserts and deletes between requests can duplicate or skip items, and large "
+                "offsets get slower.",
+                "It returns rows in a non-deterministic order even when the query has an "
+                "`ORDER BY` on a unique column.",
             ),
         ),
         _t(
@@ -243,12 +244,13 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "linhas ignoradas. O offset funciona bem com ordenação, não exige contagem total "
             "e devolve as linhas na ordem pedida.",
             _options(
-                "Não pode ser combinada com uma ordenação.",
-                "Obriga o cliente a conhecer antes o número total de linhas.",
+                "Não pode ser combinada com uma ordenação, então a ordem do feed fica indefinida.",
+                "Obriga o cliente a conhecer o número total de linhas antes de pedir qualquer "
+                "página.",
                 "Inserções e remoções entre requisições podem duplicar ou pular itens, e "
-                "offsets grandes ficam mais lentos porque as linhas anteriores ainda precisam "
-                "ser ignoradas.",
-                "Devolve as linhas em ordem não determinística mesmo com `ORDER BY`.",
+                "offsets grandes ficam mais lentos.",
+                "Devolve as linhas em ordem não determinística mesmo quando a consulta tem "
+                "`ORDER BY` em uma coluna única.",
             ),
         ),
     ),
@@ -311,10 +313,10 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "is not inherently safer, `no-store` does not stop a client from editing the "
             "copy it already holds, and TLS protects transport, not concurrent writers.",
             _options(
-                "Return an `ETag` on `GET`, require it in an `If-Match` header on updates and "
-                "answer `412 Precondition Failed` when it no longer matches.",
+                "Return an `ETag` on `GET`, require it in an `If-Match` header on updates, and "
+                "answer `412 Precondition Failed` on a mismatch.",
                 "Use `PATCH` instead of `PUT`, because `PATCH` updates are atomic and can never "
-                "overwrite another client's change.",
+                "overwrite another client's change in the meantime.",
                 "Serve the API only over HTTPS, so concurrent requests are serialized.",
                 "Send `Cache-Control: no-store` on the `GET` response so clients never hold a "
                 "stale copy.",
@@ -332,9 +334,9 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "escritores concorrentes.",
             _options(
                 "Devolver um `ETag` no `GET`, exigi-lo em um header `If-Match` nas "
-                "atualizações e responder `412 Precondition Failed` quando ele não bater mais.",
+                "atualizações e responder `412 Precondition Failed` se divergir.",
                 "Usar `PATCH` em vez de `PUT`, porque atualizações `PATCH` são atômicas e "
-                "nunca sobrescrevem a mudança de outro cliente.",
+                "nunca sobrescrevem a mudança de outro cliente nesse meio-tempo.",
                 "Servir a API somente por HTTPS, de modo que requisições concorrentes sejam "
                 "serializadas.",
                 "Enviar `Cache-Control: no-store` na resposta do `GET` para que os clientes "
@@ -359,11 +361,13 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`GET` must be free of side effects, and processing later does not stop the "
             "retry from being enqueued twice.",
             _options(
-                "Rate-limit the endpoint so retries are rejected.",
-                "Change the endpoint to `GET`, because `GET` requests are safe to retry.",
-                "Return `200` immediately and process the transfer in the background.",
-                "Require a client-generated `Idempotency-Key`, store it with the result under a "
-                "unique constraint, and return the stored result when the key repeats.",
+                "Rate-limit the endpoint so that retries arriving too soon are rejected.",
+                "Change the endpoint to `GET` with query parameters, because `GET` requests "
+                "are always safe to retry.",
+                "Return `200` immediately and process the transfer in the background, so a "
+                "retry finds it already queued.",
+                "Require a client-generated `Idempotency-Key` and return the stored result "
+                "when the key repeats.",
             ),
         ),
         _t(
@@ -376,12 +380,14 @@ REST_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deve ser livre de efeitos colaterais, e processar depois não impede que a nova "
             "tentativa seja enfileirada duas vezes.",
             _options(
-                "Aplicar rate limit ao endpoint para que as novas tentativas sejam rejeitadas.",
-                "Trocar o endpoint para `GET`, porque requisições `GET` são seguras para repetir.",
-                "Retornar `200` imediatamente e processar a transferência em segundo plano.",
-                "Exigir uma `Idempotency-Key` gerada pelo cliente, guardá-la com o resultado "
-                "sob uma constraint de unicidade e devolver o resultado guardado quando a "
-                "chave se repetir.",
+                "Aplicar rate limit ao endpoint para que as novas tentativas que chegarem "
+                "cedo demais sejam rejeitadas.",
+                "Trocar o endpoint para `GET` com parâmetros de consulta, porque requisições "
+                "`GET` são sempre seguras para repetir.",
+                "Retornar `200` imediatamente e processar a transferência em segundo plano, "
+                "de modo que uma nova tentativa a encontre já enfileirada.",
+                "Exigir uma `Idempotency-Key` gerada pelo cliente e devolver o resultado "
+                "guardado quando a chave se repetir.",
             ),
         ),
     ),
@@ -638,11 +644,11 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "verification can be done locally with the key, with no call to the issuer on "
             "every request.",
             _options(
-                "The payload is encrypted, so the client cannot read the claims.",
-                "The payload is only encoded: anyone holding the token can read it, and the "
-                "signature only protects against tampering.",
-                "The signature makes the claims confidential.",
-                "A server must call the issuer on every request to verify the token.",
+                "The payload is encrypted, so the client cannot read the claims inside the token.",
+                "The payload is only encoded, so anyone holding the token can read it.",
+                "The signature makes the claims confidential from anyone who intercepts the token.",
+                "A server must call the issuer on every single request to check that the "
+                "token is valid.",
             ),
         ),
         _t(
@@ -654,11 +660,12 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "assinatura não esconde nada, e a verificação pode ser feita localmente com a "
             "chave, sem consultar o emissor a cada requisição.",
             _options(
-                "O payload é criptografado, então o cliente não consegue ler as claims.",
-                "O payload é apenas codificado: qualquer um com o token pode lê-lo, e a "
-                "assinatura só protege contra adulteração.",
-                "A assinatura torna as claims confidenciais.",
-                "O servidor precisa consultar o emissor a cada requisição para verificar o token.",
+                "O payload é criptografado, então o cliente não consegue ler as claims dentro "
+                "do token.",
+                "O payload é apenas codificado, então qualquer um com o token pode lê-lo.",
+                "A assinatura torna as claims confidenciais para quem interceptar o token.",
+                "O servidor precisa consultar o emissor a cada requisição para checar se o "
+                "token é válido.",
             ),
         ),
     ),
@@ -680,11 +687,11 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "need extra machinery (short expiry plus revocable refresh tokens, or a "
             "denylist) to approximate this.",
             _options(
-                "Stateless JWT access tokens valid for 24 hours, with no server-side state.",
-                "Stateless JWTs with longer lifetimes, so users rarely need to log in.",
-                "Stateless JWTs signed with a stronger algorithm.",
-                "Server-side sessions kept in a database or cache: delete all of the user's "
-                "session records.",
+                "Stateless JWT access tokens valid for 24 hours, with no server-side state to "
+                "revoke.",
+                "Stateless JWTs with longer lifetimes, so users rarely need to log in again.",
+                "Stateless JWTs signed with a stronger algorithm and a longer signing key.",
+                "Server-side sessions in a database: delete all of the user's session records.",
             ),
         ),
         _t(
@@ -699,12 +706,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "exigem mecanismos extras (expiração curta com refresh tokens revogáveis, ou "
             "uma denylist) para aproximar isso.",
             _options(
-                "Access tokens JWT stateless válidos por 24 horas, sem estado no servidor.",
+                "Access tokens JWT stateless válidos por 24 horas, sem estado no servidor para "
+                "revogar.",
                 "JWTs stateless com vida mais longa, para que os usuários raramente precisem "
-                "fazer login.",
-                "JWTs stateless assinados com um algoritmo mais forte.",
-                "Sessões no servidor guardadas em banco ou cache: apagar todos os registros "
-                "de sessão do usuário.",
+                "logar de novo.",
+                "JWTs stateless assinados com um algoritmo mais forte e uma chave de assinatura "
+                "maior.",
+                "Sessões no servidor, em um banco: apagar todos os registros de sessão do usuário.",
             ),
         ),
     ),
@@ -766,11 +774,12 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "user) and a standard userinfo endpoint. It does not replace the authorization "
             "code flow, and refresh tokens already exist in OAuth 2.0.",
             _options(
-                "Encryption of all access tokens in transit and at rest.",
-                "A new flow that replaces the authorization code flow.",
-                "An identity layer: an ID token with claims about the authenticated user, "
-                "the `openid` scope and a userinfo endpoint.",
-                "Refresh tokens, which OAuth 2.0 does not support.",
+                "Encryption of all access tokens in transit and at rest, plus mandatory "
+                "signing of every request.",
+                "A new flow that replaces the authorization code flow for browser-based apps.",
+                "An identity layer: an ID token about the user, the `openid` scope and a "
+                "userinfo endpoint.",
+                "Refresh tokens, which OAuth 2.0 does not support, so sessions can be extended.",
             ),
         ),
         _t(
@@ -781,11 +790,13 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "usuário) e um endpoint userinfo padronizado. Ele não substitui o fluxo "
             "authorization code, e refresh tokens já existem no OAuth 2.0.",
             _options(
-                "Criptografia de todos os access tokens em trânsito e em repouso.",
-                "Um novo fluxo que substitui o fluxo authorization code.",
-                "Uma camada de identidade: um ID token com claims sobre o usuário "
-                "autenticado, o scope `openid` e um endpoint userinfo.",
-                "Refresh tokens, que o OAuth 2.0 não suporta.",
+                "Criptografia de todos os access tokens em trânsito e em repouso, além de "
+                "assinatura obrigatória de toda requisição.",
+                "Um novo fluxo que substitui o fluxo authorization code em aplicações de "
+                "navegador.",
+                "Uma camada de identidade: um ID token sobre o usuário, o scope `openid` e um "
+                "endpoint userinfo.",
+                "Refresh tokens, que o OAuth 2.0 não suporta, para poder estender as sessões.",
             ),
         ),
     ),
@@ -855,11 +866,12 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "authorization control. There is no SQL injection here, and CSRF concerns "
             "state-changing requests.",
             _options(
-                "None: because login is required, only legitimate users can reach it.",
+                "None: because the endpoint requires login, only legitimate users can ever "
+                "reach the invoices.",
                 "Broken object-level authorization (IDOR): any logged-in user can fetch any "
-                "invoice by id, since ownership is never checked.",
-                "SQL injection through `invoice_id`.",
-                "CSRF, because the endpoint answers a `GET` request.",
+                "invoice by id.",
+                "SQL injection through `invoice_id`, which is concatenated into the query.",
+                "CSRF, because the endpoint answers a `GET` request without an anti-forgery token.",
             ),
         ),
         _t(
@@ -872,11 +884,11 @@ AUTH_QUESTIONS: tuple[QuestionSeed, ...] = (
             "aleatórios dificultam o palpite, mas não são um controle de autorização. Não há "
             "SQL injection aqui, e CSRF diz respeito a requisições que alteram estado.",
             _options(
-                "Nenhuma: como o login é exigido, só usuários legítimos chegam a ele.",
+                "Nenhuma: como o endpoint exige login, só usuários legítimos chegam às faturas.",
                 "Autorização quebrada em nível de objeto (IDOR): qualquer usuário logado "
-                "pode buscar qualquer fatura pelo id, pois a propriedade nunca é verificada.",
-                "SQL injection por meio de `invoice_id`.",
-                "CSRF, porque o endpoint responde a uma requisição `GET`.",
+                "pode buscar qualquer fatura pelo id.",
+                "SQL injection por meio de `invoice_id`, que é concatenado na consulta.",
+                "CSRF, porque o endpoint responde a uma requisição `GET` sem token anti-forgery.",
             ),
         ),
     ),
@@ -1116,11 +1128,12 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "on disk, do not make the table read-only and do not prevent duplicates (only "
             "`UNIQUE` indexes do that, by design).",
             _options(
-                "Reads on that table become slower.",
-                "Extra storage, plus every write must also update the index, which makes "
-                "writes slower.",
-                "The table can no longer contain duplicate rows.",
-                "The table becomes read-only while the index exists.",
+                "Reads on that table become slower, because the database must now check the "
+                "index first.",
+                "Extra storage, plus every write must also update the index, so writes slow down.",
+                "The table can no longer contain duplicate rows, because every index enforces "
+                "uniqueness.",
+                "The table becomes read-only while the index exists, until it is dropped.",
             ),
         ),
         _t(
@@ -1133,11 +1146,13 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "somente leitura e não impedem duplicatas (só índices `UNIQUE` fazem isso, "
             "por definição).",
             _options(
-                "As leituras nessa tabela ficam mais lentas.",
+                "As leituras nessa tabela ficam mais lentas, pois o banco agora precisa "
+                "consultar o índice primeiro.",
                 "Espaço extra de armazenamento, e toda escrita também precisa atualizar o "
-                "índice, o que a deixa mais lenta.",
-                "A tabela não pode mais conter linhas duplicadas.",
-                "A tabela fica somente leitura enquanto o índice existir.",
+                "índice, ficando mais lenta.",
+                "A tabela não pode mais conter linhas duplicadas, pois todo índice impõe "
+                "unicidade.",
+                "A tabela fica somente leitura enquanto o índice existir, até ser removido.",
             ),
         ),
     ),
@@ -1304,11 +1319,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "`citext`). Unique indexes do serve equality lookups, text columns are indexable, "
             "and `EXPLAIN` does not need any special data type.",
             _options(
-                "`UNIQUE` indexes cannot be used for equality lookups.",
-                "PostgreSQL never uses indexes on `text` columns.",
-                "`EXPLAIN` disables index usage; the real query would use the index.",
-                "The filter applies `lower()` to the column, so the index on `email` cannot "
-                "be used; create an expression index on `lower(email)`.",
+                "`UNIQUE` indexes cannot be used for equality lookups, only to enforce the "
+                "constraint.",
+                "PostgreSQL never uses indexes on `text` columns, because comparing text "
+                "depends on the active collation and locale.",
+                "`EXPLAIN` disables index usage on its own; the real query would use the "
+                "index once executed.",
+                "`lower()` is applied to the column, so the index on `email` can't match; "
+                "create an index on `lower(email)`.",
             ),
         ),
         _t(
@@ -1321,11 +1339,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "de igualdade, colunas `text` podem ser indexadas, e o `EXPLAIN` não exige "
             "nenhum tipo de dado especial.",
             _options(
-                "Índices `UNIQUE` não podem ser usados em buscas de igualdade.",
-                "O PostgreSQL nunca usa índices em colunas `text`.",
-                "O `EXPLAIN` desativa o uso de índices; a consulta real usaria o índice.",
-                "O filtro aplica `lower()` à coluna, então o índice em `email` não pode ser "
-                "usado; crie um índice de expressão em `lower(email)`.",
+                "Índices `UNIQUE` não podem ser usados em buscas de igualdade, só para impor "
+                "a constraint.",
+                "O PostgreSQL nunca usa índices em colunas `text`, porque a comparação de "
+                "texto depende da collation e do locale ativos.",
+                "O `EXPLAIN` desativa o uso de índices por conta própria; a consulta real "
+                "usaria o índice ao executar.",
+                "O `lower()` é aplicado à coluna, então o índice em `email` não casa; crie "
+                "um índice em `lower(email)`.",
             ),
         ),
     ),
@@ -1344,11 +1365,13 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "orders. The robust forms are `NOT EXISTS (SELECT 1 FROM orders o WHERE "
             "o.user_id = u.id)` or a `LEFT JOIN ... IS NULL` anti-join.",
             _options(
-                "The users that have no orders; the `NULL` row is simply ignored.",
-                "Every user, since `NULL` matches nothing.",
-                "No rows at all, because the comparison with `NULL` makes the condition "
-                "unknown for every user.",
-                "An error, because `NOT IN` does not accept subqueries with `NULL`.",
+                "The users that have no orders; the guest-order `NULL` row is simply ignored "
+                "by the `NOT IN` comparison.",
+                "Every user, since `NULL` matches nothing and so excludes nobody from the result.",
+                "No rows at all, because comparing with `NULL` makes the condition unknown "
+                "for every user.",
+                "An error, because `NOT IN` does not accept subqueries that can return `NULL` "
+                "values.",
             ),
         ),
         _t(
@@ -1359,11 +1382,14 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sem pedidos. As formas robustas são `NOT EXISTS (SELECT 1 FROM orders o WHERE "
             "o.user_id = u.id)` ou um anti-join com `LEFT JOIN ... IS NULL`.",
             _options(
-                "Os usuários sem pedidos; a linha com `NULL` é simplesmente ignorada.",
-                "Todos os usuários, pois `NULL` não casa com nada.",
+                "Os usuários sem pedidos; a linha de pedido de convidado com `NULL` é "
+                "simplesmente ignorada na comparação do `NOT IN`.",
+                "Todos os usuários, pois `NULL` não casa com nada e portanto não exclui "
+                "ninguém do resultado.",
                 "Nenhuma linha, pois a comparação com `NULL` torna a condição desconhecida "
-                "para todos os usuários.",
-                "Um erro, pois `NOT IN` não aceita subconsultas com `NULL`.",
+                "para todos.",
+                "Um erro, pois `NOT IN` não aceita subconsultas que possam devolver valores "
+                "`NULL`.",
             ),
         ),
     ),
@@ -1437,7 +1463,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "One transaction is aborted with a deadlock error and the other continues; "
                 "prevent it by always locking rows in the same order.",
                 "Both wait forever, because PostgreSQL has no deadlock detection; prevent it "
-                "with a longer `statement_timeout`.",
+                "with a longer `statement_timeout` and a larger connection pool.",
                 "Both succeed, since MVCC lets writers update the same rows without "
                 "blocking each other.",
                 "Each `UPDATE` silently skips the row locked by the other transaction.",
@@ -1459,7 +1485,7 @@ PG_QUESTIONS: tuple[QuestionSeed, ...] = (
                 "Uma transação é abortada com erro de deadlock e a outra continua; evita-se "
                 "isso bloqueando sempre as linhas na mesma ordem.",
                 "Ambas esperam para sempre, pois o PostgreSQL não detecta deadlocks; evita-se "
-                "com um `statement_timeout` maior.",
+                "com um `statement_timeout` maior e um pool de conexões maior.",
                 "Ambas têm sucesso, pois o MVCC permite que escritores atualizem as mesmas "
                 "linhas sem bloquear uns aos outros.",
                 "Cada `UPDATE` ignora silenciosamente a linha bloqueada pela outra transação.",
@@ -1513,11 +1539,13 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "notifications can all react to the same event. Both are asynchronous, and both "
             "can be durable, so those are not the distinguishing factors.",
             _options(
-                "A work queue is synchronous, while pub/sub is asynchronous.",
-                "Pub/sub messages are never persisted, while queue messages always are.",
+                "A work queue is synchronous, while pub/sub is asynchronous and fire-and-forget.",
+                "Pub/sub messages are never persisted, while queue messages are always "
+                "written to disk before delivery.",
                 "In a work queue each message is handled by one consumer; in pub/sub each "
-                "subscriber receives its own copy of every message.",
-                "A work queue can have only one consumer, while pub/sub has many.",
+                "subscriber gets its own copy.",
+                "A work queue can have only one consumer process attached at a time, while "
+                "pub/sub can have many subscribers.",
             ),
         ),
         _t(
@@ -1529,11 +1557,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "analytics e notificações podem reagir ao mesmo evento. Ambos são assíncronos e "
             "ambos podem ser duráveis, então esses não são os fatores que os distinguem.",
             _options(
-                "Uma fila de trabalho é síncrona, enquanto o pub/sub é assíncrono.",
-                "Mensagens de pub/sub nunca são persistidas, enquanto as de fila sempre são.",
+                "Uma fila de trabalho é síncrona, enquanto o pub/sub é assíncrono e do tipo "
+                "fire-and-forget.",
+                "Mensagens de pub/sub nunca são persistidas, enquanto as de fila são sempre "
+                "gravadas em disco antes da entrega.",
                 "Em uma fila de trabalho cada mensagem é tratada por um consumidor; no "
-                "pub/sub cada assinante recebe sua própria cópia de toda mensagem.",
-                "Uma fila de trabalho só pode ter um consumidor, enquanto o pub/sub tem vários.",
+                "pub/sub cada assinante recebe sua própria cópia.",
+                "Uma fila de trabalho só pode ter um processo consumidor ligado por vez, "
+                "enquanto o pub/sub pode ter vários assinantes.",
             ),
         ),
     ),
@@ -1553,9 +1584,10 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "once. Duplicates are expected, loss is not allowed by the guarantee, and global "
             "ordering is not part of it.",
             _options(
-                "Messages are never duplicated, so no special handling is needed.",
+                "Messages are never duplicated, so no special handling is needed in the consumer.",
                 "Messages may be lost, so the consumer must poll the database as a backup.",
-                "Messages always arrive in the global order they were published.",
+                "Messages always arrive in the global order they were published, across all "
+                "partitions.",
                 "The same message may arrive more than once, so processing must be idempotent.",
             ),
         ),
@@ -1568,10 +1600,12 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "o mesmo efeito que processá-la uma vez. Duplicatas são esperadas, a perda não é "
             "permitida pela garantia, e ordenação global não faz parte dela.",
             _options(
-                "As mensagens nunca são duplicadas, então nenhum tratamento especial é necessário.",
+                "As mensagens nunca são duplicadas, então nenhum tratamento especial é "
+                "necessário no consumidor.",
                 "As mensagens podem se perder, então o consumidor deve consultar o banco "
                 "como reserva.",
-                "As mensagens sempre chegam na ordem global em que foram publicadas.",
+                "As mensagens sempre chegam na ordem global em que foram publicadas, em todas "
+                "as partições.",
                 "A mesma mensagem pode chegar mais de uma vez, então o processamento deve ser "
                 "idempotente.",
             ),
@@ -1594,11 +1628,12 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "delivery, it does not remove the need for failure handling (retries, duplicates, "
             "dead letters), and the email is sent later, not before the order response.",
             _options(
-                "Order processing keeps working when the email service is slow or down, and "
-                "the queue absorbs traffic spikes.",
-                "It guarantees that each email is sent exactly once.",
-                "It removes the need to handle failures in the email service.",
-                "The email is guaranteed to be sent before the order response returns.",
+                "Orders keep succeeding when the email service is slow or down, and the queue "
+                "absorbs spikes.",
+                "It guarantees that each email is sent exactly once, even after a crash.",
+                "It removes the need to handle failures in the email service or retry anything.",
+                "The email is guaranteed to be sent before the order response returns to the "
+                "client, keeping both in step.",
             ),
         ),
         _t(
@@ -1612,11 +1647,13 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "duplicatas, dead letters), e o e-mail é enviado depois, não antes da resposta "
             "do pedido.",
             _options(
-                "O processamento de pedidos continua funcionando quando o serviço de e-mail "
-                "está lento ou fora do ar, e a fila absorve picos de tráfego.",
-                "Garante que cada e-mail seja enviado exatamente uma vez.",
-                "Elimina a necessidade de tratar falhas no serviço de e-mail.",
-                "O e-mail é garantidamente enviado antes de a resposta do pedido retornar.",
+                "Os pedidos continuam funcionando quando o serviço de e-mail está lento ou "
+                "fora do ar, e a fila absorve picos.",
+                "Garante que cada e-mail seja enviado exatamente uma vez, mesmo após uma queda.",
+                "Elimina a necessidade de tratar falhas no serviço de e-mail ou de repetir "
+                "qualquer coisa.",
+                "O e-mail é garantidamente enviado antes de a resposta do pedido voltar ao "
+                "cliente, mantendo os dois em sincronia.",
             ),
         ),
     ),
@@ -1638,13 +1675,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sender produces at-least-once, and acknowledging before processing risks "
             "losing the message on a crash.",
             _options(
-                "Any broker provides it once acknowledgements are enabled.",
-                "It is not generally achievable end to end; in practice you combine "
-                "at-least-once delivery with idempotent processing to get exactly-once "
-                "effects.",
-                "At-most-once delivery plus retries on the sender gives exactly-once.",
+                "Any broker provides it automatically once acknowledgements are enabled on "
+                "the consumer side.",
+                "It is not generally achievable end to end; in practice you pair "
+                "at-least-once delivery with idempotent processing.",
+                "At-most-once delivery combined with automatic retries on the sender gives "
+                "exactly-once delivery.",
                 "Acknowledging each message before processing it guarantees exactly-once "
-                "processing.",
+                "processing, even if the consumer crashes midway.",
             ),
         ),
         _t(
@@ -1658,13 +1696,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deduplicam, repetir um remetente at-most-once produz at-least-once, e dar "
             "acknowledge antes de processar arrisca perder a mensagem em uma queda.",
             _options(
-                "Qualquer broker a fornece quando os acknowledgements estão habilitados.",
+                "Qualquer broker a fornece automaticamente quando os acknowledgements estão "
+                "habilitados no consumidor.",
                 "Geralmente não é alcançável de ponta a ponta; na prática combina-se "
-                "entrega at-least-once com processamento idempotente para obter efeitos "
-                "exactly-once.",
-                "Entrega at-most-once mais retries no remetente resulta em exactly-once.",
+                "entrega at-least-once com processamento idempotente.",
+                "Entrega at-most-once combinada com retries automáticos no remetente resulta "
+                "em entrega exactly-once.",
                 "Dar acknowledge em cada mensagem antes de processá-la garante "
-                "processamento exactly-once.",
+                "processamento exactly-once, mesmo que o consumidor caia no meio.",
             ),
         ),
     ),
@@ -1726,13 +1765,13 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "gap, in-memory buffers lose events on a crash, and distributed two-phase commit "
             "is a different (and heavier) technique.",
             _options(
-                "Publish to the broker first, then write to the database, retrying forever "
-                "if the write fails.",
+                "Publish to the broker first, then write to the database, retrying the "
+                "database write forever if it fails.",
                 "Keep events in an in-memory list and flush them to the broker every few seconds.",
                 "Run a distributed two-phase commit between the database and the broker for "
-                "every request.",
+                "every request, holding locks until both agree.",
                 "Insert the event into an outbox table in the same transaction as the state "
-                "change; a separate relay publishes the rows and marks them as sent.",
+                "change; a relay publishes the rows.",
             ),
         ),
         _t(
@@ -1745,14 +1784,14 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "reintroduz a lacuna do dual-write, buffers em memória perdem eventos em uma "
             "queda, e two-phase commit distribuído é uma técnica diferente (e mais pesada).",
             _options(
-                "Publicar no broker primeiro e depois gravar no banco, repetindo para sempre "
-                "se a gravação falhar.",
+                "Publicar no broker primeiro e depois gravar no banco, repetindo a gravação "
+                "para sempre se ela falhar.",
                 "Manter os eventos em uma lista em memória e descarregá-los no broker a cada "
                 "alguns segundos.",
                 "Executar um two-phase commit distribuído entre o banco e o broker em toda "
-                "requisição.",
+                "requisição, mantendo locks até ambos concordarem.",
                 "Inserir o evento em uma tabela outbox na mesma transação da mudança de "
-                "estado; um relay separado publica as linhas e as marca como enviadas.",
+                "estado; um relay publica as linhas.",
             ),
         ),
     ),
@@ -1864,11 +1903,12 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "keys lose per-order ordering, sleeping in the consumer is a fragile guess about "
             "timing, and a single partition gives up the parallelism you wanted.",
             _options(
-                "Use random keys for an even spread and let the consumers sort events by "
-                "timestamp.",
-                "Use a single partition for the whole topic and a single consumer.",
+                "Use random keys for an even spread and let the consumers reorder events by "
+                "timestamp before processing.",
+                "Use a single partition for the whole topic and a single consumer, so order "
+                "is trivially kept.",
                 "Publish with the order id as the partition key, so all events of an order "
-                "land in the same partition and are consumed in sequence.",
+                "land in one partition.",
                 "Make the consumer sleep a few seconds when it receives `Paid` before `Created`.",
             ),
         ),
@@ -1884,11 +1924,11 @@ EDA_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sobre tempo, e uma única partição abre mão do paralelismo desejado.",
             _options(
                 "Usar chaves aleatórias para uma distribuição uniforme e deixar os "
-                "consumidores ordenarem os eventos por timestamp.",
-                "Usar uma única partição para o tópico inteiro e um único consumidor.",
+                "consumidores reordenarem os eventos por timestamp antes de processar.",
+                "Usar uma única partição para o tópico inteiro e um único consumidor, de "
+                "modo que a ordem seja trivialmente mantida.",
                 "Publicar com o id do pedido como chave de partição, de modo que todos os "
-                "eventos de um pedido caiam na mesma partição e sejam consumidos em "
-                "sequência.",
+                "eventos de um pedido caiam em uma partição.",
                 "Fazer o consumidor dormir alguns segundos ao receber `Paid` antes de `Created`.",
             ),
         ),
