@@ -1805,11 +1805,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "deterministic. C is wrong because evaluation and monitoring complement each "
             "other.",
             _options(
-                "Evaluation is only needed once, right before launch.",
-                "LLM outputs are deterministic, so tests are unnecessary.",
-                "Evaluation replaces the need for production monitoring.",
+                "Evaluation is only needed once, right before launch, since quality stays "
+                "fixed afterwards.",
+                "LLM outputs are deterministic, so a handful of manual checks is enough and "
+                "tests are unnecessary.",
+                "Evaluation replaces the need for production monitoring, since the dataset "
+                "already covers real traffic.",
                 "A few examples cannot reveal failure rates or regressions; you need "
-                "systematic measurement on a representative dataset.",
+                "systematic measurement.",
             ),
         ),
         _t(
@@ -1822,11 +1825,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "têm garantia de serem determinísticas. C está errada porque avaliação e "
             "monitoramento se complementam.",
             _options(
-                "A avaliação só é necessária uma vez, logo antes do lançamento.",
-                "As saídas de LLMs são determinísticas, então testes são desnecessários.",
-                "A avaliação substitui a necessidade de monitoramento em produção.",
+                "A avaliação só é necessária uma vez, logo antes do lançamento, pois a "
+                "qualidade não muda depois.",
+                "As saídas de LLMs são determinísticas, então algumas checagens manuais "
+                "bastam e testes são desnecessários.",
+                "A avaliação substitui a necessidade de monitoramento em produção, pois o "
+                "dataset já cobre o tráfego real.",
                 "Poucos exemplos não revelam taxas de falha nem regressões; é preciso medir "
-                "de forma sistemática em um dataset representativo.",
+                "de forma sistemática.",
             ),
         ),
     ),
@@ -1844,11 +1850,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "quality over time. A (raw, unreviewed logs) lacks expected answers, C confuses "
             "evaluation data with training data, and D is not a real concept.",
             _options(
-                "All production logs, stored without any review.",
+                "All production logs from the last quarter, stored exactly as they arrived, "
+                "with no review or filtering.",
                 "A curated set of representative inputs with expected outputs or grading "
-                "criteria, including edge cases, reused to measure quality over time.",
-                "The data the model was originally trained on.",
-                "A set of prompts run only at the highest temperature.",
+                "criteria, reused over time.",
+                "The data the model was originally trained on, kept for later comparison.",
+                "A set of prompts run only at the highest temperature, to stress-test the "
+                "model's randomness.",
             ),
         ),
         _t(
@@ -1859,12 +1867,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "revisão) não tem respostas esperadas, C confunde dados de avaliação com dados de "
             "treinamento, e D não é um conceito real.",
             _options(
-                "Todos os logs de produção, armazenados sem nenhuma revisão.",
+                "Todos os logs de produção do último trimestre, armazenados exatamente como "
+                "chegaram, sem revisão nem filtragem.",
                 "Um conjunto curado de entradas representativas, com saídas esperadas ou "
-                "critérios de avaliação, incluindo casos extremos, reutilizado para medir a "
-                "qualidade ao longo do tempo.",
-                "Os dados com os quais o modelo foi originalmente treinado.",
-                "Um conjunto de prompts executados apenas na temperatura mais alta.",
+                "critérios de avaliação, reutilizado ao longo do tempo.",
+                "Os dados com os quais o modelo foi originalmente treinado, guardados para "
+                "comparação posterior.",
+                "Um conjunto de prompts executados apenas na temperatura mais alta, para "
+                "testar a aleatoriedade do modelo.",
             ),
         ),
     ),
@@ -1883,10 +1893,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "clarity for a beginner are subjective and need rubric-based human or LLM "
             "evaluation.",
             _options(
-                "Whether the tone is empathetic.",
-                "Whether a summary captures the key ideas.",
+                "Whether the tone of the reply is empathetic and appropriate for an upset "
+                "customer.",
+                "Whether a summary captures the key ideas without leaving out important "
+                "caveats.",
                 "Whether the output is valid JSON containing all required fields.",
-                "Whether an explanation is clear to a beginner.",
+                "Whether an explanation of the concept is clear to a beginner with no "
+                "background.",
             ),
         ),
         _t(
@@ -1897,10 +1910,12 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "qualidade de um resumo e clareza para um iniciante são subjetivos e exigem "
             "avaliação humana ou por LLM com base em uma rubrica.",
             _options(
-                "Se o tom é empático.",
-                "Se um resumo captura as ideias principais.",
+                "Se o tom da resposta é empático e adequado para um cliente irritado.",
+                "Se um resumo captura as ideias principais sem deixar de fora ressalvas "
+                "importantes.",
                 "Se a saída é um JSON válido contendo todos os campos obrigatórios.",
-                "Se uma explicação é clara para um iniciante.",
+                "Se uma explicação do conceito é clara para um iniciante sem nenhuma bagagem "
+                "prévia.",
             ),
         ),
     ),
@@ -1957,11 +1972,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "authorship. D is not a fix: raising the temperature adds noise instead of "
             "removing bias.",
             _options(
-                "Verbosity bias; ask the candidate models for shorter answers.",
-                "Self-preference; replace the judge with a larger model and keep one order.",
-                "Position bias; run each comparison in both orders and count only consistent "
+                "Verbosity bias; ask the candidate models for shorter answers so length "
+                "stops mattering.",
+                "Self-preference; replace the judge with a larger model from another vendor "
+                "and keep one order.",
+                "Position bias; run each comparison in both orders and keep only consistent "
                 "verdicts.",
-                "Calibration drift; raise the judge's temperature.",
+                "Calibration drift; raise the judge's temperature so verdicts vary more.",
             ),
         ),
         _t(
@@ -1975,11 +1992,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "a autoria. D não é correção: aumentar a temperatura adiciona ruído em vez de "
             "remover o viés.",
             _options(
-                "Viés de verbosidade; pedir respostas mais curtas aos modelos candidatos.",
-                "Autopreferência; trocar o juiz por um modelo maior e manter uma única ordem.",
-                "Viés de posição; executar cada comparação nas duas ordens e contar apenas os "
+                "Viés de verbosidade; pedir respostas mais curtas aos modelos candidatos "
+                "para o tamanho deixar de pesar.",
+                "Autopreferência; trocar o juiz por um modelo maior, de outro fornecedor, e "
+                "manter uma única ordem.",
+                "Viés de posição; executar cada comparação nas duas ordens e contar só os "
                 "vereditos consistentes.",
-                "Deriva de calibração; aumentar a temperatura do juiz.",
+                "Deriva de calibração; aumentar a temperatura do juiz para os vereditos "
+                "variarem mais.",
             ),
         ),
     ),
@@ -2040,11 +2060,14 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "dismisses a clear signal as noise without evidence. C is unrelated, since a "
             "judge's temperature does not explain a category drop.",
             _options(
-                "Ship it, because the overall score improved.",
-                "Discard the results, assuming the eval is too noisy to trust.",
-                "Raise the judge's temperature and re-run until the category recovers.",
-                "Inspect the per-category results and investigate the refund regression "
-                "before deciding whether to ship.",
+                "Ship it, because the overall score improved and the average is what users "
+                "will feel.",
+                "Discard the results, assuming the eval is too noisy to trust, and rely on "
+                "manual spot checks.",
+                "Raise the judge's temperature and re-run until the refund category "
+                "recovers to its old level.",
+                "Inspect the per-category results and investigate the refund drop before "
+                "deciding to ship.",
             ),
         ),
         _t(
@@ -2057,10 +2080,13 @@ EVAL_QUESTIONS: tuple[QuestionSeed, ...] = (
             "descarta um sinal claro como ruído sem evidência. C não tem relação, pois a "
             "temperatura do juiz não explica a queda de uma categoria.",
             _options(
-                "Publicar, porque a nota geral melhorou.",
-                "Descartar os resultados, supondo que a avaliação é ruidosa demais para confiar.",
-                "Aumentar a temperatura do juiz e reexecutar até a categoria se recuperar.",
-                "Examinar os resultados por categoria e investigar a regressão de reembolso "
+                "Publicar, porque a nota geral melhorou e é a média que os usuários vão "
+                "sentir.",
+                "Descartar os resultados, supondo que a avaliação é ruidosa demais para "
+                "confiar, e usar só checagens manuais.",
+                "Aumentar a temperatura do juiz e reexecutar até a categoria de reembolso "
+                "voltar ao nível antigo.",
+                "Examinar os resultados por categoria e investigar a queda de reembolso "
                 "antes de decidir se publica.",
             ),
         ),
