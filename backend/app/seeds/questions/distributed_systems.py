@@ -1379,12 +1379,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "or messages are lost, as long as a majority can communicate. That is what makes "
             "replicated state machines possible. A is conflict merging after the fact, C is "
             "impossible, and D is partitioning.",
-            "Letting any node accept writes and merging conflicting values afterwards using "
-            "timestamps.",
-            "Getting nodes to agree on one ordered sequence of values despite crashes and "
-            "message loss, while a majority stays up.",
-            "Guaranteeing that no node in the cluster ever crashes.",
-            "Distributing keys evenly across the nodes of a cluster.",
+            "Letting any node accept writes and then merging the conflicting values afterwards "
+            "using timestamps or vector clocks.",
+            "Getting nodes to agree on one ordered sequence of values despite crashes, while a "
+            "majority stays up.",
+            "Guaranteeing that no node in the cluster ever crashes or loses its disk.",
+            "Distributing keys evenly across the nodes of a cluster, so that no node is "
+            "overloaded.",
         ),
         _text(
             "Que problema algoritmos de consenso como Paxos e Raft resolvem?",
@@ -1393,12 +1394,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "nós falhem ou mensagens se percam, desde que uma maioria consiga se comunicar. É o "
             "que torna possíveis as máquinas de estado replicadas. A é mesclagem de conflitos "
             "depois do fato, C é impossível e D é particionamento.",
-            "Permitir que qualquer nó aceite escritas e mesclar depois os valores conflitantes "
-            "usando timestamps.",
-            "Fazer os nós concordarem sobre uma sequência ordenada de valores apesar de falhas "
-            "e perda de mensagens, enquanto uma maioria continua ativa.",
-            "Garantir que nenhum nó do cluster jamais falhe.",
-            "Distribuir as chaves uniformemente entre os nós de um cluster.",
+            "Permitir que qualquer nó aceite escritas e depois mesclar os valores conflitantes "
+            "usando timestamps ou vector clocks.",
+            "Fazer os nós concordarem sobre uma sequência ordenada de valores apesar de "
+            "falhas, enquanto uma maioria continua ativa.",
+            "Garantir que nenhum nó do cluster jamais falhe ou perca o seu disco.",
+            "Distribuir as chaves uniformemente entre os nós de um cluster, para nenhum nó "
+            "ficar sobrecarregado.",
         ),
     ),
     _q(
@@ -1415,9 +1417,10 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "itself and requests votes from the other nodes; it becomes leader only if a "
             "majority grants them. It does not declare itself leader outright (B), and it "
             "neither shuts down (C) nor waits indefinitely for the old leader (D).",
-            "It increments its term, becomes a candidate and requests votes from the other nodes.",
-            "It declares itself the leader of the current term immediately.",
-            "It shuts down until an operator restarts it.",
+            "It increments its term, becomes a candidate and requests votes from the others.",
+            "It immediately declares itself the leader of the current term and starts sending "
+            "heartbeats.",
+            "It shuts itself down until an operator restarts it manually.",
             "It keeps waiting for the old leader, since only the leader may start an election.",
         ),
         _text(
@@ -1427,9 +1430,9 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "mesmo e pede votos aos outros nós; só vira líder se uma maioria os conceder. Não se "
             "declara líder diretamente (B), não se desliga (C) nem espera indefinidamente pelo "
             "líder antigo (D).",
-            "Incrementa seu term, vira candidato e pede votos aos outros nós.",
-            "Declara-se imediatamente líder do term atual.",
-            "Desliga-se até que um operador o reinicie.",
+            "Incrementa seu term, vira candidato e pede votos aos demais nós.",
+            "Declara-se imediatamente líder do term atual e começa a enviar heartbeats.",
+            "Desliga-se até que um operador o reinicie manualmente.",
             "Continua esperando o líder antigo, pois só o líder pode iniciar uma eleição.",
         ),
     ),
@@ -1448,11 +1451,14 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "which is what stops a later leader or decision from ignoring it. Majorities are not "
             "required for speed (A), do not pick the fastest node (B), and the argument does "
             "not depend on odd cluster sizes (D).",
-            "A majority is the smallest group that can answer quickly enough.",
-            "The majority always includes the fastest node, which then becomes leader.",
-            "Any two majorities overlap in at least one node, so a committed decision cannot be "
-            "missed by a later majority.",
-            "Clusters must have an odd number of nodes for any vote to work.",
+            "A majority is the smallest group that can answer quickly enough to keep latency "
+            "low.",
+            "The majority always includes the fastest node, which then becomes the leader of "
+            "the cluster.",
+            "Any two majorities share a node, so a later majority cannot miss a committed "
+            "decision.",
+            "Clusters must have an odd number of nodes, otherwise no vote can ever reach a "
+            "majority.",
         ),
         _text(
             "Por que protocolos de consenso exigem uma **maioria** (e não um conjunto "
@@ -1462,11 +1468,14 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "maioria posterior, o que impede que um líder ou decisão posterior a ignore. A "
             "maioria não é exigida por velocidade (A), não escolhe o nó mais rápido (B) e o "
             "argumento não depende de o cluster ter tamanho ímpar (D).",
-            "A maioria é o menor grupo capaz de responder rápido o bastante.",
-            "A maioria sempre inclui o nó mais rápido, que então vira líder.",
-            "Quaisquer duas maiorias se sobrepõem em ao menos um nó, então uma decisão "
-            "confirmada não pode ser ignorada por uma maioria posterior.",
-            "Os clusters precisam ter um número ímpar de nós para qualquer votação funcionar.",
+            "A maioria é o menor grupo capaz de responder rápido o bastante para manter a "
+            "latência baixa.",
+            "A maioria sempre inclui o nó mais rápido, que então se torna o líder do cluster "
+            "inteiro.",
+            "Quaisquer duas maiorias compartilham um nó, então uma maioria posterior não pode "
+            "ignorar uma decisão confirmada.",
+            "Os clusters precisam ter um número ímpar de nós, senão nenhuma votação alcança a "
+            "maioria.",
         ),
     ),
     _q(
@@ -1486,11 +1495,11 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "write anyway (C) would risk diverging history, and nothing committed is lost (D).",
             "It continues normally, since the 2 survivors are a majority of the nodes still "
             "running.",
-            "It cannot elect a leader or commit new entries until enough nodes return, but "
-            "committed data is not lost.",
-            "The 2 survivors elect a leader and accept writes, to be reconciled once the other "
-            "nodes return.",
-            "All data committed so far is lost, because most nodes are gone.",
+            "It cannot elect a leader or commit new entries until nodes return, but committed "
+            "data is not lost.",
+            "The 2 survivors elect a leader and keep accepting writes, to be reconciled once "
+            "the other nodes return.",
+            "All data committed so far is lost, because most of the nodes holding it are gone.",
         ),
         _text(
             "Em um cluster Raft de 5 nós, 3 nós caem e continuam fora. Qual é o estado do cluster?",
@@ -1502,11 +1511,12 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "confirmado se perde (D).",
             "Continua normalmente, pois os 2 sobreviventes são uma maioria dos nós que ainda "
             "estão rodando.",
-            "Não consegue eleger líder nem confirmar novas entradas até que nós suficientes "
-            "voltem, mas os dados confirmados não se perdem.",
-            "Os 2 sobreviventes elegem um líder e aceitam escritas, a serem reconciliadas "
-            "quando os outros nós voltarem.",
-            "Todos os dados confirmados até agora se perdem, pois a maioria dos nós sumiu.",
+            "Não consegue eleger líder nem confirmar novas entradas até os nós voltarem, mas "
+            "os dados confirmados não se perdem.",
+            "Os 2 sobreviventes elegem um líder e continuam aceitando escritas, a serem "
+            "reconciliadas quando os outros nós voltarem.",
+            "Todos os dados confirmados até agora se perdem, pois a maioria dos nós que os "
+            "guardam sumiu.",
         ),
     ),
     _q(
@@ -1565,11 +1575,11 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "guarantee that the most up-to-date node goes first (A); log freshness is enforced "
             "by the voting rule instead. Security (C) and read distribution (D) are not goals "
             "of this mechanism.",
-            "To guarantee that the node with the most complete log always times out first.",
-            "So one node usually times out first and wins the election, avoiding repeated "
-            "split votes.",
-            "To make the leader's heartbeats unpredictable to attackers.",
-            "To spread read traffic evenly across the followers.",
+            "To guarantee that the node with the most complete log always times out first and "
+            "wins.",
+            "So one node usually times out first and wins, avoiding repeated split votes.",
+            "To make the leader's heartbeats and elections unpredictable to network attackers.",
+            "To spread read traffic evenly across the followers of the cluster.",
         ),
         _text(
             "Por que o Raft randomiza o election timeout de cada nó?",
@@ -1579,11 +1589,12 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "não garante que o nó mais atualizado saia primeiro (A); o frescor do log é "
             "garantido pela regra de votação. Segurança contra atacantes (C) e distribuição de "
             "leituras (D) não são objetivos desse mecanismo.",
-            "Para garantir que o nó com o log mais completo sempre expire primeiro.",
-            "Para que um nó em geral expire primeiro e vença a eleição, evitando votos "
-            "divididos repetidos.",
-            "Para tornar os heartbeats do líder imprevisíveis para atacantes.",
-            "Para distribuir uniformemente o tráfego de leitura entre os seguidores.",
+            "Para garantir que o nó com o log mais completo sempre expire primeiro e vença.",
+            "Para que um nó em geral expire primeiro e vença, evitando votos divididos "
+            "repetidos.",
+            "Para tornar os heartbeats e as eleições imprevisíveis para atacantes de rede.",
+            "Para distribuir uniformemente o tráfego de leitura entre os seguidores do "
+            "cluster.",
         ),
     ),
     _q(
@@ -1602,12 +1613,13 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "term, steps down and discards its uncommitted entries. A is impossible because the "
             "group of 2 cannot commit, B would let uncommitted data become visible as committed, "
             "and C is too pessimistic because the majority side stays available.",
-            "Both groups keep committing writes and reconcile them when the partition heals.",
-            "The old leader keeps committing writes in its group of 2 and the other group "
-            "copies them later.",
-            "The whole cluster halts until the partition heals.",
-            "The group of 3 elects a new leader and continues; the old leader cannot commit "
-            "anything and steps down after the partition heals.",
+            "Both groups keep committing writes in parallel and reconcile them when the "
+            "partition heals.",
+            "The old leader keeps committing writes in its group of 2, and the other group "
+            "copies them in once the partition heals.",
+            "The whole cluster halts, because no group can proceed until the partition heals.",
+            "The group of 3 elects a new leader; the old leader can commit nothing and steps "
+            "down after healing.",
         ),
         _text(
             "Um cluster Raft de 5 nós é particionado em um grupo de 3 e um grupo de 2, e o "
@@ -1619,13 +1631,14 @@ _CONSENSUS: tuple[QuestionSeed, ...] = (
             "grupo de 2 não consegue confirmar, B tornaria dados não confirmados visíveis "
             "como confirmados, e C é pessimista demais, pois o lado majoritário continua "
             "disponível.",
-            "Os dois grupos continuam confirmando escritas e as reconciliam quando a partição "
-            "se resolve.",
-            "O líder antigo continua confirmando escritas em seu grupo de 2 e o outro grupo as "
-            "copia depois.",
-            "O cluster inteiro para até a partição se resolver.",
-            "O grupo de 3 elege um novo líder e continua; o líder antigo não consegue "
-            "confirmar nada e renuncia depois que a partição se resolve.",
+            "Os dois grupos continuam confirmando escritas em paralelo e as reconciliam "
+            "quando a partição se resolve.",
+            "O líder antigo continua confirmando escritas em seu grupo de 2, e o outro grupo "
+            "as incorpora quando a partição se resolve.",
+            "O cluster inteiro para, pois nenhum grupo pode prosseguir até a partição se "
+            "resolver.",
+            "O grupo de 3 elege um novo líder; o líder antigo não confirma nada e renuncia "
+            "depois que a partição se resolve.",
         ),
     ),
     _q(
