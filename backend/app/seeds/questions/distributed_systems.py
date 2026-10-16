@@ -146,11 +146,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "has not failed must get a non-error response. The answer may be stale. It is not "
             "an uptime percentage (A), it does not promise the latest write (B; that is "
             "consistency), and the theorem sets no latency bound (C).",
-            "The service is up a very high percentage of the time (for example 99.99%).",
-            "Every request returns the result of the most recent write.",
-            "Every request is answered within the latency target of the service.",
-            "Every request to a non-failing node receives a non-error response, though not "
-            "necessarily one reflecting the latest write.",
+            "The service is up a very high percentage of the time, for example 99.99% over a "
+            "month.",
+            "Every request returns the result of the most recent completed write, as if there "
+            "were a single copy of the data.",
+            "Every request is answered within the latency target in the service's SLO, for "
+            "example 200 ms.",
+            "Every request to a non-failing node gets a non-error response, even if it is not "
+            "the latest write.",
         ),
         _text(
             "Na formulação formal do teorema CAP, o que significa **disponibilidade** "
@@ -159,11 +162,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "um nó que não falhou deve receber uma resposta sem erro. A resposta pode estar "
             "desatualizada. Não é um percentual de uptime (A), não promete a última escrita "
             "(B; isso é consistência) e o teorema não define limite de latência (C).",
-            "O serviço fica no ar uma porcentagem altíssima do tempo (por exemplo, 99,99%).",
-            "Toda requisição retorna o resultado da escrita mais recente.",
-            "Toda requisição é respondida dentro da meta de latência do serviço.",
-            "Toda requisição a um nó que não falhou recebe uma resposta sem erro, embora "
-            "não necessariamente refletindo a última escrita.",
+            "O serviço fica no ar uma porcentagem altíssima do tempo, por exemplo 99,99% ao "
+            "longo de um mês.",
+            "Toda requisição retorna o resultado da última escrita concluída, como se "
+            "houvesse uma única cópia dos dados.",
+            "Toda requisição é respondida dentro da meta de latência do SLO do serviço, por "
+            "exemplo 200 ms.",
+            "Toda requisição a um nó que não falhou recebe uma resposta sem erro, mesmo que "
+            "não seja a da última escrita.",
         ),
     ),
     _q(
@@ -181,11 +187,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "(for example, it cannot reach a majority) refuses or times out requests. B and C "
             "keep answering and so are AP behaviors, and D accepts writes it cannot "
             "coordinate, so it risks the very divergence a ledger must avoid.",
-            "It rejects or times out requests that it cannot guarantee are consistent until the "
+            "It rejects or times out requests it cannot guarantee are consistent until the "
             "partition heals.",
-            "It keeps accepting writes and merges them with the other data centers afterwards.",
-            "It keeps answering reads from its local, possibly stale, copy of the data.",
-            "It acknowledges writes immediately and replicates them whenever the network returns.",
+            "It keeps accepting writes locally and merges them with the other data centers "
+            "once the partition heals.",
+            "It keeps answering reads from its local, possibly stale, copy of the data until "
+            "the partition heals.",
+            "It acknowledges writes immediately and replicates them whenever the network "
+            "returns to normal.",
         ),
         _text(
             "Um livro-razão bancário está implantado em três data centers e uma partição de "
@@ -198,10 +207,11 @@ _CAP: tuple[QuestionSeed, ...] = (
             "que um livro-razão precisa evitar.",
             "Rejeita ou deixa expirar as requisições cuja consistência não consegue garantir "
             "até que a partição seja resolvida.",
-            "Continua aceitando escritas e as mescla com os outros data centers depois.",
+            "Continua aceitando escritas localmente e as mescla com os outros data centers "
+            "quando a partição for resolvida.",
             "Continua respondendo leituras a partir da sua cópia local, possivelmente "
-            "desatualizada.",
-            "Confirma as escritas imediatamente e as replica quando a rede voltar.",
+            "desatualizada, até a partição ser resolvida.",
+            "Confirma as escritas imediatamente e as replica quando a rede voltar ao normal.",
         ),
     ),
     _q(
@@ -219,12 +229,12 @@ _CAP: tuple[QuestionSeed, ...] = (
             "to another, preserving application-defined invariants such as constraints. They "
             "are unrelated guarantees, and CAP consistency is not eventual consistency.",
             "They are the same guarantee; CAP just applies the ACID definition to several nodes.",
-            "CAP consistency means reads see the latest write as if there were one copy of the "
-            "data; ACID consistency means a transaction preserves the database's invariants.",
-            "CAP consistency means replicas converge eventually; ACID consistency means reads "
-            "see the latest write.",
-            "CAP consistency is about durability on disk; ACID consistency is about isolation "
-            "between transactions.",
+            "CAP consistency means reads see the latest write, as if there were one copy; ACID "
+            "consistency means a transaction preserves the invariants.",
+            "CAP consistency means replicas eventually converge to the same value; ACID "
+            "consistency means every read sees the latest committed write.",
+            "CAP consistency is about durability, meaning writes survive a crash on disk; ACID "
+            "consistency is about isolation between concurrent transactions.",
         ),
         _text(
             'Qual afirmação distingue melhor o "C" do CAP do "C" do ACID?',
@@ -235,13 +245,12 @@ _CAP: tuple[QuestionSeed, ...] = (
             "constraints. São garantias sem relação, e a consistência do CAP não é consistência "
             "eventual.",
             "São a mesma garantia; o CAP apenas aplica a definição do ACID a vários nós.",
-            "No CAP, consistência significa que as leituras veem a última escrita como se "
-            "houvesse uma só cópia dos dados; no ACID, que uma transação preserva as "
-            "invariantes do banco.",
-            "No CAP, consistência significa que as réplicas convergem com o tempo; no ACID, "
-            "que as leituras veem a última escrita.",
-            "No CAP, consistência trata de durabilidade em disco; no ACID, de isolamento entre "
-            "transações.",
+            "No CAP, consistência significa que as leituras veem a última escrita, como se "
+            "houvesse uma só cópia; no ACID, que uma transação preserva as invariantes.",
+            "No CAP, consistência significa que as réplicas acabam convergindo para o mesmo "
+            "valor; no ACID, que toda leitura vê a última escrita confirmada.",
+            "No CAP, consistência trata de durabilidade, ou seja, as escritas sobrevivem a "
+            "uma queda em disco; no ACID, de isolamento entre transações concorrentes.",
         ),
     ),
     _q(
@@ -339,10 +348,13 @@ _CAP: tuple[QuestionSeed, ...] = (
             "asynchronous replication does the opposite. B reverses the roles of the clauses, "
             "C is not a PACELC trade-off, and D describes CAP's own clause.",
             "The trade-off between latency and consistency when there is no partition, such as "
-            "synchronous versus asynchronous replication.",
-            "The trade-off between latency and consistency while a partition is happening.",
-            "The trade-off between storage cost and durability when there is no partition.",
-            "The trade-off between availability and consistency when there is no partition.",
+            "synchronous replication.",
+            "The trade-off between latency and consistency that a system faces while a network "
+            "partition is in progress.",
+            "The trade-off between storage cost and durability, such as how many replicas to "
+            "keep, when there is no partition.",
+            "The trade-off between availability and consistency when there is no partition, "
+            "that is, the choice CAP already describes.",
         ),
         _text(
             'A formulação PACELC acrescenta uma cláusula "ELC" ao CAP. O que ela descreve?',
@@ -351,11 +363,14 @@ _CAP: tuple[QuestionSeed, ...] = (
             "replicação síncrona compra mais consistência ao custo de latência, e a assíncrona "
             "faz o oposto. B inverte os papéis das cláusulas, C não é um trade-off do PACELC e "
             "D descreve a própria cláusula do CAP.",
-            "O trade-off entre latência e consistência quando não há partição, como replicação "
-            "síncrona versus assíncrona.",
-            "O trade-off entre latência e consistência enquanto uma partição está ocorrendo.",
-            "O trade-off entre custo de armazenamento e durabilidade quando não há partição.",
-            "O trade-off entre disponibilidade e consistência quando não há partição.",
+            "O trade-off entre latência e consistência quando não há partição, como a "
+            "replicação síncrona.",
+            "O trade-off entre latência e consistência que o sistema enfrenta enquanto uma "
+            "partição de rede está em curso.",
+            "O trade-off entre custo de armazenamento e durabilidade, como quantas réplicas "
+            "manter, quando não há partição.",
+            "O trade-off entre disponibilidade e consistência quando não há partição, ou "
+            "seja, a escolha que o CAP já descreve.",
         ),
     ),
     _q(
