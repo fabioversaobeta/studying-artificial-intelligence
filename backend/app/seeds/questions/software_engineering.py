@@ -591,10 +591,10 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "knowing the details. A describes Singleton, B describes Observer, and D "
             "describes Builder.",
             (
-                "Guarantee that a class has exactly one instance with a global access point.",
+                "Guarantee that a class has exactly one instance and provide a single global "
+                "access point to it.",
                 "Notify many dependents automatically when an object's state changes.",
-                "Encapsulate interchangeable algorithms behind a common interface so the "
-                "behavior can be swapped at runtime.",
+                "Put interchangeable algorithms behind a common interface, chosen at runtime.",
                 "Construct a complex object step by step through a readable sequence of calls.",
             ),
         ),
@@ -605,11 +605,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "sem que o contexto conheça os detalhes. A descreve o Singleton, a B descreve o "
             "Observer e a D descreve o Builder.",
             (
-                "Garantir que uma classe tenha exatamente uma instância com um ponto de "
-                "acesso global.",
+                "Garantir que uma classe tenha exatamente uma instância e oferecer um único "
+                "ponto de acesso global a ela.",
                 "Notificar automaticamente vários dependentes quando o estado de um objeto muda.",
-                "Encapsular algoritmos intercambiáveis atrás de uma interface comum, para "
-                "trocar o comportamento em tempo de execução.",
+                "Colocar algoritmos intercambiáveis atrás de uma interface comum, escolhidos "
+                "em tempo de execução.",
                 "Construir um objeto complexo passo a passo por uma sequência legível de chamadas.",
             ),
         ),
@@ -709,9 +709,8 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Factory Method, to pick the concrete request class.",
                 "Observer, to notify the request about its own parameters.",
-                "Adapter, to convert the positional arguments into a dictionary.",
-                "Builder, to set each option through named steps and validate in a final "
-                "`build()`.",
+                "Adapter, to convert the positional arguments into a dictionary before each call.",
+                "Builder, to set options through named steps and validate in `build()`.",
             ),
         ),
         _t(
@@ -726,9 +725,9 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             (
                 "Factory Method, para escolher a classe concreta da requisição.",
                 "Observer, para notificar a requisição sobre seus próprios parâmetros.",
-                "Adapter, para converter os argumentos posicionais em um dicionário.",
-                "Builder, para definir cada opção por passos nomeados e validar em um "
-                "`build()` final.",
+                "Adapter, para converter os argumentos posicionais em um dicionário antes de "
+                "cada chamada.",
+                "Builder, para definir opções por passos nomeados e validar em `build()`.",
             ),
         ),
     ),
@@ -785,10 +784,10 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "handle) and, where available, weak references. Observers do not need to be "
             "singletons (B), and the other options do not describe a leak.",
             (
-                "Lapsed listeners: the subject keeps strong references until observers "
-                "explicitly unsubscribe.",
+                "Lapsed listeners: strong references are held until observers unsubscribe.",
                 "Observers must be singletons, so every screen shares one listener.",
-                "The subject should notify observers in separate processes to free memory.",
+                "The subject should notify observers in separate processes so that memory is "
+                "freed sooner.",
                 "Observer is limited to a single subscriber per event type.",
             ),
         ),
@@ -804,12 +803,12 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "disponível, usar referências fracas. Observadores não precisam ser singletons "
             "(B) e as demais opções não descrevem um vazamento.",
             (
-                "Lapsed listeners: o sujeito mantém referências fortes até que os "
-                "observadores cancelem a inscrição explicitamente.",
+                "Lapsed listeners: referências fortes são mantidas até os observadores "
+                "cancelarem a inscrição.",
                 "Os observadores precisam ser singletons, então toda tela compartilha um "
                 "único listener.",
-                "O sujeito deveria notificar os observadores em processos separados para "
-                "liberar memória.",
+                "O sujeito deveria notificar os observadores em processos separados para que a "
+                "memória seja liberada antes.",
                 "O Observer se limita a um único inscrito por tipo de evento.",
             ),
         ),
@@ -874,11 +873,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "the decision logic still exists somewhere, so it does not remove every "
             "conditional (D).",
             (
-                "It guarantees that only one `Notifier` instance can ever exist.",
+                "It guarantees that only one `Notifier` instance can ever exist in the whole "
+                "application.",
                 "It makes every `Notifier` immutable.",
-                "Callers depend only on the `Notifier` interface, and adding a kind changes "
-                "one place instead of many.",
-                "It removes every conditional from the program.",
+                "Callers depend only on the `Notifier` interface; a new kind changes one place.",
+                "It removes every conditional from the program, since creation needs no decision.",
             ),
         ),
         _t(
@@ -892,11 +891,11 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "(B), e a lógica de decisão continua existindo em algum lugar, então ela não "
             "remove todas as condicionais (D).",
             (
-                "Garante que só possa existir uma instância de `Notifier`.",
+                "Garante que só possa existir uma instância de `Notifier` em toda a aplicação.",
                 "Torna todo `Notifier` imutável.",
-                "Os chamadores dependem apenas da interface `Notifier`, e adicionar um tipo "
-                "altera um lugar em vez de vários.",
-                "Remove todas as condicionais do programa.",
+                "Os chamadores dependem apenas da interface `Notifier`; um novo tipo altera "
+                "um só lugar.",
+                "Remove todas as condicionais do programa, pois a criação não exige decisão.",
             ),
         ),
     ),
@@ -917,12 +916,13 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "know nothing about each other. Both use composition and an interface, and "
             "neither is structural in the GoF sense.",
             (
-                "Strategy needs an interface while State does not.",
-                "State uses inheritance of the context while Strategy uses composition.",
+                "Strategy needs an interface to be swapped through, while State works with "
+                "concrete classes only.",
+                "State relies on inheritance of the context class to change its behavior, "
+                "while Strategy relies on plain composition.",
                 "State is a structural pattern and Strategy is a creational pattern.",
-                "In State the object's behavior changes as its own state changes, often with "
-                "the state objects driving transitions; in Strategy the client chooses an "
-                "algorithm and the strategies are independent of each other.",
+                "In State, behavior follows the object's own lifecycle; in Strategy, the "
+                "client picks an independent algorithm.",
             ),
         ),
         _t(
@@ -935,13 +935,13 @@ PATTERNS_QUESTIONS: tuple[QuestionSeed, ...] = (
             "intercambiável e as estratégias não sabem nada umas das outras. Ambos usam "
             "composição e uma interface, e nenhum é estrutural no sentido do GoF.",
             (
-                "O Strategy precisa de uma interface, enquanto o State não.",
-                "O State usa herança do contexto, enquanto o Strategy usa composição.",
+                "O Strategy precisa de uma interface para ser trocado, enquanto o State "
+                "trabalha apenas com classes concretas.",
+                "O State depende da herança da classe de contexto para mudar seu "
+                "comportamento, enquanto o Strategy depende de composição simples.",
                 "O State é um padrão estrutural e o Strategy é um padrão de criação.",
-                "No State o comportamento do objeto muda conforme o próprio estado muda, "
-                "muitas vezes com os objetos de estado conduzindo as transições; no "
-                "Strategy o cliente escolhe um algoritmo e as estratégias são independentes "
-                "entre si.",
+                "No State o comportamento acompanha o ciclo de vida do próprio objeto; no "
+                "Strategy o cliente escolhe um algoritmo independente.",
             ),
         ),
     ),
