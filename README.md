@@ -7,8 +7,10 @@
 
 A personal learning and career-development platform: goals, subjects, competencies, learning paths, study sessions, mastery tracking, spaced repetition and gamification (XP, levels, achievements, quests, streaks). Built **AI-native** and designed to evolve toward AI-assisted, adaptive learning and interview/career readiness.
 
-<!-- TODO: add dashboard / skill-tree screenshots, e.g.
-<p align="center"><img src="docs/images/dashboard.png" width="700" /></p> -->
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="Dashboard with level, XP, streak, goals and recent study sessions" width="800" /><br/>
+  <img src="docs/images/skill-tree.png" alt="Skill tree with locked and available competencies" width="800" />
+</p>
 
 ## Features (v1)
 
